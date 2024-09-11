@@ -13,32 +13,34 @@ int main() {
     // Ademas con valores de 9/10 para arriba pierde precision
     while (true){
 
-        // get cateto ARMAR FUNC
-        cout << "Introudce el cateto del  triángulo" << endl;
+        // Get Cathetus and check impossible triangle
+        cout << "Enter the cathetus c of the triangle" << endl;
         cin >> c;
         if (c<=0){
-            cout<<"Has introducido un cateto prohibido"<<endl;
+            cout<<"Impossible triangle. C must be positive"<<endl;
             cout<<"END"<<endl; 
             break;
         }
-        // get hipotenusa ARMAR FUNC
-        cout << "Introduce la hipotenusa h del triángulo" << endl;
+        
+        // Get Hypotenuse and check impossible triangle
+        cout << "Enter the hypotenuse h of the triangle"<< endl;
         cin >> h;
             if (h<=0){
-            cout<<"Has introducido un hipotenusa prohibido"<<endl;
+            cout<<"Impossible triangle. H must be positive"<<endl;
             cout<<"END"<<endl; 
             break;
         }
 
+        // Check cathetus/hypothenuse ratio
         if (c/h>=1){
-            cout<<"Has introducido un triangulo rectangulo prohibido"<<endl;
+            cout<<"Impossible triangle. The cathetus cannot be greater than the hypotenuse."<<endl;
             cout<<"END"<<endl; 
             break;
         } 
     
         result = arcsin(c/h, 40);
 
-        cout << "El angulo es de " << result << "°." <<endl;
+        cout << "The angle is " << result << "degrees." <<endl;
     }
 
   return 0;   

@@ -1,0 +1,51 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "description": "Default configuration for calculator",
+            "hidden": true,
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "macos-debug",
+            "inherits": "default",
+            "description": "Configure for macOS Debug",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/macos-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "windows-debug",
+            "inherits": "default",
+            "description": "Configure for Windows Debug",
+            "hidden": false,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/windows-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "macos-debug",
+            "configurePreset": "macos-debug",
+            "description": "Build for macOS Debug",
+            "hidden": false
+        },
+        {
+            "name": "windows-debug",
+            "configurePreset": "windows-debug",
+            "description": "Build for Windows Debug",
+            "hidden": false
+        }
+    ]
+}
