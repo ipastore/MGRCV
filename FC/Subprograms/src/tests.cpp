@@ -1,13 +1,10 @@
-//FALTA: armar tests mas completos
-
 #include <iostream>
 #include "functions.h"
 
 using namespace std;
 
-void test_power(float base, int exp, float expected){
-    float actual_value = powerWithExpInt(base, exp);
-    // if(actual_value != expected){
+void test_power(double base, int exp, double expected){
+    double actual_value = exponential(base, exp);
     if(abs(actual_value - expected) > 0.02){
         cout << "Error: powerWithExpInt(" << base << ", " << "exp) = " << actual_value << endl;
         cout << "Expected " << expected << endl;
@@ -22,9 +19,8 @@ void test_factorial (int number, int expected){
     }
 }
 
-void test_arcsin(float x, int iterations, float expected){
-    float actual_value = arcsin(x, iterations);
-    // if(actual_value != expected){
+void test_arcsin(double x, int iterations, double expected){
+    double actual_value = arcsin(x, iterations);
     if(abs(actual_value - expected) > 0.02){
         cout << "Error: arcsin("<< x <<", "<< iterations << ") = " << actual_value << endl;
         cout << "Expected " << expected << endl;
@@ -51,6 +47,6 @@ int main() {
     test_arcsin(3.0/4.0,20,48.59);
     test_arcsin(3.0/4.0,30,48.59);
     test_arcsin(3.0/4.0,50,48.59);
-
+    
     return 0;   
 }

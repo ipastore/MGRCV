@@ -1,16 +1,27 @@
-// Falta preguntar por armar funcion de power con exponente float
-// Preguntar por precision 
-
-
 #include <iostream>
 #include "functions.h"
 using namespace std;
 
+/*
+Developed by: 
+    - David Padilla Orenga, NIA: 946874
+    - Inacio Pastore Benaim, NIP: 920576
+
+Main function containing a a program to calculate the degree of a set of rectangular triangules using 
+a Taylor series for the approximation for the arcsin function. 
+    - c input correponds to the cathetus value.
+    - h input correponds to the hypotenuse value.
+    - The output returns the angle value in degrees.
+
+We have seen that:
+    - With 30 iterations it breaks.
+    - Also with values of 9/10 and above it loses precision.
+*/
+
 int main() {
 
-    float c, h, result;
-    // Con 30 iteraciones se rompe.
-    // Ademas con valores de 9/10 para arriba pierde precision
+    double c, h, result;
+
     while (true){
 
         // Get Cathetus and check impossible triangle
@@ -38,12 +49,10 @@ int main() {
             break;
         } 
     
-        result = arcsin(c/h, 40);
+        result = arcsin(c/h, 10);
 
-        cout << "The angle is " << result << "degrees." <<endl;
+        cout << "The angle is " << result << " degrees." <<endl;
     }
 
   return 0;   
 }
-
-

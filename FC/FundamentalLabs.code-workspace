@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "Imperative_programming"
+		},
+		{
+			"path": "Subprograms"
+		},
+		{
+			"path": "memory"
+		},
+		{
+			"path": "data_structure"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iostream": "cpp"
+		}
+	}
+}

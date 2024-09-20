@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 
 /**
@@ -5,9 +7,9 @@
  *
  * base represents the base of the exponentiation.
  * exp represents the exponent, which is an integer.
- * The function returns the result of base raised to the power of exp as a float.
+ * The function returns the result of base raised to the power of exp as a double.
  */
-float exponential(float base, int exp);
+double exponential(double base, int exp);
 
 /**
  * The function factorial calculates the factorial of a given non-negative integer.
@@ -22,6 +24,6 @@ int factorial(int number);
  *
  * x represents the input value for which the arcsin is to be calculated.
  * iterations represents the number of terms to consider in the Taylor series for the approximation.
- * The function returns the approximate value of arcsin(x) as a float.
+ * The function returns the approximate value of arcsin(x) as a double.
  */
-float arcsin(float x, int iterations);
+double arcsin(double x, int iterations);
