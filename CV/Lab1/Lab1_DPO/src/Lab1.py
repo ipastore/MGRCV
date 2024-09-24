@@ -64,7 +64,7 @@ def project_to_camera(X_h, P):
     x_h_projected /= x_h_projected[-1]
     return x_h_projected
 
-def plot_point(ax, points, color='red', marker='x',labels=None):
+def plot_point(ax, points, color='red', marker='+',labels=None):
     if points.ndim == 1:
         points = points[:, np.newaxis]
     x_coords, y_coords = points[0], points[1]
@@ -75,23 +75,58 @@ def plot_point(ax, points, color='red', marker='x',labels=None):
         if label:
             ax.text(x_coords[i], y_coords[i], '  ' + label, verticalalignment='center', color=color)
 
+def get_limit_line(start_point, end_point, width, height):
+    m = (end_point[1] - start_point[1]) / (end_point[0] - start_point[0])
+    c = start_point[1] - m * start_point[0]
+    y_left = m * 0 + c
+    y_right = m * width + c
+    x_top = (0 - c) / m
+    x_bottom = (height - c) / m 
+    points = np.array([
+        [0, y_left],
+        [width, y_right],
+        [x_top, 0],
+        [x_bottom, height]
+    ])
     
+    valid_points = points[(points[:, 0] >= 0) & (points[:, 0] <= width) &
+                          (points[:, 1] >= 0) & (points[:, 1] <= height)]
     
-def plot_line(ax, start_point, end_point=None, direction=None, length=1, style='-', color='blue'):
+    return valid_points[0], valid_points[1]
+
+def get_limit_line_direction(direction, width, height):
+    m = (direction[1]) / (direction[0])
+    c = direction[1] - m * direction[0]
+    y_left = m * 0 + c
+    y_right = m * width + c
+    x_top = (0 - c) / m
+    x_bottom = (height - c) / m 
+    points = np.array([
+        [0, y_left],
+        [width, y_right],
+        [x_top, 0],
+        [x_bottom, height]
+    ])
+    
+    valid_points = points[(points[:, 0] >= 0) & (points[:, 0] <= width) &
+                          (points[:, 1] >= 0) & (points[:, 1] <= height)]
+    
+    return valid_points[0], valid_points[1]
+    
+def plot_line(ax, start_point=None, end_point=None, direction=None, width=None, height=None, style='-', color='green'):
     if direction is not None:
         # Calculate points based on direction and length
-        line_start = start_point - direction * length
-        line_end = start_point + direction * length
+        line_start, line_end = get_limit_line_direction(direction, width, height)
     elif end_point is not None:
         # Use the provided end point
         line_start = start_point
         line_end = end_point
-        
-        m = (end_point[1] - start_point[1]) / (end_point[0] - start_point[0])
-        c = y1 - m * x1
+        if width is not None and height is not None:
+            line_start, line_end = get_limit_line(start_point, end_point, width, height)
     else:
-        raise ValueError("Either an end point or a direction must be provided")
+        raise ValueError("Either an two points or a direction must be provided")
 
+    
     ax.plot([line_start[0], line_end[0]], [line_start[1], line_end[1]], style, color=color)
 
 
@@ -132,8 +167,8 @@ if __name__ == '__main__':
     # Project points from world to cameras coordinates
     x_C1_h = project_to_camera(X_w_h, P1)
     x_C2_h = project_to_camera(X_w_h, P2) 
-    print("Homogenous coordinates in for camera C1 (in px) are: \n",x_C1_h)
-    print("Homogenous coordinates in for camera C2 (in px) are: \n",x_C2_h)
+    print("Homogenous coordinates of points for camera C1 (in px) are: \n",x_C1_h)
+    print("Homogenous coordinates of points for camera C2 (in px) are: \n",x_C2_h)
     
     # Project lines from world to cameras coordinates
     x_AB_h = project_to_camera(xAB_h, P1)
@@ -149,14 +184,19 @@ if __name__ == '__main__':
     ax1.imshow(img_C1) 
     ax1.set_title('Image 1')
     x_C1_labels = ['a', 'b', 'c', 'd', 'e']
-    plot_point(ax1, x_C1_h, labels=x_C1_labels)  
+    plot_point(ax1, x_C1_h, labels=x_C1_labels) 
+    plot_line(ax1, start_point=x_C1_h[:,2], end_point=x_C1_h[:,3], width=(xo*2), height=(yo*2))
+    plot_line(ax1, start_point=x_C1_h[:,0], end_point=x_C1_h[:,1], width=(xo*2), height=(yo*2))
+    plot_line(ax1, direction=x_AB_h, width=(xo*2), height=(yo*2))
     
     # Segundo subplot para la segunda imagen
     ax2.set_xlabel('Coordinates X (píxeles)')
     ax2.set_ylabel('Coordinates Y (píxeles)')
     ax2.imshow(img_C2)
     x_C2_labels = ['a', 'b', 'c', 'd', 'e']
-    plot_point(ax2, x_C2_h, color='blue', labels=x_C2_labels)
+    plot_point(ax2, x_C2_h, color='red', labels=x_C2_labels)
+    plot_line(ax2, start_point=x_C2_h[:,2], end_point=x_C2_h[:,3], width=(xo*2), height=(yo*2))
+
     ax2.set_title('Image 2')
     plt.draw() 
 
