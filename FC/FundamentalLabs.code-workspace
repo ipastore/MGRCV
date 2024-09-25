@@ -1,16 +1,22 @@
 {
 	"folders": [
 		{
-			"path": "Imperative_programming"
+			"path": "01_Imperative_programming"
 		},
 		{
-			"path": "Subprograms"
+			"path": "02_Subprograms"
 		},
 		{
-			"path": "memory"
+			"path": "03_Memory_management"
 		},
 		{
-			"path": "data_structure"
+			"path": "04_Smart_pointers"
+		},
+		{
+			"path": "05_Data_structure_and_Classes"
+		},
+		{
+			"path": "06_Polymorphism"
 		}
 	],
 	"settings": {
