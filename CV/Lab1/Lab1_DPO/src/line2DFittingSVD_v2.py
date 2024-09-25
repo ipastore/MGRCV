@@ -59,14 +59,18 @@ if __name__ == '__main__':
     x_l0 = np.vstack((-l_GTNorm[0:2]*l_GTNorm[2],1))  #The closest point of the line to the origin
     plt.plot([0, x_l0[0,0]], [0, x_l0[1,0]], '-r')
     plt.draw()
+    print('Click in the image to continue...')
+    plt.waitforbuttonpress()
 
+    ## OPTION 1: Generate perfect and noisy points##
     # mu = np.arange(-1000, 1000, 250)
     # noiseSigma = 15 #Standard deviation
     # xGT = x_l0 + np.array([[0, -1, 0], [1, 0, 0], [0, 0, 0]]) @ (l_GTNorm * mu)
     # x = xGT + np.diag([1, 1, 0]) @ np.random.normal(0, noiseSigma, (3, len(mu)))
 
-    xGT = np.loadtxt('./data/x2DGTLineFittingSVD.txt')
-    x = np.loadtxt('./data/x2DLineFittingSVD.txt')
+    # OPTION 2: Loading points in the line and points with noise
+    xGT = np.loadtxt('./Lab1_DPO/data/x2DGTLineFittingSVD.txt')
+    x = np.loadtxt('./Lab1_DPO/data/x2DLineFittingSVD.txt')
     plt.plot(xGT[0, :], xGT[1, :], 'b.')
     plt.plot(x[0, :], x[1, :], 'rx')
     plt.draw()
@@ -79,18 +83,18 @@ if __name__ == '__main__':
     sM = scAlg.diagsvd(s, u.shape[0], vh.shape[0])  # svd function returns the diagonal s values instead of the S matrix. 
     l_ls = vh[-1, :]
 
-    # Notice that the input matrix A of the svd has been decomposed such that A = u @ sM @ vh 
+    # # Notice that the input matrix A of the svd has been decomposed such that A = u @ sM @ vh 
 
-    drawLine(l_ls, 'r--', 1)
-    plt.draw()
-    plt.waitforbuttonpress()
+    # drawLine(l_ls, 'r--', 1)
+    # plt.draw()
+    # plt.waitforbuttonpress()
 
 
-    ## Project the points on the line using SVD
-    s[2] = 0  # If all the points are lying on the line s[2] = 0, therefore we impose it
-    xProjectedOnTheLine = (u @ scAlg.diagsvd(s, u.shape[0], vh.shape[0]) @ vh).T
-    xProjectedOnTheLine /= xProjectedOnTheLine[2, :]
+    # ## Project the points on the line using SVD
+    # s[2] = 0  # If all the points are lying on the line s[2] = 0, therefore we impose it
+    # xProjectedOnTheLine = (u @ scAlg.diagsvd(s, u.shape[0], vh.shape[0]) @ vh).T
+    # xProjectedOnTheLine /= xProjectedOnTheLine[2, :]
 
-    plt.plot(xProjectedOnTheLine[0,:], xProjectedOnTheLine[1, :], 'bx')
-    plt.show()
-    print('End')
+    # plt.plot(xProjectedOnTheLine[0,:], xProjectedOnTheLine[1, :], 'bx')
+    # plt.show()
+    # print('End')
