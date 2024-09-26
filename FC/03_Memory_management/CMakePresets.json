@@ -44,6 +44,28 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "ubuntu-debug",
+            "generator": "Unix Makefiles",
+            "description": "Configure for Ubuntu Debug",
+            "binaryDir": "${sourceDir}/build/ubuntu-debug",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -O0 -g",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "ubuntu-release",
+            "generator": "Unix Makefiles",
+            "description": "Configure for Ubuntu Release",
+            "binaryDir": "${sourceDir}/build/ubuntu-release",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -O3 -s",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
         }
     ],
     "buildPresets": [
@@ -66,6 +88,16 @@
             "name": "windows-release",
             "configurePreset": "windows-release",
             "description": "Build for Windows Release"
+        },
+        {
+            "name": "ubuntu-debug",
+            "configurePreset": "ubuntu-debug",
+            "description": "Build for Ubuntu Debug"
+        },
+        {
+            "name": "ubuntu-release",
+            "configurePreset": "ubuntu-release",
+            "description": "Build for Ubuntu Release"
         }
     ]
 }
