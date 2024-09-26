@@ -1,0 +1,55 @@
+#pragma once
+#include <iostream>
+
+/**
+ * Rational.h
+ * Definition of the Rational class to represent and manipulate rational numbers.
+ * 
+ * The Rational class provides functionality for representing rational numbers (fractions),
+ * and performing arithmetic operations, comparison, and input/output values using the terminal.
+ * The class ensures that rational numbers are stored in their reduced form and provides methods
+ * for common arithmetic operations like addition, subtraction, multiplication, and division.
+ * 
+ * Key Features:
+ * - Arithmetic operations: add, sub, mul, div.
+ * - Zero and infinity checks: is_zero, is_infinite.
+ * - Input/Output: Overloaded stream operators.
+ * - Getter for both, numrator and denominator values.
+ **/
+
+class Rational {
+   private:
+      int num;
+      int den;
+   public:
+      
+      // Constructor
+      Rational(int num=0, int den=1);
+
+      // Getters
+      int get_num() const;
+      int get_den() const;
+
+      // Input/output
+      void write(std::ostream& os) const;
+      void read(std::istream& is);
+
+      // Operaciones aritmeticas
+      Rational add(const Rational& other) const;
+      Rational sub(const Rational& other) const;
+      Rational mul(const Rational& other) const;
+      Rational div(const Rational& other) const;
+
+      // Zero & infinity check
+      bool is_zero() const;
+      bool is_infinite() const;
+
+   private:
+      // Auxiliar methods, private
+      int gcf(int a, int b);
+
+};
+
+
+
+

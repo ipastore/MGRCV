@@ -5,47 +5,40 @@ using namespace std;
 
 int main() {
  
-    Rational res = rational();
-    Rational n1 = rational();
-    Rational n2 = rational();
+    Rational res = Rational();
+    Rational r1 = Rational();
+    Rational r2 = Rational();
     char calc;
 
     while (true){
         
         cout << "Enter a calculation" << endl;
-        read(cin, n1);
+        r1.read(cin);
         cin >> calc;
-        read(cin, n2);
+        r2.read(cin);
         
-        if (is_zero(n1) && is_zero(n2)) {
+        if (r1.is_zero() && r2.is_zero()) {
             cout << "End" << endl;
             break;
         }
 
-        if (is_infinite(n1) || is_infinite(n2)) {
+        if (r1.is_infinite() || r2.is_infinite()) {
             cout << "A denominator cannot be 0." << endl;
-            cout << "End" << endl;
             continue;
         }
 
-        if (calc == '+') res = add(n1, n2);
-        else if (calc == '-') res = sub(n1, n2);
-        else if (calc == '*') res = mul(n1, n2);
-        else if (calc == '/') {
-            if (is_zero(n2)){
-                cout << "Error: division by zero" << endl;
-                continue; 
-            }
-            else res = div(n1, n2); 
-        }
+        if (calc == '+') res = r1.add(r2);
+        else if (calc == '-') res = r1.sub(r2);
+        else if (calc == '*') res = r1.mul(r2);
+        else if (calc == '/') res = r1.div(r2); 
         else {
             cout << "Error: " << calc << " Operation not recognized" << endl;
             continue;
         }
-        cout << "Output: ";
-        write(cout,res);
-        cout << endl;
 
+        cout << "Output: ";
+        res.write(cout);
+        cout << endl;
     }
 
    return 0; 

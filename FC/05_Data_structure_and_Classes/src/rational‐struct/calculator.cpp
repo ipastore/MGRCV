@@ -24,7 +24,6 @@ int main() {
 
         if (is_infinite(n1) || is_infinite(n2)) {
             cout << "A denominator cannot be 0." << endl;
-            cout << "End" << endl;
             continue;
         }
 

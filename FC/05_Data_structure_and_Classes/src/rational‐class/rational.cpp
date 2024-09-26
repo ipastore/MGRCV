@@ -1,0 +1,71 @@
+#include "rational.h"
+
+
+// Initialize
+Rational::Rational(int num, int den) {
+	int m = gcf(num,den);
+	this->num = num/m;
+	this->den = den/m; 
+}
+
+int Rational::get_num() const{
+	return this->num;
+}
+
+int Rational::get_den() const{
+	return this->den;
+}
+
+// Auxiliar functions, private
+int Rational::gcf(int a, int b) {
+	return ( b==0 ? a : gcf(b,a%b) );
+}
+
+// Input/output
+void Rational::write(std::ostream& os) const {
+	os << this->num << "/" << this->den;
+}
+
+void Rational::read(std::istream& is) {
+	char dummy;
+	is >> this->num >> dummy >> this->den;
+}
+
+// Operations
+Rational Rational::add(const Rational& other) const {
+	return Rational(
+		this->num * other.get_den() + other.get_num() * this->den,
+		this->den * other.get_den()
+	);
+
+}
+
+Rational Rational::sub(const Rational& other) const {
+	return Rational(
+		this->num * other.get_den() - other.get_num() * this->den,
+		this->den * other.get_den()
+	);
+}
+
+Rational Rational::mul(const Rational& other) const {
+	return Rational(
+		this->num * other.get_num(),
+		this->den * other.get_den()
+	);
+}
+
+Rational Rational::div(const Rational& other) const {
+	return Rational(
+		this->num * other.get_den(),
+		this->den * other.get_num()
+	);
+}
+
+//Zero check
+bool Rational::is_zero() const{
+	return this->num == 0;
+}
+
+bool Rational::is_infinite() const {
+	return this->den == 0;
+}
