@@ -1,0 +1,17 @@
+\begin{table}
+\centering
+\caption{Model Performance with MSE and R²}
+\label{tab:model_performance}
+\begin{tabular}{|l|l|c|c|}
+\toprule
+                       Model &   MSE &    R2 \\
+\midrule
+       Polynomial (degree=6) & 1.770 & 0.682 \\
+Ridge (degree=6, alpha=0.01) & 1.769 & 0.682 \\
+       Polynomial (degree=7) & 1.763 & 0.684 \\
+Ridge (degree=7, alpha=0.01) & 1.765 & 0.683 \\
+                  KNN (k=15) & 1.804 & 0.704 \\
+                  KNN (k=20) & 1.837 & 0.700 \\
+\bottomrule
+\end{tabular}
+\end{table}
