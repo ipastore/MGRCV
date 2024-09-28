@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.16)
 
 project (global_local VERSION 1.0 LANGUAGES CXX)
 
@@ -17,4 +17,7 @@ add_executable(variables src/variables.cpp)
 add_executable(variables_wout_pointers src/variables_wout_pointers.cpp)
 
 add_executable(max_min_global_2d_matrix src/max_min_global_2d_matrix.cpp)
+
+add_executable(max_min_heap_2d_matrix src/max_min_heap_2d_matrix.cpp)
+
 
