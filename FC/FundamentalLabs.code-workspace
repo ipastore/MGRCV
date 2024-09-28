@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "06_Polymorphism"
+		},
+		{
+			"path": "07_Debbuging"
 		}
 	],
 	"settings": {
