@@ -27,7 +27,7 @@ void delete_int_ptr(int* ptr){
 
 int main(){
     int* int_ptr = create_int_ptr();
-    // delete_int_ptr(int_ptr);
-    delete int_ptr;
+    delete_int_ptr(int_ptr);
+    // delete int_ptr;
 }
 

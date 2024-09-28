@@ -2,12 +2,13 @@
 using namespace std;
 
 /*
-Developed by: 
-    - David Padilla Orenga, NIA: 946874
-    - Inacio Pastore Benaim, NIP: 920576
-
-Main program to modify a number entered by the user with pointers and references
-*/
+ * Developed by: 
+ *     - David Padilla Orenga, NIA: 946874
+ *     - Inacio Pastore Benaim, NIP: 920576
+ * 
+ * Main program to modify a number entered by the user with pointers and references.
+ * We've added a modification by copy.
+ */
 
 
 int main() {
@@ -24,6 +25,9 @@ int main() {
     int& ref = number;
     ref -= 2;
     cout << "Number after substraction using reference: " << number << endl;
+
+    number += 2;
+    cout << "Number after addition using copy: " << number << endl;
 
 }
 
