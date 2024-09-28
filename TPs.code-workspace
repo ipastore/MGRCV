@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "MSAP"
+		},
+		{
+			"path": "ML"
+		},
+		{
+			"path": "PACS"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iostream": "cpp",
+			"ostream": "cpp"
+		},
+		"cmake.options.statusBarVisibility": "visible"
+	}
+}
