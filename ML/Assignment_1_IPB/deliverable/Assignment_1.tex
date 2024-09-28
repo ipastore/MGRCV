@@ -12,6 +12,11 @@
 \usepackage{booktabs}
 \usepackage{amsmath}
 
+% Hyphen penalty
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\sloppy
+
 \begin{document}
 
 \maketitle
@@ -21,11 +26,13 @@
 In this report, we present the results of the first assignment of the Machine Learning course. The assignment consists of fitting 
 several regression models to a noisy dataset generated from a polynomial function. The figure \ref{fig:polynomial_data} shows 
 the dataset which contains 500 data points. The majority of the methods seen in class were explored for the sake 
-of completeness. A comparison of the results is presented along with the election of the optimal model. 
+of completeness. A comparison of the results is presented along with the election of the optimal models. 
 
 We explore multiple methods, including k-NN, linear regression variants, and regularized 
-polynomial regressions (Ridge and Lasso). The optimal model is selected based on cross-validation, 
+polynomial regressions. The optimal models were selected based on cross-validation, 
 and final test results are reported. Finally, a short discussion and conclusion are presented.
+
+The complete code used for this analysis can be found in a \href{https://colab.research.google.com/drive/1Gg35b8epwsI3nkCeiqCgBeFCd3aNdahI?usp=sharing}{Google Colab Notebook}.
 
 \begin{figure}[!htb]
 \centering
@@ -34,33 +41,36 @@ and final test results are reported. Finally, a short discussion and conclusion 
 \label{fig:polynomial_data}
 \end{figure}
   
-\section{Methods}
+\section{Materials \& Methods}
 
 The original dataset consists of 500 data points, which were split into training (81\%), 
-validation (9\%), and test (10\%) sets. No outlier removal was performed. 
-All models were trained using the training set, evaluated with the validation set for model selection, 
-and finally evaluated on the test set after model selection. The evaluation process involved three key steps: 
+validation (9\%), and test (10\%) sets. No outlier removal was performed. The evaluation process involved 3 key steps: 
 initial screening with validation, cross-validation of selected models, and final evaluation on the test set.
 
-\subsection{Initial Screening with Validation}
-Various models, including k-NN, linear regression variants, and polynomial regression with regularization, were first evaluated using a validation set. 
+All models were implemented in Python with the numpy, pandas and scikit-learn libraries.
+
+\subsection{Initial Screening with Validation set}
+Various models (described in Section \ref{sec:models}) were first evaluated using a validation set. 
 The purpose of this step was to quickly assess model performance and identify promising candidates.
 
 \subsection{Cross-Validation of Selected Models}
-Based on the validation results, a subset of models was chosen for cross-validation. Cross-validation was used to provide a more robust evaluation with
+Based on the validation results, a subset of models was chosen for cross-validation with
 \( k = 10 \) folds. The average performance across the folds was used to further narrow down the best-performing models.
 
 \subsection{Final Testing on Test Set}
-After cross-validation, the best models were evaluated on the test set to determine their generalization performance.
+After cross-validation, the best models were retrained with the training and validation set combined. 
+The evaluation was finally made on the test set.
 
-\subsection{Models}
+
+
+\subsection{Models}\label{sec:models}
 
 We tested several different models, including k-Nearest Neighbors (k-NN), 
-various linear regression models(Huber and RANSAC), and polynomial regression with regularization (Ridge and Lasso).
+various linear regression models, and polynomial regression with regularization.
 
-\subsubsection{k-Nearest Neighbors (k-NN)}
-The k-NN algorithm was tested with CAMBIAR Y AGREGAR GRIDSEARCH \( k = 1 \), \( k = 5 \), \( k = 10 \), \( k = 15 \), and \( k = 20 \). 
-The optimal \( k \) value was chosen based on validation set performance.
+\subsubsection{k-NN}
+The k-NN model was implemented with an optimal \( k = 17\) obntained from a grid search with 5-fold cross-validation 
+over the range of 1 to 20.
 
 \subsubsection{Linear Regression Variants}
 Despite knowing that a linear model might not be the outmost appropiated for this task, 3 variants were implemented
@@ -73,12 +83,19 @@ to compare with other methods:
 \end{itemize}
 
 \subsubsection{Polynomial Regression with Regularization}
-Polynomial regression models were fitted with degrees ranging from 2 to 12. Additionally, 
-Lasso and Ridge regression were applied with a regularization parameter \( \lambda = 0.01 \), 
-obtained from a grid search over \( \{0.01, 0.1, 1, 10, 100\} \). 
+Polynomial regression models were fitted using Ridge and Lasso regularizations to 
+control overfitting. We applied 5-fold cross-validation using a grid search over 
+polynomial degrees from 1 to 12 and regularization strengths \(\lambda\) in the range of [0.01, 0.1, 1, 10, 100]
+to find the optimal configurations. The initial results showed that the best-performing 
+models were Ridge Regression with degree 12 and \(\lambda\) = 0.01 and 
+Lasso Regression with degree 6 and \(\lambda\) = 0.01.
+
+However, visual inspection suggested that high-degree polynomial models were prone to overfitting. To balance model complexity 
+and performance, we decided to focus on polynomial degrees 6 and 7 for further analysis, 
+both with and without regularization. 
 
 \subsection{Evaluation Metrics}
-The models were evaluated using two primary metrics:
+Through all the phases, the models were evaluated using 2 primary metrics:
 \begin{itemize}
     \item Mean Squared Error (MSE).
     \item \( R^2 \) Score.
@@ -87,32 +104,36 @@ The models were evaluated using two primary metrics:
 
 \section{Results}
 
-The following steps were taken to assess model performance:
-
 \subsection{Initial Validation Results}
 The first screening of models was done using the validation set. Table \ref{tab:validation} shows the MSE and \( R^2 \) 
-scores for the various models during the validation phase. Based on these results, several models were selected 
-for cross-validation.
+scores for the various models during the validation phase. Based on these results, linear models were discarded for further analysis.
 
 \input{tables/results.tex}
 
 \subsection{Cross-Validation Results}
-The selected models (k-NN with \(k=15\) CAMBIAR 15, polynomial regression with degree 6, and Ridge regression with degree 6 and \(\lambda = 0.01\)) were then evaluated using cross-validation. 
-The cross-validation results are summarized in Table \ref{tab:cross_validation}. 
-Cross-validation confirmed that k-NN and polynomial regression were the best candidates.
+The cross-validation results are summarized in Table \ref{tab:cross_validation} showing the MSE and \( R^2 \) scores.
+Based on these results all the models were retained for further analysis.
 
 \input{tables/cross_validation.tex}
 
 \subsection{Test Set Results}
-Finally, the selected models were tested on the test set. Table \ref{tab:tests} shows the final MSE and \( R^2 \) scores on the test set 
-for the top-performing models. k-NN with \(k=15\) CAMBIAR ESTE 15 provided the best generalization, 
-slightly outperforming polynomial regression with degree 6.
+Finally, the selected models were tested on the test set. Table \ref{tab:tests} shows the final MSE and \( R^2 \) scores on the test set.
 
 \input{tables/tests.tex}
 
 \section{Discussion}
+The initial screening confirmed that linear models were unsuitable and were discarded as expected. 
+Surprisingly, k-NN performed similarly to the more complex polynomial models. The MSE values ranged from 1.127 to 1.160, and when rounding up the  \( R^2 \)  scores, all models 
+explained around $80\%$ of the variance in the data.
 
+Ridge and Lasso regularizations showed no significant improvements, suggesting that 
+overfitting was not an issue. Given the comparable results, we would choose between k-NN and polynomial regression for their simplicity. 
+Future work could involve removing outliers to refine the results further.
 
-\section{conclusion}
+\section{Conclusion}
+All tested models—k-NN, polynomial regression, and regularized variants—showed comparable performance,
+ explaining approximately $80\%$ of the variance in the data. Minor differences in the metrics indicate no clear 
+ best model, making k-NN and polynomial regression preferable for their simplicity. Future work could focus on enhancing 
+ model performance through data preprocessing techniques such as outlier removal.
 
 \end{document}

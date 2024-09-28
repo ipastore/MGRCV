@@ -1,7 +1,7 @@
 \begin{table}
 \centering
-\caption{Model Performance with MSE and R²}
-\label{tab:model_performance}
+\caption{Initial validation performance}
+\label{tab:validation}
 \begin{tabular}{|l|l|c|c|}
 \toprule
                            Model &   MSE &    R2 \\
@@ -9,40 +9,13 @@
                       KNN (k=17) & 0.514 & 0.916 \\
                           Linear & 0.978 & 0.841 \\
                            Huber & 1.059 & 0.828 \\
-                          RANSAC & 1.266 & 0.794 \\
-           Polynomial (degree=2) & 1.002 & 0.837 \\
- Ridge (degree=2, $\lambda=0.1$) & 1.002 & 0.837 \\
- Lasso (degree=2, $\lambda=0.1$) & 1.097 & 0.821 \\
-           Polynomial (degree=3) & 0.757 & 0.877 \\
- Ridge (degree=3, $\lambda=0.1$) & 0.756 & 0.877 \\
- Lasso (degree=3, $\lambda=0.1$) & 0.862 & 0.860 \\
-           Polynomial (degree=4) & 0.447 & 0.927 \\
- Ridge (degree=4, $\lambda=0.1$) & 0.438 & 0.929 \\
- Lasso (degree=4, $\lambda=0.1$) & 0.759 & 0.877 \\
-           Polynomial (degree=5) & 0.435 & 0.929 \\
- Ridge (degree=5, $\lambda=0.1$) & 0.436 & 0.929 \\
- Lasso (degree=5, $\lambda=0.1$) & 0.759 & 0.877 \\
+                          RANSAC & 1.337 & 0.782 \\
            Polynomial (degree=6) & 0.425 & 0.931 \\
- Ridge (degree=6, $\lambda=0.1$) & 0.457 & 0.926 \\
- Lasso (degree=6, $\lambda=0.1$) & 0.700 & 0.886 \\
+Ridge (degree=6, $\lambda=0.01$) & 0.430 & 0.930 \\
+Lasso (degree=6, $\lambda=0.01$) & 0.474 & 0.923 \\
            Polynomial (degree=7) & 0.509 & 0.917 \\
- Ridge (degree=7, $\lambda=0.1$) & 0.461 & 0.925 \\
- Lasso (degree=7, $\lambda=0.1$) & 0.700 & 0.886 \\
-           Polynomial (degree=8) & 0.511 & 0.917 \\
- Ridge (degree=8, $\lambda=0.1$) & 0.453 & 0.926 \\
- Lasso (degree=8, $\lambda=0.1$) & 0.700 & 0.886 \\
-           Polynomial (degree=9) & 0.565 & 0.908 \\
- Ridge (degree=9, $\lambda=0.1$) & 0.467 & 0.924 \\
- Lasso (degree=9, $\lambda=0.1$) & 0.700 & 0.886 \\
-          Polynomial (degree=10) & 0.562 & 0.909 \\
-Ridge (degree=10, $\lambda=0.1$) & 0.456 & 0.926 \\
-Lasso (degree=10, $\lambda=0.1$) & 0.700 & 0.886 \\
-          Polynomial (degree=11) & 0.542 & 0.912 \\
-Ridge (degree=11, $\lambda=0.1$) & 0.475 & 0.923 \\
-Lasso (degree=11, $\lambda=0.1$) & 0.700 & 0.886 \\
-          Polynomial (degree=12) & 0.544 & 0.912 \\
-Ridge (degree=12, $\lambda=0.1$) & 0.469 & 0.924 \\
-Lasso (degree=12, $\lambda=0.1$) & 0.700 & 0.886 \\
+Ridge (degree=7, $\lambda=0.01$) & 0.465 & 0.924 \\
+Lasso (degree=7, $\lambda=0.01$) & 0.474 & 0.923 \\
 \bottomrule
 \end{tabular}
 \end{table}
