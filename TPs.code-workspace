@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "CV"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iostream": "cpp",
+			"ostream": "cpp"
+		},
+		"cmake.options.statusBarVisibility": "visible"
+	}
+}
