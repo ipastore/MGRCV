@@ -10,3 +10,5 @@ include_directories(include)
 
 add_executable(to_fix_memory_leaks src/to_fix_memory_leaks.cpp)
 
+add_executable(shared_ptr src/shared_ptr.cpp)
+
