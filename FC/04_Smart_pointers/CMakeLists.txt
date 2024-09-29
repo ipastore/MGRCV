@@ -12,3 +12,4 @@ add_executable(to_fix_memory_leaks src/to_fix_memory_leaks.cpp)
 
 add_executable(shared_ptr src/shared_ptr.cpp)
 
+add_executable(max_min_sp_2d_matrix src/max_min_sp_2d_matrix.cpp)

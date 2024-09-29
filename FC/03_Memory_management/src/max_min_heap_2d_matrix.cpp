@@ -46,6 +46,9 @@ void check_dimensions(Matrix& matrix){
     if ((matrix.rows >= 5) || (matrix.columns >= 5)) {
         std::cerr << "Error: Rows/columns dimensions cannot be 5 or bigger." << std::endl;
         exit(1);
+    } else if ((matrix.rows == 0) || (matrix.columns == 0)){
+        std::cerr << "Error: Zero is not an accepted dimension." << std::endl;
+        exit(1);
     }
 }
 

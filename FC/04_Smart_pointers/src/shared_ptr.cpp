@@ -6,9 +6,6 @@
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
  * 
- * DESCRIPTION:
- * 
- * 
  * QUESTIONS: 
  * 1. How many objects (variables) are allocated in the stack and in the heap?
  *  STACK OBJECTS:
