@@ -1,0 +1,9 @@
+hector_quadrotor_noetic/hector_quadrotor/hector_quadrotor_controller
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/cmake.lock /home/ipastore/MGRCV/AR/catkin_ws/devel/./cmake.lock
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/lib/libhector_quadrotor_motor_controller.so /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/libhector_quadrotor_motor_controller.so
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/lib/libhector_quadrotor_controller.so /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/libhector_quadrotor_controller.so
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/lib/libhector_quadrotor_pose_controller.so /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/libhector_quadrotor_pose_controller.so
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/lib/libhector_quadrotor_twist_controller.so /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/libhector_quadrotor_twist_controller.so
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/lib/pkgconfig/hector_quadrotor_controller.pc /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/pkgconfig/hector_quadrotor_controller.pc
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/share/hector_quadrotor_controller/cmake/hector_quadrotor_controllerConfig-version.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/hector_quadrotor_controller/cmake/hector_quadrotor_controllerConfig-version.cmake
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_controller/share/hector_quadrotor_controller/cmake/hector_quadrotor_controllerConfig.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/hector_quadrotor_controller/cmake/hector_quadrotor_controllerConfig.cmake

@@ -1,1 +1,0 @@
-/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/catkin_tools_prebuild/local_setup.bash

@@ -2,3 +2,26 @@
 **/build
 .vscode
 *.zip
+**/logs
+
+# # Ignore build, devel, and install directories
+build/
+devel/
+install/
+logs/
+
+# # Ignore ROS-specific log files and temporary files
+*.bag
+*.log
+*.active
+*.swp
+
+# # Ignore editor and IDE configurations
+# .vscode/
+# .idea/
+# *.swp
+
+# # Ignore Python cache files
+__pycache__/
+*.pyc
+

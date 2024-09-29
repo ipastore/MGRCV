@@ -1,8 +1,0 @@
-prefix=/home/ipastore/catkin_ws/devel/.private/turtle_comunic
-
-Name: turtle_comunic
-Description: Description of turtle_comunic
-Version: 0.0.1
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

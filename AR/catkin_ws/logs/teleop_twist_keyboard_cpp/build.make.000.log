@@ -1,4 +1,0 @@
-[35m[1mScanning dependencies of target teleop_twist_keyboard[0m
-[ 50%] [32mBuilding CXX object CMakeFiles/teleop_twist_keyboard.dir/src/teleop_twist_keyboard.cpp.o[0m
-[100%] [32m[1mLinking CXX executable /home/ipastore/catkin_ws/devel/.private/teleop_twist_keyboard_cpp/lib/teleop_twist_keyboard_cpp/teleop_twist_keyboard[0m
-[100%] Built target teleop_twist_keyboard

@@ -1,0 +1,5 @@
+hector_quadrotor_noetic/takeoff_land
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/takeoff_land/cmake.lock /home/ipastore/MGRCV/AR/catkin_ws/devel/./cmake.lock
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/takeoff_land/lib/pkgconfig/takeoff_land.pc /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/pkgconfig/takeoff_land.pc
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/takeoff_land/share/takeoff_land/cmake/takeoff_landConfig-version.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/takeoff_land/cmake/takeoff_landConfig-version.cmake
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/takeoff_land/share/takeoff_land/cmake/takeoff_landConfig.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/takeoff_land/cmake/takeoff_landConfig.cmake
