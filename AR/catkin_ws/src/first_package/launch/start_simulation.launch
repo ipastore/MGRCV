@@ -1,0 +1,14 @@
+<launch>
+    <node 
+        name="stageros"
+        pkg="stage_ros" 
+        type="stageros" 
+        args="$(find first_package)/world/simple.world"
+        />
+    <node 
+        name="teleop"
+        pkg="teleop_twist_keyboard_cpp"
+        type="teleop_twist_keyboard" 
+        output="screen" 
+    />
+</launch>

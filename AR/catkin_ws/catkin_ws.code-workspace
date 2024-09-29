@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "teleop_twist_keyboard_cpp",
+			"path": "src/teleop_twist_keyboard_cpp"
+		}
+	],
+	"settings": {
+		"python.autoComplete.extraPaths": [
+			"/opt/ros/noetic/lib/python3/dist-packages"
+		],
+		"python.analysis.extraPaths": [
+			"/opt/ros/noetic/lib/python3/dist-packages"
+		]
+	}
+}

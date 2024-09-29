@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/ipastore/catkin_ws/devel/.private/first_package/setup.sh
