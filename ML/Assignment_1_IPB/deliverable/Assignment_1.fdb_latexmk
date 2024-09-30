@@ -1,13 +1,13 @@
 # Fdb version 4
-["biber Assignment_1"] 1727395363 "Assignment_1.bcf" "Assignment_1.bbl" "Assignment_1" 1727468087 0
-  "./references.bib" 1727458295 1056 fd61b16ccda427994794bb83d0557e14 ""
-  "Assignment_1.bcf" 1727468087 107351 0470ecce0075ae5b433b575e6548d19b "pdflatex"
+["biber Assignment_1"] 1727395363 "Assignment_1.bcf" "Assignment_1.bbl" "Assignment_1" 1727690191 0
+  "./references.bib" 1727689926 1056 fd61b16ccda427994794bb83d0557e14 ""
+  "Assignment_1.bcf" 1727690191 107351 0470ecce0075ae5b433b575e6548d19b "pdflatex"
   (generated)
   "Assignment_1.bbl"
   "Assignment_1.blg"
   (rewritten before read)
-["pdflatex"] 1727468086 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Assignment_1_IPB/deliverable/Assignment_1.tex" "Assignment_1.pdf" "Assignment_1" 1727468087 0
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Assignment_1_IPB/deliverable/Assignment_1.tex" 1727468085 6441 872b29618a3b01a505912f43f33fa6c9 ""
+["pdflatex"] 1727690190 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Assignment_1_IPB/deliverable/Assignment_1.tex" "Assignment_1.pdf" "Assignment_1" 1727690191 0
+  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Assignment_1_IPB/deliverable/Assignment_1.tex" 1727690190 6447 c8cac78c8a67e4269e20222030670651 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -111,15 +111,15 @@
   "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1691836396 4647401 00ff9efb2ef8bbb46dd24b87a26bdf62 ""
   "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1691844456 8173128 4e9fee7949b5ce7b1faebac18332615e ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
-  "Assignment_1.aux" 1727468087 3645 8a8e6f15ef6b762d67857456077c846c "pdflatex"
-  "Assignment_1.bbl" 1727458295 466 ee04f40f768daeed26442158e95aba61 "biber Assignment_1"
-  "Assignment_1.out" 1727468087 2534 de8d975fa5e0e98081ec01d0c89c5bb2 "pdflatex"
-  "Assignment_1.run.xml" 1727468087 2361 cd8e5db12b5f7cd9f204898595565a2c "pdflatex"
-  "Assignment_1.tex" 1727468085 6441 872b29618a3b01a505912f43f33fa6c9 ""
-  "images/scatter_plot.png" 1727464532 30189 b791f87481b5fffd6b65b841842a46a3 ""
-  "tables/cross_validation.tex" 1727464533 592 e68d62130d9982c11047a36ea83dbd03 ""
-  "tables/results.tex" 1727464533 744 badc44812d83953d95c0e1a94b2adb83 ""
-  "tables/tests.tex" 1727464533 570 6784662eb9cabac77ce00cb7a1c94000 ""
+  "Assignment_1.aux" 1727690191 3645 8a8e6f15ef6b762d67857456077c846c "pdflatex"
+  "Assignment_1.bbl" 1727689926 466 ee04f40f768daeed26442158e95aba61 "biber Assignment_1"
+  "Assignment_1.out" 1727690191 2534 de8d975fa5e0e98081ec01d0c89c5bb2 "pdflatex"
+  "Assignment_1.run.xml" 1727690191 2361 cd8e5db12b5f7cd9f204898595565a2c "pdflatex"
+  "Assignment_1.tex" 1727690190 6447 c8cac78c8a67e4269e20222030670651 ""
+  "images/scatter_plot.png" 1727689926 30189 b791f87481b5fffd6b65b841842a46a3 ""
+  "tables/cross_validation.tex" 1727689926 592 e68d62130d9982c11047a36ea83dbd03 ""
+  "tables/results.tex" 1727689926 744 badc44812d83953d95c0e1a94b2adb83 ""
+  "tables/tests.tex" 1727689926 570 6784662eb9cabac77ce00cb7a1c94000 ""
   (generated)
   "Assignment_1.aux"
   "Assignment_1.bcf"
