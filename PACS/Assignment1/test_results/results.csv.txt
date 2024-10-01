@@ -1,0 +1,410 @@
+Executable,Matrix Size,Iteration,Real Time,User Time,System Time
+standard_matrix,10,1,0.00,0.00,0.00
+standard_matrix,10,2,0.00,0.00,0.00
+standard_matrix,10,3,0.00,0.00,0.00
+standard_matrix,10,4,0.00,0.00,0.00
+standard_matrix,10,5,0.00,0.00,0.00
+standard_matrix,10,6,0.00,0.00,0.00
+standard_matrix,10,7,0.00,0.00,0.00
+standard_matrix,10,8,0.00,0.00,0.00
+standard_matrix,10,9,0.00,0.00,0.00
+standard_matrix,10,10,0.00,0.00,0.00
+standard_matrix_O2,10,1,0.00,0.00,0.00
+standard_matrix_O2,10,2,0.00,0.00,0.00
+standard_matrix_O2,10,3,0.00,0.00,0.00
+standard_matrix_O2,10,4,0.00,0.00,0.00
+standard_matrix_O2,10,5,0.00,0.00,0.00
+standard_matrix_O2,10,6,0.00,0.00,0.00
+standard_matrix_O2,10,7,0.00,0.00,0.00
+standard_matrix_O2,10,8,0.00,0.00,0.00
+standard_matrix_O2,10,9,0.00,0.00,0.00
+standard_matrix_O2,10,10,0.00,0.00,0.00
+standard_matrix_O3,10,1,0.00,0.00,0.00
+standard_matrix_O3,10,2,0.00,0.00,0.00
+standard_matrix_O3,10,3,0.00,0.00,0.00
+standard_matrix_O3,10,4,0.00,0.00,0.00
+standard_matrix_O3,10,5,0.00,0.00,0.00
+standard_matrix_O3,10,6,0.00,0.00,0.00
+standard_matrix_O3,10,7,0.00,0.00,0.00
+standard_matrix_O3,10,8,0.00,0.00,0.00
+standard_matrix_O3,10,9,0.00,0.00,0.00
+standard_matrix_O3,10,10,0.00,0.00,0.00
+my_eigen_matmult,10,1,0.00,0.00,0.00
+my_eigen_matmult,10,2,0.00,0.00,0.00
+my_eigen_matmult,10,3,0.00,0.00,0.00
+my_eigen_matmult,10,4,0.00,0.00,0.00
+my_eigen_matmult,10,5,0.00,0.00,0.00
+my_eigen_matmult,10,6,0.00,0.00,0.00
+my_eigen_matmult,10,7,0.00,0.00,0.00
+my_eigen_matmult,10,8,0.00,0.00,0.00
+my_eigen_matmult,10,9,0.00,0.00,0.00
+my_eigen_matmult,10,10,0.00,0.00,0.00
+my_eigen_matmult_O2,10,1,0.00,0.00,0.00
+my_eigen_matmult_O2,10,2,0.00,0.00,0.00
+my_eigen_matmult_O2,10,3,0.00,0.00,0.00
+my_eigen_matmult_O2,10,4,0.00,0.00,0.00
+my_eigen_matmult_O2,10,5,0.00,0.00,0.00
+my_eigen_matmult_O2,10,6,0.00,0.00,0.00
+my_eigen_matmult_O2,10,7,0.00,0.00,0.00
+my_eigen_matmult_O2,10,8,0.00,0.00,0.00
+my_eigen_matmult_O2,10,9,0.00,0.00,0.00
+my_eigen_matmult_O2,10,10,0.00,0.00,0.00
+my_eigen_matmult_O3,10,1,0.00,0.00,0.00
+my_eigen_matmult_O3,10,2,0.00,0.00,0.00
+my_eigen_matmult_O3,10,3,0.00,0.00,0.00
+my_eigen_matmult_O3,10,4,0.00,0.00,0.00
+my_eigen_matmult_O3,10,5,0.00,0.00,0.00
+my_eigen_matmult_O3,10,6,0.00,0.00,0.00
+my_eigen_matmult_O3,10,7,0.00,0.00,0.00
+my_eigen_matmult_O3,10,8,0.00,0.00,0.00
+my_eigen_matmult_O3,10,9,0.00,0.00,0.00
+my_eigen_matmult_O3,10,10,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,1,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,2,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,3,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,4,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,5,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,6,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,7,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,8,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,9,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,10,10,0.00,0.00,0.00
+standard_matrix_threading,10,1,0.00,0.00,0.00
+standard_matrix_threading,10,2,0.00,0.00,0.00
+standard_matrix_threading,10,3,0.00,0.00,0.00
+standard_matrix_threading,10,4,0.00,0.00,0.00
+standard_matrix_threading,10,5,0.00,0.00,0.00
+standard_matrix_threading,10,6,0.00,0.00,0.00
+standard_matrix_threading,10,7,0.00,0.00,0.00
+standard_matrix_threading,10,8,0.00,0.00,0.00
+standard_matrix_threading,10,9,0.00,0.00,0.00
+standard_matrix_threading,10,10,0.00,0.00,0.00
+my_eigen_matmult_threading,10,1,0.00,0.00,0.00
+my_eigen_matmult_threading,10,2,0.00,0.00,0.00
+my_eigen_matmult_threading,10,3,0.00,0.00,0.00
+my_eigen_matmult_threading,10,4,0.00,0.00,0.00
+my_eigen_matmult_threading,10,5,0.00,0.00,0.00
+my_eigen_matmult_threading,10,6,0.00,0.00,0.00
+my_eigen_matmult_threading,10,7,0.00,0.00,0.00
+my_eigen_matmult_threading,10,8,0.00,0.00,0.00
+my_eigen_matmult_threading,10,9,0.00,0.00,0.00
+my_eigen_matmult_threading,10,10,0.00,0.00,0.00
+standard_matrix,100,1,0.02,0.02,0.00
+standard_matrix,100,2,0.02,0.02,0.00
+standard_matrix,100,3,0.02,0.02,0.00
+standard_matrix,100,4,0.02,0.02,0.00
+standard_matrix,100,5,0.02,0.02,0.00
+standard_matrix,100,6,0.02,0.02,0.00
+standard_matrix,100,7,0.01,0.01,0.00
+standard_matrix,100,8,0.02,0.01,0.01
+standard_matrix,100,9,0.02,0.01,0.00
+standard_matrix,100,10,0.02,0.02,0.00
+standard_matrix_O2,100,1,0.00,0.00,0.00
+standard_matrix_O2,100,2,0.00,0.00,0.00
+standard_matrix_O2,100,3,0.00,0.00,0.00
+standard_matrix_O2,100,4,0.00,0.00,0.00
+standard_matrix_O2,100,5,0.00,0.00,0.00
+standard_matrix_O2,100,6,0.00,0.00,0.00
+standard_matrix_O2,100,7,0.00,0.00,0.00
+standard_matrix_O2,100,8,0.00,0.00,0.00
+standard_matrix_O2,100,9,0.00,0.00,0.00
+standard_matrix_O2,100,10,0.00,0.00,0.00
+standard_matrix_O3,100,1,0.00,0.00,0.00
+standard_matrix_O3,100,2,0.00,0.00,0.00
+standard_matrix_O3,100,3,0.00,0.00,0.00
+standard_matrix_O3,100,4,0.00,0.00,0.00
+standard_matrix_O3,100,5,0.00,0.00,0.00
+standard_matrix_O3,100,6,0.00,0.00,0.00
+standard_matrix_O3,100,7,0.00,0.00,0.00
+standard_matrix_O3,100,8,0.00,0.00,0.00
+standard_matrix_O3,100,9,0.00,0.00,0.00
+standard_matrix_O3,100,10,0.00,0.00,0.00
+my_eigen_matmult,100,1,0.02,0.02,0.00
+my_eigen_matmult,100,2,0.02,0.02,0.00
+my_eigen_matmult,100,3,0.01,0.01,0.00
+my_eigen_matmult,100,4,0.01,0.01,0.00
+my_eigen_matmult,100,5,0.02,0.02,0.00
+my_eigen_matmult,100,6,0.02,0.02,0.00
+my_eigen_matmult,100,7,0.02,0.02,0.00
+my_eigen_matmult,100,8,0.02,0.02,0.00
+my_eigen_matmult,100,9,0.02,0.02,0.00
+my_eigen_matmult,100,10,0.02,0.02,0.00
+my_eigen_matmult_O2,100,1,0.00,0.00,0.00
+my_eigen_matmult_O2,100,2,0.00,0.00,0.00
+my_eigen_matmult_O2,100,3,0.00,0.00,0.00
+my_eigen_matmult_O2,100,4,0.00,0.00,0.00
+my_eigen_matmult_O2,100,5,0.00,0.00,0.00
+my_eigen_matmult_O2,100,6,0.00,0.00,0.00
+my_eigen_matmult_O2,100,7,0.00,0.00,0.00
+my_eigen_matmult_O2,100,8,0.00,0.00,0.00
+my_eigen_matmult_O2,100,9,0.00,0.00,0.00
+my_eigen_matmult_O2,100,10,0.00,0.00,0.00
+my_eigen_matmult_O3,100,1,0.00,0.00,0.00
+my_eigen_matmult_O3,100,2,0.00,0.00,0.00
+my_eigen_matmult_O3,100,3,0.00,0.00,0.00
+my_eigen_matmult_O3,100,4,0.00,0.00,0.00
+my_eigen_matmult_O3,100,5,0.00,0.00,0.00
+my_eigen_matmult_O3,100,6,0.00,0.00,0.00
+my_eigen_matmult_O3,100,7,0.00,0.00,0.00
+my_eigen_matmult_O3,100,8,0.00,0.00,0.00
+my_eigen_matmult_O3,100,9,0.00,0.00,0.00
+my_eigen_matmult_O3,100,10,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,1,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,2,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,3,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,4,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,5,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,6,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,7,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,8,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,9,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,100,10,0.00,0.00,0.00
+standard_matrix_threading,100,1,0.02,0.02,0.00
+standard_matrix_threading,100,2,0.02,0.02,0.00
+standard_matrix_threading,100,3,0.02,0.02,0.00
+standard_matrix_threading,100,4,0.02,0.01,0.00
+standard_matrix_threading,100,5,0.02,0.01,0.00
+standard_matrix_threading,100,6,0.02,0.01,0.00
+standard_matrix_threading,100,7,0.02,0.02,0.00
+standard_matrix_threading,100,8,0.02,0.02,0.00
+standard_matrix_threading,100,9,0.02,0.02,0.00
+standard_matrix_threading,100,10,0.02,0.01,0.00
+my_eigen_matmult_threading,100,1,0.01,0.04,0.00
+my_eigen_matmult_threading,100,2,0.00,0.04,0.00
+my_eigen_matmult_threading,100,3,0.01,0.07,0.00
+my_eigen_matmult_threading,100,4,0.01,0.03,0.00
+my_eigen_matmult_threading,100,5,0.01,0.05,0.00
+my_eigen_matmult_threading,100,6,0.01,0.06,0.00
+my_eigen_matmult_threading,100,7,0.00,0.03,0.00
+my_eigen_matmult_threading,100,8,0.00,0.03,0.00
+my_eigen_matmult_threading,100,9,0.01,0.08,0.00
+my_eigen_matmult_threading,100,10,0.01,0.08,0.01
+standard_matrix,1000,1,27.97,27.83,0.11
+Command terminated by signal 2
+standard_matrix,1000,2,3.06,3.04,0.01
+Command terminated by signal 2
+standard_matrix,1000,3,0.48,0.47,0.01
+Command terminated by signal 2
+standard_matrix,1000,4,0.20,0.19,0.01
+Command terminated by signal 2
+standard_matrix,1000,5,0.19,0.17,0.01
+Command terminated by signal 2
+standard_matrix,1000,6,0.49,0.47,0.01
+Command terminated by signal 2
+standard_matrix,1000,7,0.02,0.01,0.01
+Command terminated by signal 2
+standard_matrix,1000,8,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix,1000,9,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix,1000,10,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,1,0.02,0.00,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,2,0.02,0.00,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,3,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,4,0.03,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O2,1000,5,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,6,0.03,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O2,1000,7,0.02,0.00,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,8,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O2,1000,9,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O2,1000,10,0.03,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,1,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O3,1000,2,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O3,1000,3,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,4,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,5,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,6,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_O3,1000,7,0.03,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,8,0.03,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,9,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix_O3,1000,10,0.02,0.00,0.02
+Command terminated by signal 2
+my_eigen_matmult,1000,1,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,2,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,3,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,4,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,5,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,6,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,7,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,8,0.03,0.01,0.01
+Command terminated by signal 2
+my_eigen_matmult,1000,9,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult,1000,10,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,1,0.02,0.01,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,2,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,3,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,4,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,5,0.02,0.01,0.01
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,6,0.02,0.00,0.01
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,7,0.02,0.01,0.01
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,8,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,9,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O2,1000,10,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,1,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,2,0.02,0.01,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,3,0.02,0.01,0.01
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,4,0.02,0.01,0.01
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,5,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,6,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,7,0.02,0.01,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,8,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,9,0.02,0.01,0.01
+Command terminated by signal 2
+my_eigen_matmult_O3,1000,10,0.03,0.02,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,1,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,2,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,3,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,4,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,5,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,6,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,7,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,8,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,9,0.00,0.00,0.00
+/usr/bin/time: cannot run ./build/static_standard_matrix: No such file or directory
+Command exited with non-zero status 127
+static_standard_matrix,1000,10,0.00,0.00,0.00
+Command terminated by signal 2
+standard_matrix_threading,1000,1,0.01,0.00,0.00
+Command terminated by signal 2
+standard_matrix_threading,1000,2,0.03,0.02,0.00
+Command terminated by signal 2
+standard_matrix_threading,1000,3,0.02,0.00,0.01
+Command terminated by signal 2
+standard_matrix_threading,1000,4,0.02,0.00,0.01
+Command terminated by signal 2
+standard_matrix_threading,1000,5,0.02,0.00,0.02
+Command terminated by signal 2
+standard_matrix_threading,1000,6,0.02,0.01,0.01
+Command terminated by signal 2
+standard_matrix_threading,1000,7,0.03,0.01,0.01
+Command terminated by signal 2
+standard_matrix_threading,1000,8,0.03,0.02,0.01
+Command terminated by signal 2
+standard_matrix_threading,1000,9,0.02,0.00,0.01
+Command terminated by signal 2
+standard_matrix_threading,1000,10,0.02,0.00,0.01
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,1,0.02,0.01,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,2,0.02,0.00,0.01
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,3,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,4,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,5,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,6,0.02,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,7,0.02,0.01,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,8,0.03,0.03,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,9,0.03,0.02,0.00
+Command terminated by signal 2
+my_eigen_matmult_threading,1000,10,0.02,0.02,0.00
