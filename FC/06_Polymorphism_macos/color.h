@@ -8,5 +8,7 @@ public:
     Color(const std::string& name, unsigned char r, unsigned char g, unsigned char b);
     std::string name() const override;
     void edit(unsigned char& r, unsigned char& g, unsigned char& b) override;
+    virtual ~Color() = default;
+
 }; 
 

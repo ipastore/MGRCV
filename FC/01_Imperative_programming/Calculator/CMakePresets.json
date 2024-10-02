@@ -19,7 +19,7 @@
             "binaryDir": "${sourceDir}/build/windows-debug",
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Werror -O0 -g",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
+                "CMAKE_EXPORT_COMPILE_COMMANDSx": "YES",
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
