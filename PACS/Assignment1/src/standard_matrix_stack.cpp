@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     // Stack-allocated 2D arrays
     double A[MAX_SIZE][MAX_SIZE];
     double B[MAX_SIZE][MAX_SIZE];
-    double C[MAX_SIZE][MAX_SIZE] = {0};
+    double C[MAX_SIZE][MAX_SIZE];
 
     for (size_t i = 0; i < MAX_SIZE; i++) {
         for (size_t j = 0; j < MAX_SIZE; j++) {
@@ -26,6 +26,13 @@ int main(int argc, char* argv[]) {
             B[i][j] = static_cast<double>(rand()) / RAND_MAX * 10.0;
         }
     }
+
+    // Initialize array C with zeros
+    for (size_t i = 0; i < MAX_SIZE; i++) {
+        for (size_t j = 0; j < MAX_SIZE; j++) {
+            C[i][j] = 0;
+        }
+    }   
 
     for (size_t i = 0; i < MAX_SIZE; i++) {
         for (size_t j = 0; j < MAX_SIZE; j++) {

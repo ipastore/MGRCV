@@ -18,7 +18,10 @@ int main(int argc, char* argv[]) {
     // Stack-allocated 1D matrices
     double A[MAX_SIZE * MAX_SIZE];
     double B[MAX_SIZE * MAX_SIZE];
-    double C[MAX_SIZE * MAX_SIZE] = {0};  // Initialize with zeros
+    double C[MAX_SIZE * MAX_SIZE];  // Initialize with zeros
+
+    // Initialize C with zeros
+    std::fill(C, C + MAX_SIZE * MAX_SIZE, 0.0);
 
     for (size_t i = 0; i < MAX_SIZE * MAX_SIZE; i++) {
         A[i] = static_cast<double>(rand()) / RAND_MAX * 10.0;
