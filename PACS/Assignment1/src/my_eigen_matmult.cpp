@@ -30,5 +30,4 @@ int main (int argc, char* argv[]){
 }
 
 
-// g++ -O3 -I ./eigen-3.4.0 my_eigen_matmult.cpp -o my_eigen_matmult__03
 

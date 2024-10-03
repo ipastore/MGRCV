@@ -3,24 +3,29 @@
 # Create the build directory if it doesn't exist
 mkdir -p build
 
-# Directories for Eigen (if needed)
-eigen_dir="./eigen-3.4.0"
+# #Standard version in stack (array[N][N])*
+g++ ./src/standard_matrix_stack.cpp -o ./build/standard_matrix_stack
+g++ -O2 ./src/standard_matrix_stack.cpp -o ./build/standard_matrix_stack_O2
+g++ -O3 ./src/standard_matrix_stack.cpp -o ./build/standard_matrix_stack_O3
 
-# Compile the standard matrix multiplication versions
-g++ standard_matrix.cpp -o build/standard_matrix
-g++ -O2 standard_matrix.cpp -o build/standard_matrix_O2
-g++ -O3 standard_matrix.cpp -o build/standard_matrix_O3
+# # Standard version in stack with flattened vector  (array[N*N])
+g++ ./src/standard_matrix_stack_flattened_array.cpp -o ./build/standard_matrix_stack_flattened_array
+g++ -O2 ./src/standard_matrix_stack_flattened_array.cpp -o ./build/standard_matrix_stack_flattened_array_O2
+g++ -O3 ./src/standard_matrix_stack_flattened_array.cpp -o ./build/standard_matrix_stack_flattened_array_O3
 
-# Compile the Eigen-based versions
-g++ -I $eigen_dir my_eigen_matmult.cpp -o build/my_eigen_matmult
-g++ -O2 -I $eigen_dir my_eigen_matmult.cpp -o build/my_eigen_matmult_O2
-g++ -O3 -I $eigen_dir my_eigen_matmult.cpp -o build/my_eigen_matmult_O3
+# Standard version in heap
+g++ ./src/standard_matrix_heap.cpp -o ./build/standard_matrix_heap
+g++ -O2 ./src/standard_matrix_heap.cpp -o ./build/standard_matrix_heap_O2
+g++ -O3 ./src/standard_matrix_heap.cpp -o ./build/standard_matrix_heap_O3
 
-# Compile static memory version
-g++ static_standard_matrix.cpp -o build/static_standard_matrix
+# Standard version in heap with flattened vector
+g++ ./src/standard_matrix_heap_flattened_version.cpp -o ./build/standard_matrix_heap_flattened_version
+g++ -O2 ./src/standard_matrix_heap_flattened_version.cpp -o ./build/standard_matrix_heap_flattened_version_O2
+g++ -O3 ./src/standard_matrix_heap_flattened_version.cpp -o ./build/standard_matrix_heap_flattened_version_O3
 
-# Compile multi-threading versions
-g++ -fopenmp standard_matrix.cpp -o build/standard_matrix_threading
-g++ -fopenmp -I $eigen_dir my_eigen_matmult.cpp -o build/my_eigen_matmult_threading
+# Using EIGEN library
+g++ -I ./eigen-3.4.0 ./src/my_eigen_matmult.cpp -o ./build/my_eigen_matmult
+g++ -O2 -I ./eigen-3.4.0 ./src/my_eigen_matmult.cpp -o ./build/my_eigen_matmult_O2
+g++ -O3 -I ./eigen-3.4.0 ./src/my_eigen_matmult.cpp -o ./build/my_eigen_matmult_O3
 
 echo "All programs compiled and placed in 'build' folder."

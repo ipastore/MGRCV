@@ -27,16 +27,6 @@ void multiplyMatrices(const vector<vector<double>>& A,
     }   
 }
 
-// Function to print a matrix (for testing purposes)
-// void printMatrix(const vector<vector<double>>& matrix, int N) {
-//     for (int i = 0; i < N; i++) {
-//         for (int j = 0; j < N; j++) {
-//             cout << matrix[i][j] << " ";
-//         }
-//         cout << endl;
-//     }
-// }
-
 int main (int argc, char* argv[]){
 
     if (argc != 2) {
@@ -46,7 +36,7 @@ int main (int argc, char* argv[]){
 
     size_t N = std::stoul(argv[1]);
     srand(time(0)); 
-    
+
     vector<vector<double>> A(N, vector<double>(N));
     vector<vector<double>> B(N, vector<double>(N));
     vector<vector<double>> C(N, vector<double>(N, 0));
@@ -54,14 +44,5 @@ int main (int argc, char* argv[]){
     fillMatrix(A, N);
     fillMatrix(B, N);
     multiplyMatrices(A, B, C, N);
-
-    // cout <<  endl << "Matrix A:" << endl;
-    // printMatrix(A, N);
-
-    // cout << "Matrix B:" << endl;
-    // printMatrix(B, N);
-
-    // cout << "Matrix C:" << endl;
-    // printMatrix(C, N);
 
 }
