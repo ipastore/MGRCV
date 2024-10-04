@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Check if running on macOS or Ubuntu
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    time_cmd="/bin/time"
-    csv_file="test/results_macos_heap.csv"
-else
-    time_cmd="/usr/bin/time"
-    csv_file="test/results_ubuntu_heap.csv"
-fi
+# # Check if running on macOS or Ubuntu
+# if [[ "$OSTYPE" == "darwin"* ]]; then
+time_cmd="/usr/bin/time -p"
+csv_file="test/results_macos_heap.csv"
+# else
+#     time_cmd="/usr/bin/time"
+#     csv_file="test/results_ubuntu_heap.csv"
+# fi
 
 # Define matrix sizes and iterations
 iterations=10
@@ -32,12 +32,12 @@ do
         do
             echo "Running $executable for N=$N, iteration $i"
             # Use the appropriate time command in the script
-            output=$( { $time_cmd -f "%e,%U,%S" ./build/"$executable" $N 2>&1; } 2>&1 )
+            output=$( { $time_cmd ./build/"$executable" $N 2>&1; } 2>&1 )
             
             # Parse the output into variables
-            real_time=$(echo "$output" | awk -F',' '{print $1}')
-            user_time=$(echo "$output" | awk -F',' '{print $2}')
-            sys_time=$(echo "$output" | awk -F',' '{print $3}')
+            real_time=$(echo "$output" | grep real | awk '{print $2}')
+            user_time=$(echo "$output" | grep user | awk '{print $2}')
+            sys_time=$(echo "$output" |  grep sys | awk '{print $2}')
 
             # Append results to CSV
             echo "$executable,$N,$i,$real_time,$user_time,$sys_time" >> "$csv_file"
