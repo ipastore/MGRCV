@@ -1,0 +1,33 @@
+\begin{table}
+\centering
+\caption{Initial validation performance. Time: elpased time of training + predicting.}
+\label{tab:validation}
+\begin{tabular}{|l|l|c|c|}
+\toprule
+                            Model &  Accuracy &   Time(s) \\
+\midrule
+               k-NN (k=6), PCA=20 &     0.953 &  0.445 \\
+               k-NN (k=6), PCA=30 &     0.958 &  0.473 \\
+               k-NN (k=6), PCA=40 &     0.960 &  0.590 \\
+               k-NN (k=6), PCA=50 &     0.962 &  0.609 \\
+              k-NN (k=6), PCA=100 &     0.961 &  0.713 \\
+            k-NN (k=6) (All dims) &     0.945 &  3.284 \\
+     LR (PCA=20) &     0.871 &  3.621 \\
+     LR (PCA=30) &     0.885 &  3.110 \\
+     LR (PCA=40) &     0.895 &  3.593 \\
+     LR (PCA=50) &     0.900 &  3.803 \\
+    LR (PCA=100) &     0.913 &  8.523 \\
+RC ($\lambda=0.001$) &     0.771 &  2.361 \\
+ RC ($\lambda=0.01$) &     0.771 &  4.507 \\
+  RC ($\lambda=0.1$) &     0.771 &  6.423 \\
+    RC ($\lambda=1$) &     0.771 &  8.806 \\
+   RC ($\lambda=10$) &     0.771 & 10.704 \\
+  RC ($\lambda=100$) &     0.771 & 12.105 \\
+                     SVM (PCA=20) &     0.961 & 27.730 \\
+                     SVM (PCA=30) &     0.967 & 30.754 \\
+                     SVM (PCA=40) &     0.970 & 36.696 \\
+                     SVM (PCA=50) &     0.971 & 44.384 \\
+                    SVM (PCA=100) &     0.971 & 88.341 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,14 @@
+\begin{table}
+\centering
+\caption{Final testing. F1, Recall and Precision are the weighted average for all labels. Time: elapsed time in training and predicting. }
+\label{tab:test}
+\begin{tabular}{|l|l|c|c|c|}
+\toprule
+                                Model &    F1 &  Recall &  Precision &   Time(s) \\
+\midrule
+                    k-NN (k=6),  & 0.948 &   0.948 &      0.948 &  0.482 \\
+        SVM (C=1; kernel=rbf),  & 0.960 &   0.960 &      0.960 & 33.174 \\
+VC (k-NN + SVM) & 0.951 &   0.951 &      0.951 & 33.642 \\
+\bottomrule
+\end{tabular}
+\end{table}

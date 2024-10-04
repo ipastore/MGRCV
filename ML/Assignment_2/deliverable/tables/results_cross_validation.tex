@@ -1,0 +1,15 @@
+\begin{table}
+\centering
+\caption{Initial validation performance. Mean Accuracy over 5 folds. Time: elapsed time of training + cross-validating.}
+\label{tab:cross_validation}
+\begin{tabular}{|l|l|c|c|}
+\toprule
+               Model &  Mean Acc. &    Time(s) \\
+\midrule
+  k-NN (k=6), PCA=20 &          0.947 &   2.556 \\
+          LR, PCA=20 &          0.868 &  17.605 \\
+         SVM, PCA=20 &          0.961 & 168.414 \\
+VC (LR + k-NN + SVM) &          0.951 & 190.714 \\
+\bottomrule
+\end{tabular}
+\end{table}
