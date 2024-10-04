@@ -1,22 +1,35 @@
 {
 	"folders": [
 		{
+			"name": "01_Imperative_programming",
 			"path": "01_Imperative_programming"
 		},
 		{
+			"name": "02_Subprograms",
 			"path": "02_Subprograms"
 		},
 		{
+			"name": "03_Memory_management",
 			"path": "03_Memory_management"
 		},
 		{
+			"name": "04_Smart_pointers",
 			"path": "04_Smart_pointers"
 		},
 		{
+			"name": "05_Data_structure_and_Classes",
 			"path": "05_Data_structure_and_Classes"
 		},
 		{
+			"name": "06_Polymorphism",
+			"path": "06_Polymorphism"
+		},
+		{
+			"name": "07_Debbuging",
 			"path": "07_Debbuging"
+		},
+		{
+			"path": "08_Memory_leaks"
 		}
 	],
 	"settings": {
@@ -66,7 +79,18 @@
 			"streambuf": "cpp",
 			"typeinfo": "cpp",
 			"cstring": "cpp",
-			"ctime": "cpp"
+			"ctime": "cpp",
+			"bitset": "cpp",
+			"chrono": "cpp",
+			"complex": "cpp",
+			"condition_variable": "cpp",
+			"map": "cpp",
+			"set": "cpp",
+			"ratio": "cpp",
+			"iomanip": "cpp",
+			"mutex": "cpp",
+			"thread": "cpp",
+			"cinttypes": "cpp"
 		}
 	}
 }
