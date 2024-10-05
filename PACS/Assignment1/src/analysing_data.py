@@ -1,9 +1,7 @@
 import pandas as pd
 
 # Load your CSV data
-# df = pd.read_csv('../test/results_ubuntu_heap.csv')
 df = pd.read_csv('../test/results_macos_heap.csv')
-
 
 # Group by 'Executable' and 'Matrix Size', then calculate mean and standard deviation
 stats = df.groupby(['Executable', 'Matrix Size']).agg(
@@ -15,7 +13,16 @@ stats = df.groupby(['Executable', 'Matrix Size']).agg(
     std_system_time=('System Time', 'std')
 ).reset_index()
 
-# Save the result to a new CSV file
-stats.to_csv('../test/means_macos_heap.csv', index=False)
+# Get the unique executables
+unique_executables = stats['Executable'].unique()
 
-print("Statistics saved to 'path_to_save_statistics.csv'.")
+# Create individual CSV for each executable
+for executable in unique_executables:
+    # Filter the dataframe for the current executable
+    executable_df = stats[stats['Executable'] == executable]
+    
+    # Save each filtered dataframe to a separate CSV file
+    file_name = f'../test/macos/{executable}_stats.csv'
+    executable_df.to_csv(file_name, index=False)
+    print(f"Statistics for {executable} saved to '{file_name}'.")
+

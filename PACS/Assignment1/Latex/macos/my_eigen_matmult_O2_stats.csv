@@ -1,0 +1,10 @@
+Executable,Matrix Size,mean_real_time,std_real_time,mean_user_time,std_user_time,mean_system_time,std_system_time
+my_eigen_matmult_O2,100,0.0,0.0,0.0,0.0,0.0,0.0
+my_eigen_matmult_O2,250,0.0,0.0,0.0,0.0,0.0,0.0
+my_eigen_matmult_O2,500,0.01,0.0,0.01,0.0,0.0,0.0
+my_eigen_matmult_O2,600,0.02,0.0,0.01,0.0,0.0,0.0
+my_eigen_matmult_O2,700,0.03,0.0,0.02,0.0,0.0,0.0
+my_eigen_matmult_O2,800,0.04,0.0,0.031,0.0031622776601683803,0.0,0.0
+my_eigen_matmult_O2,900,0.053000000000000005,0.004830458915396477,0.05,0.0,0.0,0.0
+my_eigen_matmult_O2,1000,0.07,0.0,0.07,0.0,0.0,0.0
+my_eigen_matmult_O2,1500,0.23000000000000004,0.0,0.221,0.003162277660168384,0.0,0.0

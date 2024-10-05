@@ -1,0 +1,238 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e} 
+\usepackage[top=0.25in, bottom=1in, left=0.75in, right=0.75in]{geometry} % Ajuste de márgenes verticales y horizontales
+\title{Assignment 1 \\ \small Performance evaluation of the two matrix multiplication.}
+\author{David Padilla Orenga\\ Ignacio Pastore Benaim}
+\date{}  % No date will be shown
+
+% \date{\today}   % You can use \date{\today}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\usepackage{filecontents}
+\usepackage{pgfplotstable}
+
+
+% Hyphen penalty
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\sloppy
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This report evaluates the performance of three different methods for performing matrix multiplication. The first method uses traditional 2D arrays in C++ (\textbf{2D vec}), the second employs a flattened approach, using a 1D array (\textbf{1D vec}), and the third utilizes the Eigen-based C++ library (\textbf{EIG}). Tests are conducted across various matrix sizes and optimization levels (-O2, -O3), with performance measured in terms of real times. The analysis highlights significant performance differences observed across two different hardware architectures. Focus will be on heap storage, since tests on stack storage were performed, but \( N = 500 \) could not be exceeded due to memory limitations.
+  
+\section{Experimental Setup}
+
+The experiments were conducted on two machines. Their specifications are summarized in Table \ref{tab:specs}. \textbf{Matrix Sizes and Executions:} The matrix sizes tested were \textit{N = 100, 250, 500, 600, 700, 800, 900, 1000, 1500}. For each version, different levels of compiler optimizations (\textit{standard, `-O2`, `-O3`}) will be performed. Each experiment was executed \textit{10 times} to calculate the mean and standard deviation for real times.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Specification} & \textbf{Ubuntu (x86\_64)} & \textbf{Mac (M1)} \\ \hline
+Operating System       & Ubuntu 20.04 LTS          & macOS Big Sur     \\ \hline
+Processor              & Intel Core i7-6700HQ @ 2.60GHz & Apple M1         \\ \hline
+Cores/Threads          & 4 Cores / 8 Threads       & 8 Cores (4 performance, 4 efficiency) \\ \hline
+Memory                 & 15.5 GiB                  & 8 GB              \\ \hline
+Architecture           & x86\_64                   & ARM64             \\ \hline
+\end{tabular}
+\caption{Specifications of the two systems used for testing.}
+\label{tab:specs}
+\end{table}
+
+\vspace{-0.7cm}  % Reduce the vertical space here
+
+
+\section{Performance Results}
+
+Figure \ref{fig:1} summarizes the real-time performance of the implementations across both platforms and optimizations. As the matrix size increases, noticeable trends emerge:
+
+\begin{itemize}
+    \item The \textbf{Eigen library} consistently outperforms the standard implementations for all matrix sizes. This is especially evident for larger matrices (\(N > 1000\)), where the difference in performance becomes more pronounced.
+    \item  \textbf{2D vs 1D flattened array}: The 1D flattened vector approach shows better performance than the standard 2D array approach, particularly for larger matrix sizes, due to improved memory locality and reduced cache misses (data is stored continuously), but remains slower than Eigen.
+    \item \textbf{Ubuntu vs. MacOS}: MacOS, with its M1 chip, consistently outperforms the Ubuntu machine for larger matrix sizes, particularly when using the Eigen library. From matrix size \(N = 600\) onwards, MacOS achieves real times that are approximately half, or even less, compared to Ubuntu across all implementations. The performance boost with the `-O2` and `-O3` optimizations is especially significant.
+    \item \textbf{Optimization Impact}: Compiler optimizations (`-O2`, `-O3`) significantly reduce execution time in a similar way across all implementations. The most notable improvements are seen with the Eigen library, where `-O3` provides the best performance across both platforms especially for larger matrices. For instance, at N = 1400, Eigen with `-O3` performs almost the same way as for small matrixe. Standard 2D arrays, even with optimizations, perform worse than the 1D flattened implementation.
+\end{itemize}
+
+
+\begin{figure}[h]
+    \centering
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                    title={Ubuntu vs Macos Performance},
+                    xlabel={Matrix Size (N)},
+                    ylabel={Real Time (s)},
+                    legend pos=north west,
+                    grid=major,
+                    xmax=1500,  % Limitar el eje X a 1500
+                    legend cell align=left
+                ]
+                \addplot [color=red, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_stats.csv};
+                \addlegendentry{2D Vec - Ubu}
+                
+                \addplot [color=red, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_flattened_version_stats.csv};
+                \addlegendentry{1D Vec - Ubu}
+                
+                \addplot [color=red, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/my_eigen_matmult_stats.csv};
+                \addlegendentry{EIG - Ubu}
+                
+                \addplot [color=blue, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_stats.csv};
+                \addlegendentry{2D Vec - Mac}
+                
+                \addplot [color=blue, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_flattened_version_stats.csv};
+                \addlegendentry{1D Vec - Mac}
+                
+                \addplot [color=blue, dashdotted,mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/my_eigen_matmult_stats.csv};
+                \addlegendentry{EIG - Mac}
+                
+                \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+        \hfill
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                    title={Optimizations in Ubuntu},
+                    xlabel={Matrix Size (N)},
+                    ylabel={Real Time (s)},
+                    legend pos=north west,
+                    grid=major,
+                    xmax=1500,  % Limitar el eje X a 1500
+                    legend cell align=left
+                ]
+                %% standard_matrix_heap_stats
+                \addplot [color=black, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_stats.csv};
+                \addlegendentry{2D Vec}
+
+                \addplot [color=black, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_O2_stats.csv};
+                \addlegendentry{2D Vec -O2}
+
+                \addplot [color=black, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_O3_stats.csv};
+                \addlegendentry{2D Vec -O3}
+
+
+                %% standard_matrix_heap_flattened_version_stats
+                \addplot [color=blue, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_flattened_version_stats.csv};
+                \addlegendentry{1D Vec}
+                
+                \addplot [color=blue, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_flattened_version_O2_stats.csv};
+                \addlegendentry{1D Vec -O2}
+
+                \addplot [color=blue, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/standard_matrix_heap_flattened_version_O3_stats.csv};
+                \addlegendentry{1D Vec -O3}
+                
+                %% my_eigen_matmult_stats              
+                \addplot [color=red, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/my_eigen_matmult_stats.csv};
+                \addlegendentry{EIG}
+
+                \addplot [color=red, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/my_eigen_matmult_O2_stats.csv};
+                \addlegendentry{EIG -O2}
+
+                \addplot [color=red, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {ubuntu/my_eigen_matmult_O3_stats.csv};
+                \addlegendentry{EIG -03}
+                
+                \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+
+        \vspace{0.5cm}  % Space between rows
+        
+        \begin{minipage}{0.45\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                    title={Optimizations in Macos},
+                    xlabel={Matrix Size (N)},
+                    ylabel={Real Time (s)},
+                    legend pos=north west,
+                    grid=major,
+                    xmax=1500,  % Limitar el eje X a 1500
+                    legend cell align=left
+                ]
+                %% standard_matrix_heap_stats
+                \addplot [color=black, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_stats.csv};
+                \addlegendentry{2D Vec}
+
+                \addplot [color=black, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_O2_stats.csv};
+                \addlegendentry{2D Vec -O2}
+
+                \addplot [color=black, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_O3_stats.csv};
+                \addlegendentry{2D Vec -O3}
+
+                %% standard_matrix_heap_flattened_version_stats
+                \addplot [color=blue, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_flattened_version_stats.csv};
+                \addlegendentry{1D Vec}
+                
+                \addplot [color=blue, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_flattened_version_O2_stats.csv};
+                \addlegendentry{1D Vec -O2}
+
+                \addplot [color=blue, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/standard_matrix_heap_flattened_version_O3_stats.csv};
+                \addlegendentry{1D Vec -O3}
+                
+                %% my_eigen_matmult_stats              
+                \addplot [color=red, solid, mark=square, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/my_eigen_matmult_stats.csv};
+                \addlegendentry{EIG}
+
+                \addplot [color=red, dashed, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/my_eigen_matmult_O2_stats.csv};
+                \addlegendentry{EIG -O2}
+
+                \addplot [color=red, dashdotted, mark=triangle, mark options={solid}]
+                table [x=Matrix Size, y=mean_real_time, col sep=comma] {macos/my_eigen_matmult_O3_stats.csv};
+                \addlegendentry{EIG -O3}
+                \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+
+    \caption{Real time comparison for different implementations.}
+    \label{fig:1}
+\end{figure}
+
+\vspace{-0.9cm}  % Reduce the vertical space here
+
+
+\section{Conclusion}
+
+In this study, matrix multiplication was implemented using heap-based allocation, flattened vectors, and the Eigen library. Heap allocation provides flexibility for handling larger matrix sizes, avoiding stack overflow, while flattened vectors improve memory locality by storing elements continuously. The Eigen library further optimized memory and instruction-level operations, demonstrating efficient handling of large matrices. The standard matrix multiplication algorithm has a time complexity of \(\mathcal{O}(N^3)\), meaning that execution time increases cubically with matrix size. This behavior was observed in the results, particularly for matrix sizes above \(N = 500\). Although Eigen cannot alter this inherent complexity, its optimizations significantly reduce overhead, leading to lower real times, especially for larger matrices.
+
+\vspace{0.12cm}
+Overall, the Eigen library outperformed both the standard heap and flattened vector implementations across all matrix sizes. Compiler optimizations (-O2, -O3) provided substantial performance gains, with Eigen benefiting the most. System time remained consistently low across all tests, indicating minimal overhead from memory allocation. Additionally, MacOS (Apple M1) showed superior performance compared to Ubuntu (x86\_64), particularly for larger matrices, likely due to the M1 chip's architecture and its ability to take full advantage of Eigen’s optimizations. In conclusion, Eigen, combined with compiler optimizations, offers the best performance for matrix multiplication across both platforms. As matrix size increases, the performance gap between Eigen and the standard implementations grows, with the M1 architecture further enhancing performance for larger matrices.
+
+
+\end{document}

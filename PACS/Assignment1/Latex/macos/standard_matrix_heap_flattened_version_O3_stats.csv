@@ -1,0 +1,10 @@
+Executable,Matrix Size,mean_real_time,std_real_time,mean_user_time,std_user_time,mean_system_time,std_system_time
+standard_matrix_heap_flattened_version_O3,100,0.0,0.0,0.0,0.0,0.0,0.0
+standard_matrix_heap_flattened_version_O3,250,0.014000000000000002,0.005163977794943223,0.01,0.0,0.0,0.0
+standard_matrix_heap_flattened_version_O3,500,0.15,0.0,0.14300000000000002,0.0048304589153964714,0.0,0.0
+standard_matrix_heap_flattened_version_O3,600,0.262,0.006324555320336775,0.26,0.0,0.0,0.0
+standard_matrix_heap_flattened_version_O3,700,0.41600000000000004,0.0051639777949432294,0.4109999999999999,0.003162277660168381,0.0,0.0
+standard_matrix_heap_flattened_version_O3,800,0.63,0.0,0.629,0.003162277660168374,0.0,0.0
+standard_matrix_heap_flattened_version_O3,900,0.89,0.0,0.8800000000000001,0.0,0.0,0.0
+standard_matrix_heap_flattened_version_O3,1000,1.23,0.004714045207910313,1.223,0.004830458915396476,0.0,0.0
+standard_matrix_heap_flattened_version_O3,1500,4.368,0.01619327706865491,4.3469999999999995,0.017029386365926272,0.006,0.0051639777949432225
