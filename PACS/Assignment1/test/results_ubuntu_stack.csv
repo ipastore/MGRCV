@@ -1,0 +1,187 @@
+Executable,Matrix Size,Iteration,Real Time,User Time,System Time
+standard_matrix_stack,100,1,0.01,0.00,0.00
+standard_matrix_stack_O2,100,1,0.00,0.00,0.00
+standard_matrix_stack_O3,100,1,0.01,0.00,0.00
+standard_matrix_stack_flattened_array,100,1,0.02,0.01,0.00
+standard_matrix_stack_flattened_array_O2,100,1,0.00,0.00,0.00
+standard_matrix_stack_flattened_array_O3,100,1,0.01,0.00,0.00
+standard_matrix_stack,250,1,0.15,0.14,0.00
+standard_matrix_stack_O2,250,1,0.00,0.00,0.00
+standard_matrix_stack_O3,250,1,0.01,0.00,0.00
+standard_matrix_stack_flattened_array,250,1,0.27,0.26,0.00
+standard_matrix_stack_flattened_array_O2,250,1,0.00,0.00,0.00
+standard_matrix_stack_flattened_array_O3,250,1,0.01,0.01,0.00
+standard_matrix_stack,500,1,0.79,0.77,0.01
+standard_matrix_stack_O2,500,1,0.01,0.00,0.00
+standard_matrix_stack_O3,500,1,0.03,0.02,0.00
+standard_matrix_stack_flattened_array,500,1,0.79,0.77,0.01
+standard_matrix_stack_flattened_array_O2,500,1,0.01,0.00,0.00
+standard_matrix_stack_flattened_array_O3,500,1,0.02,0.00,0.01
+standard_matrix_stack,600,1,Command terminated by signal 11
+0.36,
+0.01,
+0.00
+standard_matrix_stack_O2,600,1,Command terminated by signal 11
+0.25,
+0.00,
+0.00
+standard_matrix_stack_O3,600,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack_flattened_array,600,1,Command terminated by signal 11
+0.23,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,600,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,600,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack,700,1,Command terminated by signal 11
+0.23,
+0.00,
+0.00
+standard_matrix_stack_O2,700,1,Command terminated by signal 11
+0.43,
+0.00,
+0.00
+standard_matrix_stack_O3,700,1,Command terminated by signal 11
+1.00,
+0.00,
+0.02
+standard_matrix_stack_flattened_array,700,1,Command terminated by signal 11
+0.25,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,700,1,Command terminated by signal 11
+0.28,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,700,1,Command terminated by signal 11
+0.49,
+0.00,
+0.00
+standard_matrix_stack,800,1,Command terminated by signal 11
+0.33,
+0.01,
+0.01
+standard_matrix_stack_O2,800,1,Command terminated by signal 11
+0.31,
+0.00,
+0.00
+standard_matrix_stack_O3,800,1,Command terminated by signal 11
+0.25,
+0.00,
+0.00
+standard_matrix_stack_flattened_array,800,1,Command terminated by signal 11
+0.49,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,800,1,Command terminated by signal 11
+0.42,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,800,1,Command terminated by signal 11
+0.45,
+0.00,
+0.00
+standard_matrix_stack,900,1,Command terminated by signal 11
+0.23,
+0.00,
+0.00
+standard_matrix_stack_O2,900,1,Command terminated by signal 11
+0.46,
+0.00,
+0.00
+standard_matrix_stack_O3,900,1,Command terminated by signal 11
+0.25,
+0.00,
+0.00
+standard_matrix_stack_flattened_array,900,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,900,1,Command terminated by signal 11
+0.51,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,900,1,Command terminated by signal 11
+0.30,
+0.00,
+0.00
+standard_matrix_stack,1000,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack_O2,1000,1,Command terminated by signal 11
+0.48,
+0.00,
+0.00
+standard_matrix_stack_O3,1000,1,Command terminated by signal 11
+0.34,
+0.00,
+0.00
+standard_matrix_stack_flattened_array,1000,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,1000,1,Command terminated by signal 11
+0.25,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,1000,1,Command terminated by signal 11
+0.31,
+0.00,
+0.00
+standard_matrix_stack,1500,1,Command terminated by signal 11
+0.48,
+0.00,
+0.00
+standard_matrix_stack_O2,1500,1,Command terminated by signal 11
+0.30,
+0.00,
+0.00
+standard_matrix_stack_O3,1500,1,Command terminated by signal 11
+0.41,
+0.00,
+0.00
+standard_matrix_stack_flattened_array,1500,1,Command terminated by signal 11
+0.48,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,1500,1,Command terminated by signal 11
+0.25,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,1500,1,Command terminated by signal 11
+0.65,
+0.00,
+0.00
+standard_matrix_stack,2000,1,Command terminated by signal 11
+0.24,
+0.01,
+0.00
+standard_matrix_stack_O2,2000,1,Command terminated by signal 11
+0.44,
+0.00,
+0.00
+standard_matrix_stack_O3,2000,1,Command terminated by signal 11
+0.24,
+0.00,
+0.00
+standard_matrix_stack_flattened_array,2000,1,Command terminated by signal 11
+0.26,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O2,2000,1,Command terminated by signal 11
+0.39,
+0.00,
+0.00
+standard_matrix_stack_flattened_array_O3,2000,1,Command terminated by signal 11
+0.36,
+0.00,
+0.02
