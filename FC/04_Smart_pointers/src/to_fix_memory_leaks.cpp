@@ -5,6 +5,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  * Starting from the max_min_heap_2d_matrix.cpp code, replace all dynamic memory operations
  * with   smart   pointers.   The   resulting   file   should   be   named   max_min_sp_2d_matrix.cpp.   The 

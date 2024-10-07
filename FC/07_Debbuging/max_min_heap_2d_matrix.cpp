@@ -6,6 +6,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  * EXPLANATION OF ASSERTS:
  *      - The assert macro is used to check the correctness of the program. If the condition is true, the program continues to run normally.

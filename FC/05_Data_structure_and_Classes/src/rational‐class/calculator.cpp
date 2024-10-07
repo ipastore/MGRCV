@@ -6,6 +6,7 @@ using namespace std;
 Developed by: 
     - David Padilla Orenga, NIA: 946874
     - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIA: 717171
 
 Description:
     This program is a simple calculator that works with rational numbers (fractions). 

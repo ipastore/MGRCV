@@ -7,6 +7,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  *  */
 
@@ -18,7 +19,7 @@ struct Matrix
     std::unique_ptr<std::unique_ptr<float[]>[]> array;
     std::unique_ptr<float> min_value = std::make_unique<float>(std::numeric_limits<float>::max());
     std::unique_ptr<float> max_value = std::make_unique<float>(std::numeric_limits<float>::lowest());
-};2
+};
 
 void get_matrix_dimensions(Matrix& matrix){
     std::cout << "Indicate rows and columns of the matrix:" << std::endl;

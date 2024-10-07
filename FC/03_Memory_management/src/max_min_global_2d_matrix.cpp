@@ -5,6 +5,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIP: 717171
  * 
  * EXPLANATION:
  *      - The matrix is stored in the data (global/static data section). Since it's a statically allocated array,the size of the matrix is fixed at

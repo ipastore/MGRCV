@@ -5,6 +5,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIP: 717171
  * 
  * EXPLANATION:
  *      - The matrix is dynamically allocated in the heap using several new operators. This means that memory for the matrix rows

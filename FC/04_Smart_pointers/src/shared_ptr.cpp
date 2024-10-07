@@ -5,6 +5,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  * QUESTIONS: 
  * 1. How many objects (variables) are allocated in the stack and in the heap?
