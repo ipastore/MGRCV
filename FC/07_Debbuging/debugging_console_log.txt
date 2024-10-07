@@ -1,0 +1,85 @@
+padidavid@padipc:~/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/build-debbuging$ gdb ./factorial 
+GNU gdb (Ubuntu 10.2-0ubuntu1~20.04~1) 10.2
+Copyright (C) 2021 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<https://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from ./factorial...
+(gdb) break main
+Breakpoint 1 at 0x1244: file /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp, line 13.
+(gdb) run
+Starting program: /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/build-debbuging/factorial 
+
+Breakpoint 1, main ()
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:13
+warning: Source file is more recent than executable.
+13	{
+(gdb) list
+8	
+9	  return factorial(n-1) * n;
+10	}
+11	
+12	int main()
+13	{
+14	    std::cout << "Type the n value for computing factorial: ";
+15	
+16	    unsigned int n{};
+17	    std::cin >> n;
+(gdb) break factorial
+Breakpoint 2 at 0x555555555218: file /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp, line 5.
+(gdb) continue
+Continuing.
+Type the n value for computing factorial: 3
+
+Breakpoint 2, factorial (n=3)
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:5
+5	  if(n == 0) {
+(gdb) backtrace
+#0  factorial (n=3)
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:5
+#1  0x000055555555528a in main ()
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:19
+(gdb) info breakpoints
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x0000555555555244 in main() 
+                                                   at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:13
+	breakpoint already hit 1 time
+2       breakpoint     keep y   0x0000555555555218 in factorial(unsigned int) 
+                                                   at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:5
+	breakpoint already hit 1 time
+(gdb) delete 2
+(gdb) break factorial.cpp:9 
+Breakpoint 3 at 0x555555555225: file /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp, line 9.
+(gdb) continue
+Continuing.
+
+Breakpoint 3, factorial (n=3)
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:9
+9	  return factorial(n-1) * n;
+(gdb) backtrace
+#0  factorial (n=3)
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:9
+#1  0x000055555555528a in main ()
+    at /home/padidavid/Documents/unizar/master/repositorios/MGRCV/FC/07_Debbuging/factorial.cpp:19
+(gdb) list
+4	{
+5	  if(n == 0) {
+6	    return 1;
+7	  }
+8	
+9	  return factorial(n-1) * n;
+10	}
+11	
+12	int main()
+13	{
+(gdb)
