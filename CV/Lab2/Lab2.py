@@ -149,7 +149,108 @@ def on_click(event, F, ax1, ax2, img2):
         # Plot the corresponding epipolar line in image 2
         plot_epipolar_line(F, x1_clicked, ax2, img2)
 
+
+def visualize_epipolar_lines(F, img1, img2):
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # 1 fila, 2 columnas
+        # Configuración del primer subplot
+        ax1.set_xlabel('Coordinates X (píxeles)')
+        ax1.set_ylabel('Coordinates Y (píxeles)')
+        ax1.imshow(img1) 
+        ax1.set_title('Image 1 - Select Point')
+        
+        # Segundo subplot para la segunda imagen
+        ax2.set_xlabel('Coordinates X (píxeles)')
+        ax2.set_ylabel('Coordinates Y (píxeles)')
+        ax2.imshow(img2)
+        ax1.set_title('Image 2 - Epipolar Lines')
+        
+        # Connect the click event on image 1 to the handler
+        fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, F , ax1, ax2, img2))
+        print('\nClose the figure to continue. Select a point from Img1 to get the equivalent epipolar line.')
+        plt.show()
+
+def skew_symmetric(v):
+    """
+    Returns the skew-symmetric matrix of a vector v.
+    """
+    return np.array([[0, -v[2], v[1]],
+                     [v[2], 0, -v[0]],
+                     [-v[1], v[0], 0]])
     
+def compute_essential_matrix(R, t):
+    """
+    Computes the essential matrix E given rotation R and translation t.
+    """
+    return skew_symmetric(t) @ R
+
+def compute_fundamental_matrix(E, K1, K2):
+    """
+    Computes the fundamental matrix F given essential E and tintrinsic matrices K1 and K2.
+    """
+    return np.linalg.inv(K2).T @ E @ np.linalg.inv(K1)
+
+def normalize_points(points):
+    """
+    Normalize a set of points for the eight-point algorithm to improve numerical stability.
+    - points: Input points (shape: 2 x N, where each column is a point [x, y])
+    Returns:
+    - points_norm: Normalized points
+    - T: Normalization matrix
+    """
+    mean = np.mean(points, axis=1)
+    std = np.std(points, axis=1)
+    
+    # Construct normalization matrix
+    T = np.array([[1/std[0], 0, -mean[0]/std[0]],
+                  [0, 1/std[1], -mean[1]/std[1]],
+                  [0, 0, 1]])
+    
+    # Convert points to homogeneous coordinates
+    points_hom = np.vstack((points, np.ones((1, points.shape[1]))))
+    
+    # Apply the normalization
+    points_norm = T @ points_hom
+    return points_norm, T
+
+def eight_point_algorithm(x1, x2):
+    """
+    Compute the fundamental matrix using the eight-point algorithm.
+    - x1, x2: Corresponding points from image 1 and image 2 (shape: 2 x N)
+    Returns:
+    - F: The estimated fundamental matrix
+    """
+    # Normalize the points
+    x1_norm, T1 = normalize_points(x1)
+    x2_norm, T2 = normalize_points(x2)
+    
+    # Construct the matrix A based on the normalized points
+    N = x1.shape[1]
+    A = np.zeros((N, 9))
+    for i in range(N):
+        A[i] = [
+            x2_norm[0, i] * x1_norm[0, i],  # x2' * x1'
+            x2_norm[0, i] * x1_norm[1, i],  # x2' * y1'
+            x2_norm[0, i],                  # x2'
+            x2_norm[1, i] * x1_norm[0, i],  # y2' * x1'
+            x2_norm[1, i] * x1_norm[1, i],  # y2' * y1'
+            x2_norm[1, i],                  # y2'
+            x1_norm[0, i],                  # x1'
+            x1_norm[1, i],                  # y1'
+            1
+        ]
+    
+    # Solve Af = 0 using SVD
+    _, _, Vt = np.linalg.svd(A)
+    F_norm = Vt[-1].reshape(3, 3)  # The last row of V gives the solution
+    
+    # Enforce the rank-2 constraint on F (set the smallest singular value to 0)
+    U, S, Vt = np.linalg.svd(F_norm)
+    S[-1] = 0
+    F_norm = U @ np.diag(S) @ Vt
+    
+    # Denormalize the fundamental matrix
+    F = T2.T @ F_norm @ T1
+    return F
 
 ### MAIN ###
 
@@ -162,13 +263,13 @@ if __name__ == '__main__':
         # Initialize camera and world parameters
         T_w_c1 = load_matrix('./T_w_c1.txt')
         T_w_c2 = load_matrix('./T_w_c2.txt')
-        T_C1_w = np.linalg.inv(T_w_c1)
-        T_C2_w = np.linalg.inv(T_w_c2)
+        T_c1_w = np.linalg.inv(T_w_c1)
+        T_c2_w = np.linalg.inv(T_w_c2)
         K_C = load_matrix('./K_c.txt')  
 
         # Compute projection matrices
-        P1 = get_projection_matrix(K_C, T_C1_w)
-        P2 = get_projection_matrix(K_C, T_C2_w)
+        P1 = get_projection_matrix(K_C, T_c1_w)
+        P2 = get_projection_matrix(K_C, T_c2_w)
         
         # Loading set of points already projected
         x1_data = load_matrix('./x1Data.txt')  # 2D points from image 1
@@ -178,7 +279,7 @@ if __name__ == '__main__':
         X_h = triangulate_points(x1_data, x2_data, P1, P2)
         X_w_sol = load_matrix('./X_w.txt')
 
-        print("Projection Matrix P1:")
+        print("\nProjection Matrix P1:")
         print(P1)
         print("\nProjection Matrix P2:")
         print(P2)
@@ -206,7 +307,7 @@ if __name__ == '__main__':
         yFakeBoundingBox = np.linspace(0, 4, 2)
         zFakeBoundingBox = np.linspace(0, 4, 2)
         plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
-        print('Close the figure to continue. Left button for orbit, right button for zoom.')
+        print('\nClose the figure to continue. Left button for orbit, right button for zoom.')
         plt.show()
         #endregion
         
@@ -217,24 +318,31 @@ if __name__ == '__main__':
         img1 = cv2.cvtColor(cv2.imread('image1.png'), cv2.COLOR_BGR2RGB)
         img2 = cv2.cvtColor(cv2.imread('image2.png'), cv2.COLOR_BGR2RGB)
         
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # 1 fila, 2 columnas
-        # Configuración del primer subplot
-        ax1.set_xlabel('Coordinates X (píxeles)')
-        ax1.set_ylabel('Coordinates Y (píxeles)')
-        ax1.imshow(img1) 
-        ax1.set_title('Image 1 - Select Point')
+        visualize_epipolar_lines(F_21_test, img1, img2)
         
-        # Segundo subplot para la segunda imagen
-        ax2.set_xlabel('Coordinates X (píxeles)')
-        ax2.set_ylabel('Coordinates Y (píxeles)')
-        ax2.imshow(img2)
-        ax1.set_title('Image 2 - Epipolar Lines')
+        ## 2.2 CALULATE THE ESSENTIAL AND FUNDAMENTAL MATRICES
+        R1 = T_c1_w[:3, :3]
+        R2 = T_c2_w[:3, :3]
+        t1 = T_c1_w[:3, 3]
+        t2 = T_c2_w[:3, 3]
         
-        # Connect the click event on image 1 to the handler
-        fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, F_21_test , ax1, ax2, img2))
+        R = R2 @ R1.T # Relative rotation
+        t = t2 - R2 @ R1.T @ t1 # Relative translation
+        E = compute_essential_matrix(R, t)
+        F = compute_fundamental_matrix(E, K_C, K_C)
         
-        print('Close the figure to continue. Select a point from Img1 to get the equivalent epipolar line.')
-        plt.show()
+        print("\nEssential Matrix E:\n", E)
+        print("\nCalculated Fundamental Matrix F:\n", F)
+        
+        visualize_epipolar_lines(F, img1, img2)
+        
+        ### 2.3 CALCULATE F USING 8 POINTS ###
+        
+        x1 = load_matrix('./x1Data.txt')  # Points from image 1
+        x2 = load_matrix('./x2Data.txt')  # Points from image 2
+        F_est = eight_point_algorithm(x1.T, x2.T)  # Transpose to ensure (2 x N) format
+        print("\nEstimated Fundamental Matrix F:\n", F_est)
+        visualize_epipolar_lines(F_est, img1, img2)
 
         
     except Exception as e:
