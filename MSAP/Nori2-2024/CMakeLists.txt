@@ -66,7 +66,6 @@ add_executable(nori
   include/nori/transform.h
   include/nori/vector.h
   include/nori/warp.h
-  include/nori/normals.h
 
   # Source code files
   src/accel.cpp
