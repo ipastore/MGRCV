@@ -5,6 +5,7 @@ using namespace std;
 Developed by: 
     - David Padilla Orenga, NIA: 946874
     - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIP: 717171
 
 ERROR GIVEN WITHOUT THE FIX:
     to_fix_double_delete(72441,0x1fb817ac0) malloc: Double free of object 0x13de05fc0

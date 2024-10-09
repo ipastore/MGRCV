@@ -5,6 +5,7 @@ using namespace std;
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  * Main program to modify a number entered by the user with pointers and references.
  * We've added a modification by copy.

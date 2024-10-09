@@ -5,6 +5,7 @@ using namespace std;
 Developed by: 
     - David Padilla Orenga, NIA: 946874
     - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIP: 717171
 
 // In which section each variable will be stored?
     - int global_var would be stored in Data.

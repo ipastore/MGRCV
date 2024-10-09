@@ -74,7 +74,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 #For all executables in project 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 
-add_executable(minigimp brushes.cpp color.cpp grayscale.cpp orangeandtealbrush.cpp  main.cpp)
+add_executable(minigimp brushes.cpp color.cpp grayscale.cpp main.cpp)
 target_compile_definitions(minigimp PRIVATE ${cimg_defs} ${cimgdisplay_defs})
 target_link_libraries(minigimp ${cimg_libs} ${cimgdisplay_libs})
 

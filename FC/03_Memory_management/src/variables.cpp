@@ -4,6 +4,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  * Please read the variables.cpp program and briefly describe what the program does, specially in
  * terms of pointer arithmetic.

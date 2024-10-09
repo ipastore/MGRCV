@@ -4,6 +4,7 @@
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
  * 
  * SOLUTION:
  *     - Simplified Access: Each element is accessed as value in the loop, making the code more readable and concise.

@@ -3,18 +3,19 @@ using namespace std;
 
 
 /*
-Developed by: 
-    - David Padilla Orenga, NIA: 946874
-    - Inacio Pastore Benaim, NIP: 920576
-Main function containing a basic calculator.
-n1 and n2 are floats 
-calc is the character containing the operator
-res is the output result
-We have seen that:
-    - a + b : Breaks the cin buffer.
-    - ´ (tilde en español): Breaks the cin buffer.
-    - Using a comma instead of a point for decimmals: breaks the cin buffer.
-*/
+ * Developed by: 
+ *     - David Padilla Orenga, NIA: 946874
+ *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIP: 717171
+ * Main function containing a basic calculator.
+ * n1 and n2 are floats 
+ * calc is the character containing the operator
+ * res is the output result
+ * We have seen that:
+ *     - a + b : Breaks the cin buffer.
+ *     - ´ (tilde en español): Breaks the cin buffer.
+ *     - Using a comma instead of a point for decimmals: breaks the cin buffer.
+ */
 
 int main() {
     float n1, n2, res; 
