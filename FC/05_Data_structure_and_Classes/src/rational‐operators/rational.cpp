@@ -1,5 +1,11 @@
-#include "rational.h"
+/*
+Developed by: 
+    - David Padilla Orenga, NIA: 946874
+    - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIA: 717171
+*/
 
+#include "rational.h"
 
 // Initialize
 Rational::Rational(int num, int den) {

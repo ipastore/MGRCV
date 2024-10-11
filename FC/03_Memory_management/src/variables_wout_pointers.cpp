@@ -1,5 +1,3 @@
-#include <iostream>
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -14,6 +12,9 @@
  *      elements of the array. In this case, we can be sure that even if we just put six elements of a seven elemts array, the last one would be zero. 
  *     - This is a good example of how, sometimes, avoiding pointers is safer.
  */
+
+#include <iostream>
+
 
 namespace {
     const size_t n = 7;

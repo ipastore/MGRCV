@@ -1,6 +1,3 @@
-#include <iostream>
-#include <memory>
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -14,6 +11,10 @@
  * EXPLANATION:
  *   
  *  */
+
+#include <iostream>
+#include <memory>
+
 
 struct point
 {

@@ -1,6 +1,3 @@
-#include <iostream>
-using namespace std;
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -10,6 +7,10 @@ using namespace std;
  * Main program to modify a number entered by the user with pointers and references.
  * We've added a modification by copy.
  */
+
+#include <iostream>
+using namespace std;
+
 
 
 int main() {

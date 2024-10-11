@@ -1,8 +1,3 @@
-#include <iostream>
-#include <random>
-#include <memory>
-
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -10,6 +5,12 @@
  *     - Alisson Zapatier Troya, NIA: 717171
  * 
  *  */
+
+#include <iostream>
+#include <random>
+#include <memory>
+
+
 
 struct Matrix
 {

@@ -1,7 +1,3 @@
-#include <iostream>
-#include "rational.h"
-using namespace std;
-
 /*
 Developed by: 
     - David Padilla Orenga, NIA: 946874
@@ -22,6 +18,11 @@ Description:
     - Input validation: Denominators cannot be zero, and operations must be valid (+, -, *, /).
     - The program handles edge cases such as division by zero and unrecognized operators.
 */
+
+#include <iostream>
+#include "rational.h"
+using namespace std;
+
 
 int main() {
  

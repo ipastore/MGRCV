@@ -1,6 +1,3 @@
-#include <iostream>
-#include <random>
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -17,6 +14,10 @@
  *        entire matrix linearly.
  * 
  *  */
+
+#include <iostream>
+#include <random>
+
 
 // Declaration of the matrix in DATA
 const size_t n = 4;

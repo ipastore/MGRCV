@@ -1,8 +1,22 @@
+/*
+Developed by: 
+    - David Padilla Orenga, NIA: 946874
+    - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIA: 717171
+
+Changes:
+
+  - isXQuartzRunning() added to check if XQuartz is running.
+  - startXQuartz() added to start XQuartz.
+*/
+
 #include "CImg.h"
 #include <string>
 #include <cstdlib>
 #include <iostream>
 #include "brushes.h"
+#include <thread>
+#include <chrono>
 
 using namespace cimg_library;
 using namespace std;
@@ -26,7 +40,32 @@ void apply_all(CImg<unsigned char>& img, Brush& brush) {
      
 } 
 
+bool isXQuartzRunning() {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("pgrep XQuartz", "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return !result.empty();
+}
+
+void startXQuartz() {
+    std::cout << "Starting XQuartz..." << std::endl;
+    system("open -a XQuartz");
+    std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait for XQuartz to start
+}
+
+
+
 int main(int argc, char** argv) {
+    if (!isXQuartzRunning()) {
+        startXQuartz();
+    }
+
   std::string input = "";
   float radius = 3.0f;
   int size = 512;
@@ -68,6 +107,7 @@ int main(int argc, char** argv) {
     if (redraw) disp.display(img);
     disp.resize(disp).wait();
   }
-  return 0;
+
+return 0;
 
 } 

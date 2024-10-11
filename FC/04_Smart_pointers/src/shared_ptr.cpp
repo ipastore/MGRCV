@@ -1,6 +1,3 @@
-#include <iostream>
-#include <memory>
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -39,6 +36,10 @@
  *    on the heap.    
  * 
  */
+
+#include <iostream>
+#include <memory>
+
 
 int main() {
   auto sp1 = std::make_shared<int>(1);

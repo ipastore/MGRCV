@@ -1,6 +1,3 @@
-#include <iostream>
-using namespace std;
-
 /*
 Developed by: 
     - David Padilla Orenga, NIA: 946874
@@ -13,6 +10,9 @@ Developed by:
     - int* global_ptr would be stored in Stack, points to Data.
     - int* local_ptr  would be stored in Stack, points to Stack.
 */
+
+#include <iostream>
+using namespace std;
 
 int global_var = 1;
  

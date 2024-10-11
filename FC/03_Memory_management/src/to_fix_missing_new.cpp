@@ -1,6 +1,3 @@
-#include <iostream>
-using namespace std;
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -23,6 +20,10 @@ using namespace std;
  *     - We also have added to the delete_two_array funtion '[]' to the delete in order to free the entire array memory. Using only 'delete'
  *     is undefined behaviour and it may appear to work but there is no guarantee.
  */
+
+#include <iostream>
+using namespace std;
+
 
 
 

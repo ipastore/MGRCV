@@ -1,7 +1,3 @@
-#include <iostream>
-#include "functions.h"
-using namespace std;
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -18,6 +14,11 @@ using namespace std;
  *     - With 30 iterations it breaks.
  *     - Also with values of 9/10 and above it loses precision.
  */
+
+#include <iostream>
+#include "functions.h"
+using namespace std;
+
 
 int main() {
 

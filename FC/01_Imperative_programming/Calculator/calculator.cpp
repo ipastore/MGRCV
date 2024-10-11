@@ -1,7 +1,3 @@
-#include <iostream>
-using namespace std;
-
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -16,6 +12,11 @@ using namespace std;
  *     - ´ (tilde en español): Breaks the cin buffer.
  *     - Using a comma instead of a point for decimmals: breaks the cin buffer.
  */
+
+#include <iostream>
+using namespace std;
+
+
 
 int main() {
     float n1, n2, res; 

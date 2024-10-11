@@ -1,6 +1,3 @@
-#include <iostream>
-using namespace std;
-
 /*
 Developed by: 
     - David Padilla Orenga, NIA: 946874
@@ -16,6 +13,10 @@ SOLUTION:
     One of the deletes (either the function or the delete) must be removed since both are trying to free
     the same memory direction.
 */
+
+#include <iostream>
+using namespace std;
+
 
 int* create_int_ptr(){
     int* ptr = new int;

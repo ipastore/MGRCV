@@ -1,3 +1,16 @@
+/*
+ * Developed by: 
+ *     - David Padilla Orenga, NIA: 946874
+ *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIP: 717171
+ * 
+ * Tests:
+ *   - Power function tests
+ *   - Factorial function tests
+ *   - Arcsin function tests
+ * 
+ * */
+
 #include <iostream>
 #include "functions.h"
 

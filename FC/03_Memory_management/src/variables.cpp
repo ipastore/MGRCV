@@ -1,5 +1,3 @@
-#include <iostream>
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -38,6 +36,9 @@
  *     happend this memory address contains something else, leading the program to some undefined behavoiur.
  * 
  */
+
+#include <iostream>
+
 
 namespace {
     const size_t n = 7;

@@ -1,3 +1,12 @@
+/*
+Developed by: 
+    - David Padilla Orenga, NIA: 946874
+    - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIA: 717171
+
+*/
+
+
 #include "boke.h"
 
     std::string Boke::name() const {

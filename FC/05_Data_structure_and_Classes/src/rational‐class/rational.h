@@ -1,7 +1,10 @@
-#pragma once
-#include <iostream>
 
 /**
+ * Developed by: 
+    - David Padilla Orenga, NIA: 946874
+    - Inacio Pastore Benaim, NIP: 920576
+    - Alisson Zapatier Troya, NIA: 717171
+    
  * Rational.h
  * Definition of the Rational class to represent and manipulate rational numbers.
  * 
@@ -16,6 +19,9 @@
  * - Input/Output: Overloaded stream operators.
  * - Getter for both, numrator and denominator values.
  **/
+
+#pragma once
+#include <iostream>
 
 class Rational {
    private:

@@ -1,6 +1,3 @@
-#include <iostream>
-#include <random>
-
 /*
  * Developed by: 
  *     - David Padilla Orenga, NIA: 946874
@@ -28,6 +25,10 @@
  *        have a more clear main. 
  *
  *  */
+
+#include <iostream>
+#include <random>
+
 
 struct Matrix
 {
