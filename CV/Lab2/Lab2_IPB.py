@@ -99,7 +99,7 @@ def draw3DLine(ax, xIni, xEnd, strStyle, lColor, lWidth):
     ax.plot([np.squeeze(xIni[0]), np.squeeze(xEnd[0])], [np.squeeze(xIni[1]), np.squeeze(xEnd[1])], [np.squeeze(xIni[2]), np.squeeze(xEnd[2])],
             strStyle, color=lColor, linewidth=lWidth)
 
-def plot_epipolar_line(F, x1, ax2, img2):
+def plot_epipolar_line(F, x1, ax2, img2, show_epipoles):
     """
     Given a fundamental matrix and a point in image 1, plot the corresponding epipolar line in image 2.
     - F: Fundamental matrix (3x3)
@@ -109,10 +109,20 @@ def plot_epipolar_line(F, x1, ax2, img2):
     """
     # Compute the epipolar line in image 2
     l2 = F @ x1  # l2 = [a, b, c], where the line equation is ax + by + c = 0
-    
-    # Create a range of x values for image 2
-    height, width = img2.shape[:2]
-    x_vals = np.array([0, width])
+
+    if show_epipoles:
+        # Create a range of x values for image 2 chosing the max between image width and the epipole x coordinate
+        e1, e2 = compute_epipoles(F)
+        height, width = img2.shape[:2]
+        x_vals = np.array([0, max(width, int(e2[0]))])
+
+        ax2.plot(e2[0], e2[1], 'rx', markersize=10)  # Red "x" at the epipole in image 2
+        ax2.text(e2[0], e2[1], 'epipole', color='r', fontsize=12)
+
+    else: 
+         # Create a range of x values for image 2
+        height, width = img2.shape[:2]
+        x_vals = np.array([0, width])
     
     # Calculate the corresponding y values for the epipolar line
     y_vals = -(l2[0] * x_vals + l2[2]) / l2[1]
@@ -124,7 +134,7 @@ def plot_epipolar_line(F, x1, ax2, img2):
     ax2.set_title('Image 2 - Epipolar Lines')
     plt.draw()  # Redraw the figure to update the plot
 
-def on_click(event, F, ax1, ax2, img2):
+def on_click(event, F, ax1, ax2, img2, show_epipoles):
     """
     Event handler for mouse click. Computes and plots the epipolar line in image 2 based on the click in image 1.
     - event: The mouse event (contains the click coordinates)
@@ -147,10 +157,10 @@ def on_click(event, F, ax1, ax2, img2):
         x1_clicked = np.array([x_clicked, y_clicked, 1])
         
         # Plot the corresponding epipolar line in image 2
-        plot_epipolar_line(F, x1_clicked, ax2, img2)
+        plot_epipolar_line(F, x1_clicked, ax2, img2, show_epipoles)
 
 
-def visualize_epipolar_lines(F, img1, img2):
+def visualize_epipolar_lines(F, img1, img2, show_epipoles=False):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # 1 fila, 2 columnas
         # Configuración del primer subplot
         ax1.set_xlabel('Coordinates X (píxeles)')
@@ -162,11 +172,14 @@ def visualize_epipolar_lines(F, img1, img2):
         ax2.set_xlabel('Coordinates X (píxeles)')
         ax2.set_ylabel('Coordinates Y (píxeles)')
         ax2.imshow(img2)
-        ax1.set_title('Image 2 - Epipolar Lines')
+        ax2.set_title('Image 2 - Epipolar Lines')
+
         
         # Connect the click event on image 1 to the handler
-        fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, F , ax1, ax2, img2))
+        fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, F , ax1, ax2, img2,show_epipoles))
         print('\nClose the figure to continue. Select a point from Img1 to get the equivalent epipolar line.')
+
+
         plt.show()
 
 def skew_symmetric(v):
@@ -177,7 +190,7 @@ def skew_symmetric(v):
                      [v[2], 0, -v[0]],
                      [-v[1], v[0], 0]])
     
-def compute_essential_matrix(R, t):
+def compute_essential_matrix_from_R_t(R, t):
     """
     Computes the essential matrix E given rotation R and translation t.
     """
@@ -252,6 +265,144 @@ def eight_point_algorithm(x1, x2):
     F = T2.T @ F_norm @ T1
     return F
 
+def compute_epipoles(F):
+    """
+    Compute the epipoles from the Fundamental Matrix.
+    - F: Fundamental matrix (3x3)
+    Returns: Epipole in Image 1 and Epipole in Image 2
+    """
+    # Epipole in Image 1 (null space of F)
+    _, _, Vt = np.linalg.svd(F)
+    e1 = Vt[-1]  # Last row of V gives the right null space (epipole in Image 2)
+    e1 /= e1[-1]  # Normalize to homogeneous coordinates
+
+    # Epipole in Image 2 (null space of F^T)
+    _, _, Vt = np.linalg.svd(F.T)
+    e2 = Vt[-1]  # Last row of V' gives the right null space (epipole in Image 1)
+    e2 /= e2[-1]  # Normalize to homogeneous coordinates
+
+    return e1, e2
+# Compute the Essential Matrix from the Fundamental Matrix
+def compute_essential_matrix(F, K1, K2):
+    return K2.T @ F @ K1
+
+# Decompose the Essential Matrix into four possible camera transformations
+def decompose_essential_matrix(E):
+    U, _, Vt = np.linalg.svd(E)
+
+    if np.linalg.det(U) < 0:
+        U *= -1
+    if np.linalg.det(Vt) < 0:
+        Vt *= -1
+
+    W = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+    R1 = U @ W @ Vt
+    R2 = U @ W.T @ Vt
+    t = U[:, 2]
+
+    return R1, R2, t
+
+# Check if a set of 3D points are in front of both cameras
+def is_valid_pose(X, P1, P2):
+    X_cartesian = X[:3, :] / X[3, :]
+    depth1 = P1[2, :] @ X
+    depth2 = P2[2, :] @ X
+
+    # print(f"Depth values for Camera 1: {depth1}")
+    # print(f"Depth values for Camera 2: {depth2}")
+
+    return np.all(depth1 > 0) and np.all(depth2 > 0)
+
+# Select the correct camera pose
+def select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t):
+
+    R1_t = np.hstack((R1, t.reshape(3, 1)))
+    R1_minust = np.hstack((R1, -t.reshape(3, 1)))
+    R2_t = np.hstack((R2, t.reshape(3, 1)))
+    R2_minust = np.hstack((R2, -t.reshape(3, 1)))
+
+    P1 = K1 @ np.hstack((np.eye(3), np.zeros((3, 1))))
+    P2_1 = K2 @ R1_t
+    P2_2 = K2 @ R1_minust
+    P2_3 = K2 @ R2_t
+    P2_4 = K2 @ R2_minust
+
+    X1 = triangulate_points(x1_h, x2_h, P1, P2_1)
+    X2 = triangulate_points(x1_h, x2_h, P1, P2_2)
+    X3 = triangulate_points(x1_h, x2_h, P1, P2_3)
+    X4 = triangulate_points(x1_h, x2_h, P1, P2_4)
+
+    ##Plot the 3D cameras and the 3D points
+    #P2_1
+    fig3D = drawPossiblePose(ax, R1_t, X1)
+    adjust_plot_limits(ax, X1)
+    plt.title('Possible Pose R1_t')
+    plt.show()
+    #P2_2
+    fig3D = drawPossiblePose(ax, R1_minust, X2)
+    adjust_plot_limits(ax, X1)
+    plt.title('Possible Pose R1_minust')
+    plt.show()
+    #P2_3
+    fig3D = drawPossiblePose(ax, R2_t, X3)
+    adjust_plot_limits(ax, X1)
+    plt.title('Possible Pose R2_t')
+    plt.show()
+    #P2_4
+    fig3D = drawPossiblePose(ax, R2_minust, X4)
+    adjust_plot_limits(ax, X1)
+    plt.title('Possible Pose R2_minust')
+    plt.show()
+
+    possible_P2_1 = is_valid_pose(X1, P1, P2_1)
+    possible_P2_2 = is_valid_pose(X2, P1, P2_2)
+    possible_P2_3 = is_valid_pose(X3, P1, P2_3)
+    possible_P2_4 = is_valid_pose(X4, P1, P2_4)
+
+    if possible_P2_1:
+        print("Pose 1")
+        return R1, t
+    elif possible_P2_2:
+        print("Pose 2")
+        return R1, -t
+    elif possible_P2_3:
+        print("Pose 3")
+        return R2, t
+    elif possible_P2_4:
+        print("Pose 4")
+        return R2, -t
+    else:
+        raise ValueError("No valid pose found!")
+    
+def drawPossiblePose(ax, Rt, X):
+    fig3D = plt.figure()
+    ax = plt.axes(projection='3d', adjustable='box')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    drawRefSystem(ax, np.eye(4, 4), '-', 'C1')
+    drawRefSystem(ax, Rt, '-', 'C2')
+    ax.scatter(X[0, :], X[1, :], X[2, :], marker='.', color='r')
+
+    return fig3D
+
+def adjust_plot_limits(ax, X):
+    """
+    Adjust the plot limits based on the range of 3D points.
+    - ax: The 3D plot axis.
+    - X: Triangulated 3D points (non-homogeneous coordinates).
+    """
+    X_cartesian = X[:3, :] / X[3, :]  # Convert to non-homogeneous coordinates
+    x_min, x_max = np.min(X_cartesian[0, :]), np.max(X_cartesian[0, :])
+    y_min, y_max = np.min(X_cartesian[1, :]), np.max(X_cartesian[1, :])
+    z_min, z_max = np.min(X_cartesian[2, :]), np.max(X_cartesian[2, :])
+
+    # Set plot limits
+    ax.set_xlim([x_min - 10, x_max + 10])
+    ax.set_ylim([y_min - 10, y_max + 10])
+    ax.set_zlim([z_min - 10, z_max + 10])
+    
+
 ### MAIN ###
 
 if __name__ == '__main__':
@@ -274,8 +425,6 @@ if __name__ == '__main__':
         # Loading set of points already projected
         x1_data = load_matrix('./x1Data.txt')  # 2D points from image 1
         x2_data = load_matrix('./x2Data.txt')  # 2D points from image 2
-        x1 = np.array([[362, 104]])
-        x2 = np.array([[304, 170]])
         X_h = triangulate_points(x1_data, x2_data, P1, P2)
         X_w_sol = load_matrix('./X_w.txt')
 
@@ -318,7 +467,7 @@ if __name__ == '__main__':
         img1 = cv2.cvtColor(cv2.imread('image1.png'), cv2.COLOR_BGR2RGB)
         img2 = cv2.cvtColor(cv2.imread('image2.png'), cv2.COLOR_BGR2RGB)
         
-        visualize_epipolar_lines(F_21_test, img1, img2)
+        visualize_epipolar_lines(F_21_test, img1, img2, show_epipoles=False)
         
         ## 2.2 CALULATE THE ESSENTIAL AND FUNDAMENTAL MATRICES
         R1 = T_c1_w[:3, :3]
@@ -328,21 +477,39 @@ if __name__ == '__main__':
         
         R = R2 @ R1.T # Relative rotation
         t = t2 - R2 @ R1.T @ t1 # Relative translation
-        E = compute_essential_matrix(R, t)
+        E = compute_essential_matrix_from_R_t(R, t)
         F = compute_fundamental_matrix(E, K_C, K_C)
         
         print("\nEssential Matrix E:\n", E)
         print("\nCalculated Fundamental Matrix F:\n", F)
         
-        visualize_epipolar_lines(F, img1, img2)
+        visualize_epipolar_lines(F, img1, img2, show_epipoles=True)
+
+
+       ### 2.3 CALCULATE F USING 8 POINTS ###
         
-        ### 2.3 CALCULATE F USING 8 POINTS ###
-        
-        x1 = load_matrix('./x1Data.txt')  # Points from image 1
-        x2 = load_matrix('./x2Data.txt')  # Points from image 2
-        F_est = eight_point_algorithm(x1.T, x2.T)  # Transpose to ensure (2 x N) format
+        x1 = load_matrix('./x1Data.txt')  
+        x2 = load_matrix('./x2Data.txt')  
+        F_est = eight_point_algorithm(x1, x2)  
         print("\nEstimated Fundamental Matrix F:\n", F_est)
-        visualize_epipolar_lines(F_est, img1, img2)
+        visualize_epipolar_lines(F_est, img1, img2, show_epipoles=True)
+
+        #### 2.4 and 2.5 POSE ESTIMATION FROM TWO VIEWS ###
+
+        x1_h = np.vstack((x1, np.ones(x1.shape[1])))
+        x2_h = np.vstack((x2, np.ones(x2.shape[1]))) 
+
+        K1 = K_C
+        K2 = K_C
+
+        E = compute_essential_matrix(F_est, K1, K2)
+
+        R1, R2, t = decompose_essential_matrix(E)
+
+        R_correct, t_correct = select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t)
+
+        print("Correct Rotation Matrix:\n", R_correct)
+        print("Correct Translation Vector:\n", t_correct)
 
         
     except Exception as e:
