@@ -283,7 +283,7 @@ def compute_epipoles(F):
 
     return e1, e2
 # Compute the Essential Matrix from the Fundamental Matrix
-def compute_essential_matrix(F, K1, K2):
+def compute_essential_matrix_from_F(F, K1, K2):
     return K2.T @ F @ K1
 
 # Decompose the Essential Matrix into four possible camera transformations
@@ -334,22 +334,22 @@ def select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t):
 
     ##Plot the 3D cameras and the 3D points
     #P2_1
-    fig3D = drawPossiblePose(ax, R1_t, X1)
+    fig3D = draw_possible_poses(ax, R1_t, X1)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R1_t')
     plt.show()
     #P2_2
-    fig3D = drawPossiblePose(ax, R1_minust, X2)
+    fig3D = draw_possible_poses(ax, R1_minust, X2)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R1_minust')
     plt.show()
     #P2_3
-    fig3D = drawPossiblePose(ax, R2_t, X3)
+    fig3D = draw_possible_poses(ax, R2_t, X3)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R2_t')
     plt.show()
     #P2_4
-    fig3D = drawPossiblePose(ax, R2_minust, X4)
+    fig3D = draw_possible_poses(ax, R2_minust, X4)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R2_minust')
     plt.show()
@@ -361,20 +361,20 @@ def select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t):
 
     if possible_P2_1:
         print("Pose 1")
-        return R1, t
+        return R1, t, X1
     elif possible_P2_2:
         print("Pose 2")
-        return R1, -t
+        return R1, -t, X2
     elif possible_P2_3:
         print("Pose 3")
-        return R2, t
+        return R2, t, X3
     elif possible_P2_4:
         print("Pose 4")
-        return R2, -t
+        return R2, -t, X4
     else:
         raise ValueError("No valid pose found!")
     
-def drawPossiblePose(ax, Rt, X):
+def draw_possible_poses(ax, Rt, X):
     fig3D = plt.figure()
     ax = plt.axes(projection='3d', adjustable='box')
     ax.set_xlabel('X')
@@ -402,8 +402,35 @@ def adjust_plot_limits(ax, X):
     ax.set_ylim([y_min - 10, y_max + 10])
     ax.set_zlim([z_min - 10, z_max + 10])
     
+def compute_rmse_in_world_frame(X_w_correct, X_w_sol):
+    """
+    Compute RMSE between estimated points in World frame and ground truth points in world frame.
+    X_w_correct: Estimated 3D points in World frame (homogeneous coordinates, shape 4xN).
+    X_w_sol: Ground truth 3D points in world frame (homogeneous coordinates, shape 4xN).
+    """
 
-### MAIN ###
+
+    # Convert homogeneous to Cartesian coordinates
+    X_w_correct_cartesian = X_w_correct[:3, :] / X_w_correct[3, :]
+    X_w_sol_cartesian = X_w_sol[:3, :] / X_w_sol[3, :]
+
+    # Compute RMSE
+    diff = X_w_correct_cartesian - X_w_sol_cartesian
+    rmse = np.sqrt(np.mean(np.sum(diff ** 2, axis=0)))
+
+    print(f"RMSE : {rmse:.4f}")
+    return rmse
+
+def to_world_frame (X_h, T_w_c):
+    """
+    Transform 3D points from camera frame to world frame.
+    - X_h: 3D points in camera frame (homogeneous coordinates, shape 4xN).
+    - T_w_c: Transformation matrix from camera frame to world frame (4x4 matrix).
+    Returns:
+    3D points in world frame (homogeneous coordinates, shape 4xN).
+    """
+    return T_w_c @ X_h
+
 
 if __name__ == '__main__':
     
@@ -435,6 +462,8 @@ if __name__ == '__main__':
         
         print("\nProjection Matrix x_H:")
         print(X_h[:,0:3])
+
+
         
         ##Plot the 3D cameras and the 3D points
         fig3D = plt.figure(3)
@@ -502,14 +531,21 @@ if __name__ == '__main__':
         K1 = K_C
         K2 = K_C
 
-        E = compute_essential_matrix(F_est, K1, K2)
+        E = compute_essential_matrix_from_F(F_est, K1, K2)
 
         R1, R2, t = decompose_essential_matrix(E)
 
-        R_correct, t_correct = select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t)
+        R_correct, t_correct, X_correct = select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t)
 
         print("Correct Rotation Matrix:\n", R_correct)
         print("Correct Translation Vector:\n", t_correct)
+
+        X_w_correct = to_world_frame(X_correct, T_w_c1)
+
+        print("\n Estimated with 8-point algorithm: \n")
+        compute_rmse_in_world_frame(X_w_correct, X_w_sol)
+        print("\n Calculated with T_c_w: \n")
+        compute_rmse_in_world_frame(X_w_sol, X_h)
 
         
     except Exception as e:
