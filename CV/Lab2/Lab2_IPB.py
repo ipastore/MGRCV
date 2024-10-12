@@ -421,7 +421,7 @@ def compute_rmse_in_world_frame(X_w_correct, X_w_sol):
     print(f"RMSE : {rmse:.4f}")
     return rmse
 
-def to_world_frame (X_h, T_w_c):
+def change_frame (X_h, T_w_c):
     """
     Transform 3D points from camera frame to world frame.
     - X_h: 3D points in camera frame (homogeneous coordinates, shape 4xN).
@@ -431,6 +431,176 @@ def to_world_frame (X_h, T_w_c):
     """
     return T_w_c @ X_h
 
+
+def compute_homography_from_camera_posse_and_plane(R_c2_c1, t_c2_c1, K1, K2, Pi_c1):
+    """
+    Args:
+        - R_c2_c1: Relative rotation matrix from Camera 1 to Camera 2 (3x3).
+        - t_c2_c1: Relative translation vector from Camera 1 to Camera 2 (3x1).
+        - K1: Intrinsic matrix of Camera 1 (3x3).
+        - K2: Intrinsic matrix of Camera 2 (3x3).
+        - Pi_1: Plane equation coefficients in Camera 1's frame (4x1) [n_x, n_y, n_z, d].
+
+    Returns:
+        - H21: Homography matrix (3x3).
+    """
+    # Ensure all inputs are numpy arrays
+    R_c2_c1 = np.array(R_c2_c1)
+    t_c2_c1 = np.array(t_c2_c1)
+    K1 = np.array(K1)
+    K2 = np.array(K2)
+    Pi_c1 = np.array(Pi_c1)
+
+    # Ensure Pi_1 is a column vector (4x1)
+    Pi_c1 = Pi_c1.reshape(4, 1)
+
+    # Ensure t_c2_c1 is a column vector (3x1)
+    t_c2_c1 = t_c2_c1.reshape(3, 1)
+
+    # Separate the normal vector (n1) and distance (d) from the plane equation
+    n1 = Pi_c1[:3]  # Normal vector to the plane in Camera 1's frame (3x1)
+    d = Pi_c1[3, 0]  # Distance from Camera 1 to the plane (scalar)
+
+    # Ensure n1 is a row vector (1x3)
+    n1 = n1.reshape(1, 3)
+
+    # Compute the homography matrix
+    H21 = K2 @ (R_c2_c1 - (t_c2_c1 @ n1) / d) @ np.linalg.inv(K1)
+    return H21
+
+def on_click_homography(event, H21, ax1, ax2, img2):
+    """
+    Event handler for mouse click. Transfers the clicked point from Image 1 to Image 2 using the homography matrix.
+    - event: The mouse event (contains the click coordinates)
+    - H21: Homography matrix that transfers points from Image 1 to Image 2 (3x3)
+    - ax2: Axis for image 2 where the transferred point will be plotted
+    - img2: Image 2 (for replotting as background)
+    """
+    # Get the click coordinates in Image 1
+    x_clicked = event.xdata
+    y_clicked = event.ydata
+
+    # Mark the clicked point in image 1 with an "x"
+    ax1.plot(x_clicked, y_clicked, 'rx', markersize=10)  # Red "x" at the clicked point
+    ax1.set_title('Image 1 - Select Point')
+
+    if x_clicked is not None and y_clicked is not None:
+        print(f"Clicked coordinates in Image 1: ({x_clicked:.2f}, {y_clicked:.2f})")
+        
+        # Convert the clicked point to homogeneous coordinates
+        x1_clicked = np.array([x_clicked, y_clicked, 1]).reshape(3, 1)  # 3x1 column vector
+        
+        # Transfer the point to Image 2 using the homography H21
+        x2_transferred = H21 @ x1_clicked  # Apply homography
+        x2_transferred /= x2_transferred[2]  # Normalize homogeneous coordinates
+        
+        # Extract x and y from the transferred point
+        x2_x = x2_transferred[0, 0]
+        x2_y = x2_transferred[1, 0]
+        
+        # Plot the transferred point in Image 2
+        ax2.plot(x2_x, x2_y, 'rx', markersize=10)  # Plot blue circle at transferred point
+        ax2.set_title('Image 2 - Transferred Points From Homography')
+        plt.draw()  # Redraw the figure to update the plot
+
+def visualize_point_transfer_from_homography(img1, img2, H21):
+    """
+    Visualize point transfer between Image 1 and Image 2 using a homography matrix H21.
+    Clicking on Image 1 transfers the point to Image 2.
+    - img1: Image 1 where points are clicked.
+    - img2: Image 2 where transferred points are plotted.
+    - H21: Homography matrix (3x3).
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Configure the first subplot (Image 1)
+    ax1.set_xlabel('Coordinates X (pixels)')
+    ax1.set_ylabel('Coordinates Y (pixels)')
+    ax1.imshow(img1)
+    ax1.set_title('Image 1 - Click Points')
+
+    # Configure the second subplot (Image 2)
+    ax2.set_xlabel('Coordinates X (pixels)')
+    ax2.set_ylabel('Coordinates Y (pixels)')
+    ax2.imshow(img2)
+    ax2.set_title('Image 2 - Transferred Points From Homography')
+
+    # Connect the click event on image 1 to the handler
+    fig.canvas.mpl_connect('button_press_event', lambda event: on_click_homography(event, H21, ax1, ax2, img2))
+    
+    print('\nClose the figure to continue. Select a point from Img1 to get the equivalent transferred point in Img2.')
+    plt.show()
+
+def estimate_homography_from_points(x1, x2):
+    """
+    Estimate the homography matrix from a set of point correspondences using DLT (Direct Linear Transform).
+    Args:
+    - x1: Points in Image 1 (shape: 2 x N or 3 x N, where N is the number of points).
+    - x2: Corresponding points in Image 2 (shape: 2 x N or 3 x N).
+    
+    Returns:
+    - H21: Estimated homography matrix (3x3) from image 1 to image 2.
+    """
+    N = x1.shape[1]
+    if N < 4:
+        raise ValueError("At least 4 point correspondences are required to estimate the homography.")
+
+    # Ensure points are in homogeneous coordinates (3xN)
+    if x1.shape[0] == 2:
+        x1 = np.vstack((x1, np.ones((1, N))))
+    if x2.shape[0] == 2:
+        x2 = np.vstack((x2, np.ones((1, N))))
+    
+    # Build the system of equations
+    A = []
+    for i in range(N):
+        x1i, y1i, _ = x1[:, i]
+        x2i, y2i, _ = x2[:, i]
+        A.append([-x1i, -y1i, -1, 0, 0, 0, x2i * x1i, x2i * y1i, x2i])
+        A.append([0, 0, 0, -x1i, -y1i, -1, y2i * x1i, y2i * y1i, y2i])
+
+    A = np.array(A)
+
+    # Solve Ah = 0 using SVD
+    _, _, Vt = np.linalg.svd(A)
+    H21 = Vt[-1].reshape(3, 3)
+
+    # Normalize the homography so that H[2,2] = 1
+    H21 /= H21[2, 2]
+
+    return H21
+
+def compute_rmse_of_homography_with_ground_truth(H21, x1, x2):
+    """
+    Compute the RMSE between the projected points (using the homography) and the actual points in Image 2.
+    - H21: Estimated homography matrix (3x3).
+    - x1: Points in Image 1 (3xN, homogeneous coordinates).
+    - x2: Points in Image 2 (3xN, homogeneous coordinates).
+    
+    Returns:
+    - RMSE: Root Mean Squared Error in the image plane.
+    """
+    # Number of points
+    N = x1.shape[1]
+
+    # Ensure points are in homogeneous coordinates (3xN)
+    if x1.shape[0] == 2:
+        x1 = np.vstack((x1, np.ones((1, N))))
+    if x2.shape[0] == 2:
+        x2 = np.vstack((x2, np.ones((1, N))))
+
+    # Project points from Image 1 to Image 2 using the homography
+    projected_x2 = H21 @ x1  # Apply homography to points in Image 1
+    projected_x2 /= projected_x2[2]  # Normalize homogeneous coordinates
+
+    # Compute squared differences (x and y coordinates only)
+    diff = projected_x2[:2] - x2[:2]  # Ignore the homogeneous component for RMSE
+    squared_diff = np.sum(diff**2, axis=0)
+
+    # Compute the RMSE
+    rmse = np.sqrt(np.mean(squared_diff))
+    print(f"RMSE: {rmse:.4f}")
+    return rmse
 
 if __name__ == '__main__':
     
@@ -504,9 +674,9 @@ if __name__ == '__main__':
         t1 = T_c1_w[:3, 3]
         t2 = T_c2_w[:3, 3]
         
-        R = R2 @ R1.T # Relative rotation
-        t = t2 - R2 @ R1.T @ t1 # Relative translation
-        E = compute_essential_matrix_from_R_t(R, t)
+        R_c2_c1 = R2 @ R1.T # Relative rotation
+        t_c2_c1 = t2 - R2 @ R1.T @ t1 # Relative translation
+        E = compute_essential_matrix_from_R_t(R_c2_c1, t_c2_c1)
         F = compute_fundamental_matrix(E, K_C, K_C)
         
         print("\nEssential Matrix E:\n", E)
@@ -540,12 +710,36 @@ if __name__ == '__main__':
         print("Correct Rotation Matrix:\n", R_correct)
         print("Correct Translation Vector:\n", t_correct)
 
-        X_w_correct = to_world_frame(X_correct, T_w_c1)
+        X_w_correct = change_frame(X_correct, T_w_c1)
 
         print("\n Estimated with 8-point algorithm: \n")
         compute_rmse_in_world_frame(X_w_correct, X_w_sol)
         print("\n Calculated with T_c_w: \n")
         compute_rmse_in_world_frame(X_w_sol, X_h)
+
+        ## Homography ##
+
+        ## 2.1 Homography from relative poses and common plane ##
+
+        # Load the points from the common plane in Camera 1 frame
+        Pi_c1 = load_matrix('./Pi_1.txt')
+
+        H21 = compute_homography_from_camera_posse_and_plane(R_c2_c1, t_c2_c1, K_C, K_C, Pi_c1)
+
+        ## 2.2 Visualize the homography ##
+
+        visualize_point_transfer_from_homography(img1, img2, H21)
+
+        ## 2.3 Compute Homography from matches"
+        x1_floor = load_matrix('./x1FloorData.txt')
+        x2_floor = load_matrix('./x2FloorData.txt')
+
+        H_21_est = estimate_homography_from_points(x1_floor, x2_floor)
+        visualize_point_transfer_from_homography(img1, img2, H_21_est)
+        print("Rmse of the H_21_est:")
+        compute_rmse_of_homography_with_ground_truth(H_21_est, x1_floor, x2_floor)
+
+
 
         
     except Exception as e:
