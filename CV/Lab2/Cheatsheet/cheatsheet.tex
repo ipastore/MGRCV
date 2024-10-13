@@ -1,0 +1,126 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{amssymb}
+
+\geometry{margin=0.5in}
+\setlength{\parskip}{1.5ex}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+
+\title{Cheatsheet: 2D-3D Geometry and Camera Projection}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\begin{multicols}{2}
+
+\section*{1. Camera Projection Model}
+\textbf{Projection Equation:}
+\[
+\mathbf{x} = P \mathbf{X}, \quad P = K [R | t]
+\]
+Where:
+\[
+K = \begin{bmatrix} f_x & 0 & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix}, \quad P \in \mathbb{R}^{3 \times 4}, \quad \mathbf{X} \in \mathbb{R}^{4 \times 1}
+\]
+\textbf{Transformation Matrix:}
+\[
+T_{w_{c}} = \begin{bmatrix} R & t \\ 0 & 1 \end{bmatrix}, \quad T_{c_w} = \begin{bmatrix} R^\top & -R^\top t \\ 0 & 1 \end{bmatrix}
+\]
+
+\section*{2. Fundamental Matrix ($F \in \mathbb{R}^{3 \times 3}$)}
+\textbf{Epipolar Constraint:}
+\[
+\mathbf{x'}^\top F \mathbf{x} = 0
+\]
+\textbf{8-Point Algorithm:}
+\[
+A \mathbf{f} = 0, \quad A \in \mathbb{R}^{N \times 9}, \quad \mathbf{f} = \text{flatten}(F)
+\]
+SVD for rank-2 enforcement:
+\[
+U, S, Vt = \text{SVD}(F), \quad S[-1] = 0, \quad F = U S Vt
+\]
+
+\textbf{Epipolar Line:}
+\[
+l_2 = F \mathbf{x}, \quad l_2 = [a, b, c]^\top, \quad ax + by + c = 0
+\]
+
+\textbf{Epipoles:}
+\[
+e_2 = \text{null}(F), \quad e_1 = \text{null}(F^\top)
+\]
+
+\section*{3. Essential Matrix ($E \in \mathbb{R}^{3 \times 3}$)}
+
+\textbf{Essential Matrix from $F$:}
+\[
+E = K_2^\top F K_1
+\]
+
+\textbf{Decomposition of $E$:}
+\[
+E = U \Sigma V^\top, \quad R_1 = U W V^\top, \quad R_2 = U W^\top V^\top, \quad t = U[:, 2]
+\]
+\[
+W = \begin{bmatrix} 0 & -1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 1 \end{bmatrix}
+\]
+
+\section*{4. Triangulation ($X \in \mathbb{R}^{4 \times 1}$)}
+\textbf{Triangulation from Two Views:}
+\[
+A \mathbf{X} = 0, \quad A \in \mathbb{R}^{4 \times 4}
+\]
+\[
+A = \begin{bmatrix} x_1 P_3^1 - P_1^1 \\ y_1 P_3^1 - P_2^1 \\ x_2 P_3^2 - P_1^2 \\ y_2 P_3^2 - P_2^2 \end{bmatrix}
+\]
+\textbf{Solution using SVD:}
+\[
+\mathbf{X} = Vt[-1], \quad \mathbf{X} /= \mathbf{X}[-1]
+\]
+
+\section*{5. Homography ($H \in \mathbb{R}^{3 \times 3}$)}
+\textbf{DLT (Direct Linear Transform):}
+\[
+A \mathbf{h} = 0, \quad A \in \mathbb{R}^{2N \times 9}, \quad \mathbf{h} = \text{flatten}(H)
+\]
+\[
+H = Vt[-1].reshape(3, 3), \quad H /= H[2, 2]
+\]
+
+\textbf{Inverse Homography:}
+\[
+H_{12} = H_{21}^{-1}
+\]
+
+\section*{6. RMSE for Homography}
+\textbf{RMSE Formula:}
+\[
+\text{RMSE} = \sqrt{\frac{1}{N} \sum_{i=1}^N ||\mathbf{x'}_i - H_{21} \mathbf{x}_i||^2}
+\]
+
+\section*{7. Other Useful Formulas}
+
+\textbf{Projection Matrix:}
+\[
+P = K [R | t]
+\]
+Where $K \in \mathbb{R}^{3 \times 3}$ is the intrinsic matrix, $R \in \mathbb{R}^{3 \times 3}$ is the rotation matrix, $t \in \mathbb{R}^{3 \times 1}$ is the translation vector.
+
+\textbf{Transformation of Points Between Frames:}
+\[
+\mathbf{X'} = T \mathbf{X}, \quad T \in \mathbb{R}^{4 \times 4}
+\]
+
+\textbf{Compute Essential Matrix from $R$ and $t$:}
+\[
+E = [t]_\times R, \quad [t]_\times = \begin{bmatrix} 0 & -t_z & t_y \\ t_z & 0 & -t_x \\ -t_y & t_x & 0 \end{bmatrix}
+\]
+
+\end{multicols}
+\end{document}
