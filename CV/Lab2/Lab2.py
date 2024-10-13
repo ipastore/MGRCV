@@ -9,7 +9,7 @@
 #####################################################################################
 #
 # Authors:  David Padilla Orenga
-#           Nacho Pastore
+#           Nacho Pastor
 #
 #####################################################################################
 
@@ -17,6 +17,55 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import os
+
+def decompose_essential_matrix(E):
+    U, S, Vt = np.linalg.svd(E)
+    t1 = U[:, 2]
+    t2 = -t1
+    W = np.array([[0, -1, 0],
+                  [1, 0, 0],
+                  [0, 0, 1]])  
+    R1 = U @ W @ Vt.T
+    R2 = U @ W.T @ Vt.T
+    
+    return R1, R2, t1, t2
+
+def plot_3D_points(x1, x2, ref1=None, ref2=None):
+    ##Plot the 3D cameras and the 3D points
+    fig3D = plt.figure(3)
+
+    ax = plt.axes(projection='3d', adjustable='box')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    drawRefSystem(ax, np.eye(4, 4), '-', 'W')
+    if ref1 is not None:
+        drawRefSystem(ax, ref1, '-', 'C1')
+    if ref2 is not None:
+        drawRefSystem(ax, ref2, '-', 'C2')
+    
+    ax.scatter(x1[0, :], x1[1, :], x1[2, :], marker='.', color='r')
+    ax.scatter(x2[0, :], x2[1, :], x2[2, :], marker='.', color='b')
+    
+    #Matplotlib does not correctly manage the axis('equal')
+    xFakeBoundingBox = np.linspace(0, 4, 2)
+    yFakeBoundingBox = np.linspace(0, 4, 2)
+    zFakeBoundingBox = np.linspace(0, 4, 2)
+    plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
+    print('\nClose the figure to continue. Left button for orbit, right button for zoom.')
+    plt.show()
+
+def ensamble_T(R_w_c, t_w_c) -> np.array:
+    """
+    Ensamble the a SE(3) matrix with the rotation matrix and translation vector.
+    """
+    T_w_c = np.zeros((4, 4))
+    T_w_c[0:3, 0:3] = R_w_c
+    T_w_c[0:3, 3] = t_w_c
+    T_w_c[3, 3] = 1
+    return T_w_c
+    
 
 def get_projection_matrix(K, T):
     """
@@ -183,6 +232,12 @@ def compute_essential_matrix(R, t):
     """
     return skew_symmetric(t) @ R
 
+def compute_essential_matrix_from_F(F, K1, K2):
+    """
+    Computes the essential matrix E given fundamental matrix F and the intrinsict matrices K1 and K2.
+    """
+    return K2.T @ F @ K1
+
 def compute_fundamental_matrix(E, K1, K2):
     """
     Computes the fundamental matrix F given essential E and tintrinsic matrices K1 and K2.
@@ -252,6 +307,86 @@ def eight_point_algorithm(x1, x2):
     F = T2.T @ F_norm @ T1
     return F
 
+
+#region
+
+def triangulate_with_T21(x1, x2, K, R, t):
+    """
+    Triangulate 3D points from two sets of 2D correspondences and the relative transformation (R, t).
+    - x1, x2: 2D points in image 1 and image 2 (shape: 2 x num_points)
+    - K: Intrinsic camera matrix (3x3)
+    - R: Rotation matrix (3x3) from camera 1 to camera 2
+    - t: Translation vector (3x1) from camera 1 to camera 2
+    Returns:
+    - X_h: Triangulated 3D points in homogeneous coordinates (shape: 4 x num_points)
+    """
+    # Projection matrix for camera 1 (assuming it is at the origin)
+    P1 = K @ np.hstack((np.eye(3), np.zeros((3, 1))))  # P1 = K * [I | 0]
+    
+    # Projection matrix for camera 2 (using the relative pose [R | t])
+    P2 = K @ np.hstack((R, t.reshape(-1, 1)))  # P2 = K * [R | t]
+
+    # Triangulate the points using the projection matrices
+    X_h = triangulate_points(x1, x2, P1, P2)
+    return X_h
+
+def triangulate_points(x1, x2, P1, P2):
+    """
+    Triangulate 3D points from two sets of 2D correspondences using projection matrices.
+    - x1, x2: 2D points in image 1 and image 2 (shape: 2 x num_points)
+    - P1, P2: Projection matrices for camera 1 and camera 2 (shape: 3x4)
+    Returns:
+    - X_h: Triangulated 3D points in homogeneous coordinates (shape: 4 x num_points)
+    """
+    num_points = x1.shape[1]
+    X_h = np.zeros((4, num_points))  # 4 x num_points, homogeneous coordinates
+    
+    for i in range(num_points):
+        A = np.zeros((4, 4))
+        A[0] = x1[0, i] * P1[2] - P1[0]  # x1[0, i] is the x-coordinate of point i in image 1
+        A[1] = x1[1, i] * P1[2] - P1[1]  # x1[1, i] is the y-coordinate of point i in image 1
+        A[2] = x2[0, i] * P2[2] - P2[0]  # x2[0, i] is the x-coordinate of point i in image 2
+        A[3] = x2[1, i] * P2[2] - P2[1]  # x2[1, i] is the y-coordinate of point i in image 2
+        
+        # Solve using SVD to get the 3D point
+        _, _, Vt = np.linalg.svd(A)
+        X_h[:, i] = Vt[-1]  # Take the last row of Vt
+        X_h[:, i] /= X_h[-1, i]  # Normalize to make the last coordinate 1 (homogeneous)
+    
+    return X_h
+
+def select_corrected_pose(R1, R2, t1, t2, x1_data, x2_data, K_C):
+    """
+    Select the correct pose from the four possible solutions obtained from the essential matrix decomposition.
+    - R1, R2: Two possible rotation matrices
+    - t1, t2: Two possible translation vectors
+    - x1_data, x2_data: 2D points in image 1 and image 2
+    - K_C: Intrinsic camera matrix
+    """
+    poses = [(R1, t1), (R1, t2), (R2, t1), (R2, t2)]
+    best_pose = None
+    max_positive_depths = -1
+
+    for R, t in poses:
+        # Triangulate points using the current pose
+        X_h_test = triangulate_with_T21(x1_data, x2_data, K_C, R, t)
+        
+        # Check the number of points with positive depth
+        positive_depths = np.sum(X_h_test[2, :] > 0)
+        
+        if positive_depths > max_positive_depths:
+            max_positive_depths = positive_depths
+            best_pose = (R, t)
+    
+    if best_pose:
+        R_best, t_best = best_pose
+        print("\nSelected Pose:")
+        print("Rotation Matrix R:\n", R_best)
+        print("Translation Vector t:\n", t_best)
+        plot_3D_points(X_h_test, None, ensamble_T(R_best, t_best), None)
+    else:
+        print("No valid pose found.")
+
 ### MAIN ###
 
 if __name__ == '__main__':
@@ -274,8 +409,6 @@ if __name__ == '__main__':
         # Loading set of points already projected
         x1_data = load_matrix('./x1Data.txt')  # 2D points from image 1
         x2_data = load_matrix('./x2Data.txt')  # 2D points from image 2
-        x1 = np.array([[362, 104]])
-        x2 = np.array([[304, 170]])
         X_h = triangulate_points(x1_data, x2_data, P1, P2)
         X_w_sol = load_matrix('./X_w.txt')
 
@@ -284,40 +417,17 @@ if __name__ == '__main__':
         print("\nProjection Matrix P2:")
         print(P2)
         
-        print("\nProjection Matrix x_H:")
-        print(X_h[:,0:3])
-        
-        ##Plot the 3D cameras and the 3D points
-        fig3D = plt.figure(3)
+        plot_3D_points(X_h,X_w_sol, T_w_c1, T_w_c2)
 
-        ax = plt.axes(projection='3d', adjustable='box')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
 
-        drawRefSystem(ax, np.eye(4, 4), '-', 'W')
-        drawRefSystem(ax, T_w_c1, '-', 'C1')
-        drawRefSystem(ax, T_w_c2, '-', 'C2')
-        
-        ax.scatter(X_h[0, :], X_h[1, :], X_h[2, :], marker='.', color='r')
-        ax.scatter(X_w_sol[0, :], X_w_sol[1, :], X_w_sol[2, :], marker='.', color='b')
-        
-        #Matplotlib does not correctly manage the axis('equal')
-        xFakeBoundingBox = np.linspace(0, 4, 2)
-        yFakeBoundingBox = np.linspace(0, 4, 2)
-        zFakeBoundingBox = np.linspace(0, 4, 2)
-        plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
-        print('\nClose the figure to continue. Left button for orbit, right button for zoom.')
-        plt.show()
         #endregion
         
-        ## SECTION 2 ##
-        F_21_test = load_matrix('./F_21_test.txt')
+        ############################ SECTION 2 ################################
         
-        ## 2D plotting example
+        ## 2.1 VISUALIZE EPIPOLAR LINES
+        F_21_test = load_matrix('./F_21_test.txt')
         img1 = cv2.cvtColor(cv2.imread('image1.png'), cv2.COLOR_BGR2RGB)
         img2 = cv2.cvtColor(cv2.imread('image2.png'), cv2.COLOR_BGR2RGB)
-        
         visualize_epipolar_lines(F_21_test, img1, img2)
         
         ## 2.2 CALULATE THE ESSENTIAL AND FUNDAMENTAL MATRICES
@@ -327,7 +437,7 @@ if __name__ == '__main__':
         t2 = T_c2_w[:3, 3]
         
         R = R2 @ R1.T # Relative rotation
-        t = t2 - R2 @ R1.T @ t1 # Relative translation
+        t = t2 - R @ t1 # Relative translation
         E = compute_essential_matrix(R, t)
         F = compute_fundamental_matrix(E, K_C, K_C)
         
@@ -337,13 +447,41 @@ if __name__ == '__main__':
         visualize_epipolar_lines(F, img1, img2)
         
         ### 2.3 CALCULATE F USING 8 POINTS ###
-        
-        x1 = load_matrix('./x1Data.txt')  # Points from image 1
-        x2 = load_matrix('./x2Data.txt')  # Points from image 2
-        F_est = eight_point_algorithm(x1.T, x2.T)  # Transpose to ensure (2 x N) format
+        F_est = eight_point_algorithm(x1_data, x2_data) 
         print("\nEstimated Fundamental Matrix F:\n", F_est)
         visualize_epipolar_lines(F_est, img1, img2)
 
+        ### 2.4 CALCULATE F USING 8 POINTS ###
+        E_21_est = compute_essential_matrix_from_F(F_est, K_C, K_C) 
+        R1_est, R2_est, t1_est, t2_est = decompose_essential_matrix(E)        
+        print("\nEstimated Essential Matrix E:\n", E_21_est)
+       # Projection matrix for camera 1
+        Prueba = np.eye(4)
+        Prueba[:, 3] = 1
+        P1_est = get_projection_matrix(K_C, Prueba)
+        T2_est = ensamble_T(R1_est, t1_est)
+        P2_est = get_projection_matrix(K_C, T2_est)
+        X_prueba = triangulate_points(x1_data, x2_data, P1, P2)
+        plot_3D_points(X_h,X_prueba,None, T2_est)
+        
+        T2_est = ensamble_T(R1_est, t2_est)
+        P2_est = get_projection_matrix(K_C, T2_est)
+        X_prueba = triangulate_points(x1_data, x2_data, P1, P2)
+        plot_3D_points(X_h,X_prueba,None, T2_est)
+        
+        T2_est = ensamble_T(R2_est, t1_est)
+        P2_est = get_projection_matrix(K_C, T2_est)
+        X_prueba = triangulate_points(x1_data, x2_data, P1, P2)
+        plot_3D_points(X_h,X_prueba,None, T2_est)
+        
+        T2_est = ensamble_T(R2_est, t2_est)
+        P2_est = get_projection_matrix(K_C, T2_est)
+        X_prueba = triangulate_points(x1_data, x2_data, P1, P2)
+        plot_3D_points(X_h,X_prueba,None, T2_est)
+
+        print("\nEstimated Essential Matrix E:\n", E_21_est)    
         
     except Exception as e:
         print(f"An error occurred: {e}")
+        
+        
