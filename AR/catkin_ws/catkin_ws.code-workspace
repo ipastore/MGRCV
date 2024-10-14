@@ -4,8 +4,7 @@
 			"path": "."
 		},
 		{
-			"name": "teleop_twist_keyboard_cpp",
-			"path": "src/teleop_twist_keyboard_cpp"
+			"path": "src/hector_quadrotor_noetic"
 		}
 	],
 	"settings": {
@@ -14,6 +13,7 @@
 		],
 		"python.analysis.extraPaths": [
 			"/opt/ros/noetic/lib/python3/dist-packages"
-		]
+		],
+		"ros.distro": "noetic"
 	}
 }

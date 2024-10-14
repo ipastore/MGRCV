@@ -1,0 +1,4 @@
+<launch>
+  <node name="stage" pkg="stage_ros" type="stageros" args="$(find first_package)/world/simple.world" />
+  <node name="teleop" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" />
+</launch>
