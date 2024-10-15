@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"name": "Lab1",
+			"path": "Lab1"
+		},
+		{
+			"name": "Lab2",
+			"path": "Lab2"
+		},
+		{
+			"name": "Lab3",
+			"path": "Lab3"
+		}
+	],
+	"settings": {
+		"ros.distro": "noetic"
+	}
+}
