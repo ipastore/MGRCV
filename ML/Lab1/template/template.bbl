@@ -1,0 +1,76 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{AttributionGenerator}{online}{}
+      \list{organization}{1}{%
+        {Wikimedia Deutchsland}%
+      }
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{labeltitlesource}{title}
+      \field{addendum}{(accessed: 13.11.2020)}
+      \field{title}{Atribution Generator}
+      \field{year}{(n.d.)}
+      \verb{urlraw}
+      \verb https://www.lizenzhinweisgenerator.de/?lang=en
+      \endverb
+      \verb{url}
+      \verb https://www.lizenzhinweisgenerator.de/?lang=en
+      \endverb
+    \endentry
+    \entry{OverleafBibTexHelp}{online}{}
+      \list{organization}{1}{%
+        {Overleaf}%
+      }
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labeltitlesource}{title}
+      \field{addendum}{(accessed: 13.11.2020)}
+      \field{title}{Bibliography management in LaTeX}
+      \field{year}{(n.d.)}
+      \verb{urlraw}
+      \verb https://es.overleaf.com/learn/Bibliography_management_in_LaTeX
+      \endverb
+      \verb{url}
+      \verb https://es.overleaf.com/learn/Bibliography_management_in_LaTeX
+      \endverb
+    \endentry
+    \entry{OverleafHelp}{online}{}
+      \list{organization}{1}{%
+        {Overleaf}%
+      }
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{labeltitlesource}{title}
+      \field{addendum}{(accessed: 13.11.2020)}
+      \field{title}{Documentation}
+      \field{year}{(n.d.)}
+      \verb{urlraw}
+      \verb https://www.overleaf.com/learn
+      \endverb
+      \verb{url}
+      \verb https://www.overleaf.com/learn
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
