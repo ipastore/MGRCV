@@ -8,8 +8,8 @@
 #
 #####################################################################################
 #
-# Authors:  David Padilla Orenga
-#           Nacho Pastore
+# Authors:  David Padilla Orenga 946874
+#           Nacho Pastore Benaim 920576
 #
 #####################################################################################
 
@@ -32,16 +32,12 @@ def get_projection_matrix(K, T):
     return P
 
 def load_matrix(file_path):
-    """
-        Load a matrix from a file and handle errors if the file is missing or invalid.
-    """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
     try:
         return np.loadtxt(file_path)
     except Exception as e:
         raise ValueError(f"Error loading matrix from {file_path}: {str(e)}")
-
 
 def project_to_camera(X_h, P):
     x_h_projected = P @ X_h
@@ -50,12 +46,15 @@ def project_to_camera(X_h, P):
 
 def triangulate_points(x1, x2, P1, P2):
     """
-    Triangulate 3D points from two sets of 2D correspondences, where points are stored in columns.
-    - x1, x2: 2D points from image 1 and 2 (shape: 2 x num_points, where each column is a point)
-    - P1, P2: Projection matrices for camera 1 and 2
+        Triangulate 3D points from two sets of 2D correspondences, where points are stored in columns.
+        - Inputs:
+            · x1, x2 (np.array): 2D points from image 1 and 2 (shape: 2 x num_points, where each column is a point)
+            · P1, P2 (np.array): Projection matrices (3x3) for camera 1 and 2
+        - Output:
+            · np.array: Triangulated points.
     """
-    num_points = x1.shape[1]  # Number of points is determined by the number of columns
-    X_h = np.zeros((4, num_points))  # Homogeneous coordinates for 3D points
+    num_points = x1.shape[1]  # Number of points = the number of columns
+    X_h = np.zeros((4, num_points))  # Converting it to homogeneous coordinates
     
     for i in range(num_points):
         A = np.zeros((4, 4))
@@ -64,21 +63,20 @@ def triangulate_points(x1, x2, P1, P2):
         A[2] = x2[0, i] * P2[2] - P2[0]  # x2[0, i] is the x-coordinate of the i-th point in image 2
         A[3] = x2[1, i] * P2[2] - P2[1]  # x2[1, i] is the y-coordinate of the i-th point in image 2
         
-        # Solve using SVD
         _, _, Vt = np.linalg.svd(A)
         X_h[:, i] = Vt[-1]
-        X_h[:, i] /= X_h[-1, i]  # Normalize to make last coordinate 1 (homogeneous)
+        X_h[:, i] /= X_h[-1, i]  # Normalization of homogeneous coordinates
 
     return X_h
 
 def drawRefSystem(ax, T_w_c, strStyle, nameStr):
     """
         Draw a reference system in a 3D plot: Red for X axis, Green for Y axis, and Blue for Z axis
-    -input:
-        ax: axis handle
-        T_w_c: (4x4 matrix) Reference system C seen from W.
-        strStyle: lines style.
-        nameStr: Name of the reference system.
+        -Input:
+            · ax: axis handle
+            · T_w_c (np.array): (4x4 matrix) Reference system C seen from W.
+            · strStyle: lines style.
+            · nameStr: Name of the reference system.
     """
     draw3DLine(ax, T_w_c[0:3, 3:4], T_w_c[0:3, 3:4] + T_w_c[0:3, 0:1], strStyle, 'r', 1)
     draw3DLine(ax, T_w_c[0:3, 3:4], T_w_c[0:3, 3:4] + T_w_c[0:3, 1:2], strStyle, 'g', 1)
@@ -87,25 +85,27 @@ def drawRefSystem(ax, T_w_c, strStyle, nameStr):
     
 def draw3DLine(ax, xIni, xEnd, strStyle, lColor, lWidth):
     """
-    Draw a segment in a 3D plot
-    -input:
-        ax: axis handle
-        xIni: Initial 3D point.
-        xEnd: Final 3D point.
-        strStyle: Line style.
-        lColor: Line color.
-        lWidth: Line width.
+        Draw a segment in a 3D plot
+        -Input:
+            · ax: axis handle
+            · xIni: Initial 3D point.
+            · xEnd: Final 3D point.
+            · strStyle: Line style.
+            · lColor: Line color.
+            · lWidth: Line width.
     """
     ax.plot([np.squeeze(xIni[0]), np.squeeze(xEnd[0])], [np.squeeze(xIni[1]), np.squeeze(xEnd[1])], [np.squeeze(xIni[2]), np.squeeze(xEnd[2])],
             strStyle, color=lColor, linewidth=lWidth)
 
 def plot_epipolar_line(F, x1, ax2, img2, show_epipoles):
     """
-    Given a fundamental matrix and a point in image 1, plot the corresponding epipolar line in image 2.
-    - F: Fundamental matrix (3x3)
-    - x1: Point in image 1 (homogeneous coordinates, shape (3,))
-    - ax2: Axis for image 2 where the epipolar line will be plotted
-    - img2: Image 2 (for replotting as background)
+        Given a fundamental matrix and a point in image 1, plot the corresponding epipolar line in image 2.
+        Also, plot the epipole in image 2 if show_epipoles is True.
+        - Input:
+            · F (np.array): Fundamental matrix (3x3)
+            · x1 (np.array): Point in image 1 (homogeneous coordinates, shape (3,))
+            · ax2: Axis for image 2 where the epipolar line will be plotted
+            · img2: Image 2 (for replotting as background)
     """
     # Compute the epipolar line in image 2
     l2 = F @ x1  # l2 = [a, b, c], where the line equation is ax + by + c = 0
@@ -127,20 +127,18 @@ def plot_epipolar_line(F, x1, ax2, img2, show_epipoles):
     # Calculate the corresponding y values for the epipolar line
     y_vals = -(l2[0] * x_vals + l2[2]) / l2[1]
     
-    # Clear the axis and re-plot image 2 with the new epipolar line
-    # ax2.clear()
-    # ax2.imshow(img2)
-    ax2.plot(x_vals, y_vals, 'r')  # Plot the epipolar line in red
+    ax2.plot(x_vals, y_vals, 'r')  # Plot the epipolar line
     ax2.set_title('Image 2 - Epipolar Lines')
     plt.draw()  # Redraw the figure to update the plot
 
 def on_click(event, F, ax1, ax2, img2, show_epipoles):
     """
-    Event handler for mouse click. Computes and plots the epipolar line in image 2 based on the click in image 1.
-    - event: The mouse event (contains the click coordinates)
-    - F: Fundamental matrix
-    - ax2: Axis for image 2 where the epipolar line will be plotted
-    - img2: Image 2 (for replotting as background)
+        Event handler for mouse click. Computes and plots the epipolar line in image 2 based on the click in image 1.
+        - Input
+            · event: The mouse event (contains the click coordinates)
+            · F: Fundamental matrix
+            · ax1, ax2: Axis for images 1 and 2 where the epipolar line will be plotted
+            · img2: Image 2 (for replotting as background)
     """
     # Get the click coordinates
     x_clicked = event.xdata
@@ -159,28 +157,32 @@ def on_click(event, F, ax1, ax2, img2, show_epipoles):
         # Plot the corresponding epipolar line in image 2
         plot_epipolar_line(F, x1_clicked, ax2, img2, show_epipoles)
 
-
 def visualize_epipolar_lines(F, img1, img2, show_epipoles=False):
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))  # 1 fila, 2 columnas
-        # Configuración del primer subplot
-        ax1.set_xlabel('Coordinates X (píxeles)')
-        ax1.set_ylabel('Coordinates Y (píxeles)')
-        ax1.imshow(img1) 
-        ax1.set_title('Image 1 - Select Point')
-        
-        # Segundo subplot para la segunda imagen
-        ax2.set_xlabel('Coordinates X (píxeles)')
-        ax2.set_ylabel('Coordinates Y (píxeles)')
-        ax2.imshow(img2)
-        ax2.set_title('Image 2 - Epipolar Lines')
+    """
+        Visualize epipolar lines in two images given a fundamental matrix F.
+        Clicking on image 1 will plot the corresponding epipolar line in image 2.
+        - Input:
+            · F (np.array): Fundamental matrix (3x3)
+            · img1, img2: Images 1 and 2
+            · show_epipoles (bool): Whether to plot the epipoles in both images.
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    # Configuración del primer subplot
+    ax1.set_xlabel('Coordinates X (píxeles)')
+    ax1.set_ylabel('Coordinates Y (píxeles)')
+    ax1.imshow(img1) 
+    ax1.set_title('Image 1 - Select Point')
+    
+    # Segundo subplot para la segunda imagen
+    ax2.set_xlabel('Coordinates X (píxeles)')
+    ax2.set_ylabel('Coordinates Y (píxeles)')
+    ax2.imshow(img2)
+    ax2.set_title('Image 2 - Epipolar Lines')
 
-        
-        # Connect the click event on image 1 to the handler
-        fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, F , ax1, ax2, img2,show_epipoles))
-        print('\nClose the figure to continue. Select a point from Img1 to get the equivalent epipolar line.')
-
-
-        plt.show()
+    # Connect the click event on image 1 to the handler
+    fig.canvas.mpl_connect('button_press_event', lambda event: on_click(event, F , ax1, ax2, img2,show_epipoles))
+    print('\nClose the figure to continue. Select a point from Img1 to get the equivalent epipolar line.')
+    plt.show()
 
 def skew_symmetric(v):
     """
@@ -204,11 +206,12 @@ def compute_fundamental_matrix(E, K1, K2):
 
 def normalize_points(points):
     """
-    Normalize a set of points for the eight-point algorithm to improve numerical stability.
-    - points: Input points (shape: 2 x N, where each column is a point [x, y])
-    Returns:
-    - points_norm: Normalized points
-    - T: Normalization matrix
+        Normalize a set of points for the eight-point algorithm to improve numerical stability.
+        - Input:
+            · points: Input points (shape: 2 x N, where each column is a point [x, y])
+        - Output:
+            · points_norm: Normalized points
+            · T: Normalization matrix
     """
     mean = np.mean(points, axis=1)
     std = np.std(points, axis=1)
@@ -227,10 +230,11 @@ def normalize_points(points):
 
 def eight_point_algorithm(x1, x2):
     """
-    Compute the fundamental matrix using the eight-point algorithm.
-    - x1, x2: Corresponding points from image 1 and image 2 (shape: 2 x N)
-    Returns:
-    - F: The estimated fundamental matrix
+        Compute the fundamental matrix using the eight-point algorithm.
+        - Input:
+            · x1, x2: Corresponding points from image 1 and image 2 (shape: 2 x N)
+        -Output:
+            · F: The estimated fundamental matrix
     """
     # Normalize the points
     x1_norm, T1 = normalize_points(x1)
@@ -254,7 +258,7 @@ def eight_point_algorithm(x1, x2):
     
     # Solve Af = 0 using SVD
     _, _, Vt = np.linalg.svd(A)
-    F_norm = Vt[-1].reshape(3, 3)  # The last row of V gives the solution
+    F_norm = Vt[-1].reshape(3, 3)
     
     # Enforce the rank-2 constraint on F (set the smallest singular value to 0)
     U, S, Vt = np.linalg.svd(F_norm)
@@ -267,9 +271,11 @@ def eight_point_algorithm(x1, x2):
 
 def compute_epipoles(F):
     """
-    Compute the epipoles from the Fundamental Matrix.
-    - F: Fundamental matrix (3x3)
-    Returns: Epipole in Image 1 and Epipole in Image 2
+        Compute the epipoles from the Fundamental Matrix.
+        - Input:
+            · F: Fundamental matrix (3x3)
+        - Output:
+            · Epipole in Image 1 and Epipole in Image 2
     """
     # Epipole in Image 1 (null space of F)
     _, _, Vt = np.linalg.svd(F)
@@ -282,12 +288,27 @@ def compute_epipoles(F):
     e2 /= e2[-1]  # Normalize to homogeneous coordinates
 
     return e1, e2
-# Compute the Essential Matrix from the Fundamental Matrix
+
 def compute_essential_matrix_from_F(F, K1, K2):
+    """
+        Compute the essential matrix from the fundamental matrix and intrinsic matrices of the two cameras.
+        - Input:
+            · F (np.array): Fundamental matrix (3x3)
+            · K1, K2 (np.array): Intrinsic matrices of the two cameras (3x3)
+        - Output:
+            · E (np.array): Essential matrix (3x3) 
+    """
     return K2.T @ F @ K1
 
-# Decompose the Essential Matrix into four possible camera transformations
 def decompose_essential_matrix(E):
+    """
+        Decompose the essential matrix into rotation and translation.
+        - Input:
+            · E (np.array): Essential matrix (3x3)
+        - Output:
+            · R1, R2: Possible rotation matrices (3x3)
+            · t: Translation vector
+    """
     U, _, Vt = np.linalg.svd(E)
 
     if np.linalg.det(U) < 0:
@@ -302,19 +323,33 @@ def decompose_essential_matrix(E):
 
     return R1, R2, t
 
-# Check if a set of 3D points are in front of both cameras
 def is_valid_pose(X, P1, P2):
+    """
+        Check if the triangulated 3D points are in front of both cameras.
+        - Input:
+            · X (np.array): Triangulated 3D points (4xN, homogeneous coordinates)
+            · P1, P2 (np.array): Projection matrices (3x4)
+        - Output:
+            · bool: True if the points are in front of both cameras, False otherwise
+    """
     X_cartesian = X[:3, :] / X[3, :]
     depth1 = P1[2, :] @ X
     depth2 = P2[2, :] @ X
 
-    # print(f"Depth values for Camera 1: {depth1}")
-    # print(f"Depth values for Camera 2: {depth2}")
-
     return np.all(depth1 > 0) and np.all(depth2 > 0)
 
-# Select the correct camera pose
 def select_correct_pose(x1_h, x2_h, K1, K2, R1, R2, t):
+    """
+        Select the correct pose from the four possible solutions.
+        - Input:
+            · x1_h, x2_h (np.array): 2D points from image 1 and 2 (3xN, homogeneous coordinates)
+            · K1, K2 (np.array): Intrinsic matrices of the two cameras (3x3)
+            · R1, R2 (np.array): Possible rotation matrices (3x3)
+            · t (np.array): Translation vector (3x1)
+        - Output:
+            · R, t: Correct rotation and translation
+            · X: Triangulated 3D points (4xN, homogeneous coordinates)
+    """
 
     R1_t = np.hstack((R1, t.reshape(3, 1)))
     R1_minust = np.hstack((R1, -t.reshape(3, 1)))
@@ -389,8 +424,9 @@ def draw_possible_poses(ax, Rt, X):
 def adjust_plot_limits(ax, X):
     """
     Adjust the plot limits based on the range of 3D points.
-    - ax: The 3D plot axis.
-    - X: Triangulated 3D points (non-homogeneous coordinates).
+    - Input:
+        · ax: The 3D plot axis.
+        · X: Triangulated 3D points (non-homogeneous coordinates).
     """
     X_cartesian = X[:3, :] / X[3, :]  # Convert to non-homogeneous coordinates
     x_min, x_max = np.min(X_cartesian[0, :]), np.max(X_cartesian[0, :])
@@ -634,7 +670,6 @@ if __name__ == '__main__':
         print(X_h[:,0:3])
 
 
-        
         ##Plot the 3D cameras and the 3D points
         fig3D = plt.figure(3)
 
@@ -717,20 +752,19 @@ if __name__ == '__main__':
         print("\n Calculated with T_c_w: \n")
         compute_rmse_in_world_frame(X_w_sol, X_h)
 
-        ## Homography ##
+        #### SECTION 3- Homography ####
 
-        ## 2.1 Homography from relative poses and common plane ##
+        ## 3.1 Homography from relative poses and common plane ##
 
         # Load the points from the common plane in Camera 1 frame
         Pi_c1 = load_matrix('./Pi_1.txt')
-
         H21 = compute_homography_from_camera_posse_and_plane(R_c2_c1, t_c2_c1, K_C, K_C, Pi_c1)
 
-        ## 2.2 Visualize the homography ##
+        ## 3.2 Visualize the homography ##
 
         visualize_point_transfer_from_homography(img1, img2, H21)
 
-        ## 2.3 Compute Homography from matches"
+        ## 3.3 Compute Homography from matches"
         x1_floor = load_matrix('./x1FloorData.txt')
         x2_floor = load_matrix('./x2FloorData.txt')
 
@@ -738,8 +772,6 @@ if __name__ == '__main__':
         visualize_point_transfer_from_homography(img1, img2, H_21_est)
         print("Rmse of the H_21_est:")
         compute_rmse_of_homography_with_ground_truth(H_21_est, x1_floor, x2_floor)
-
-
 
         
     except Exception as e:
