@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "src/hector_quadrotor_noetic"
+		},
+		{
+			"path": "src/pXX_arob_lab2_drones"
 		}
 	],
 	"settings": {
