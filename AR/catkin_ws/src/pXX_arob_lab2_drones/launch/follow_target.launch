@@ -1,0 +1,7 @@
+<launch>
+    <!-- Set the parameter for the targets file path -->
+    <param name="targets_file_path" value="/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/src/pXX_arob_lab2_drones/data/targets2.txt" />
+
+    <!-- Start the followTargets3D node -->
+    <node name="follow_targets_3d" pkg="lab2_drones" type="follow_targets_3d" output="screen" />
+</launch>

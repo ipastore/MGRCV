@@ -1,0 +1,6 @@
+pXX_arob_lab2_drones
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/lab2_drones/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/lab2_drones/share/lab2_drones/cmake/lab2_dronesConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/lab2_drones/cmake/lab2_dronesConfig-version.cmake
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/lab2_drones/share/lab2_drones/cmake/lab2_dronesConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/lab2_drones/cmake/lab2_dronesConfig.cmake
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/lab2_drones/lib/lab2_drones/follow_targets_3d /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/lib/lab2_drones/follow_targets_3d
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/lab2_drones/lib/pkgconfig/lab2_drones.pc /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/lib/pkgconfig/lab2_drones.pc

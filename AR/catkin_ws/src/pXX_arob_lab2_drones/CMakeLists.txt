@@ -10,13 +10,21 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   nav_msgs
-  tf2
+  tf2_ros
+  roslib
+)
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES
-  CATKIN_DEPENDS geometry_msgs nav_msgs tf2
+  LIBRARIES 
+  CATKIN_DEPENDS roscpp geometry_msgs nav_msgs tf2_ros roslib
   DEPENDS
 )
 
@@ -29,12 +37,7 @@ catkin_package(
 # why catkin is easier than pure cmake. catkin_SOMETHING is generated when
 # catkin_package() is called.
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+
 
 # NOTE: There are two options to add a .cpp into a executable node
 # We recommend option 2 but option 1 is better for larger projects.
@@ -52,13 +55,12 @@ include_directories(
 
 # 2: Declare a C++ executable and add all the source files to it
 # (RECOMMENDED FOR THIS LAB)
-add_executable(followTargets3D
 
-)
-target_link_libraries(followTargets3D
-${catkin_LIBRARIES}
-# ${PROJECT_NAME}_lib in case you chose option 1
-)
+
+## Build the executable
+add_executable(follow_targets_3d src/follow_targets_3d.cpp src/follow_targets_3d_node.cpp)
+target_link_libraries(follow_targets_3d ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
