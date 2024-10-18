@@ -1,0 +1,21 @@
+\begin{table}
+    \centering
+    \caption{Screening of regression models with default parameters and PCA=0.95 for the year-song dataset.}
+    \label{tab:year_song_screening}
+    \begin{tabular}{|l|c|c|c|c|}
+    \toprule
+    Model & MAE & MedAE & Time (s) \\
+    \midrule
+    Linear  & 6.97 & 5.32 & 0.16 \\
+    Ridge  & 6.97 & 5.32 & 0.08 \\
+    Lasso  & 7.59 & 6.34 & 0.10 \\
+    ElasticNet  & 7.43 & 6.11 & 0.09 \\
+    Huber  & 6.73 & 4.68 & 0.60 \\
+    RANSAC  & 25.34 & 18.20 & 0.43 \\
+    SVR  & 6.15 & 3.97 & 125.17 \\
+    RF  & 7.01 & 5.46 & 226.12 \\
+    GB  & 6.77 & 5.09 & 84.34 \\
+    KNN  & 6.68 & 4.80 & 0.07 \\
+    \bottomrule
+    \end{tabular}
+\end{table}

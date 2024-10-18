@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.8.12)  15 OCT 2024 00:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.8.12)  18 OCT 2024 21:17
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -589,47 +589,65 @@ Package hyperref Info: Link coloring OFF on input line 20.
 \@outlinefile=\write4
 \openout4 = `Lab1.out'.
 
+ (./tables/year_song_screening.tex) (./tables/year_song_cross_validation.tex
+Underfull \hbox (badness 1436) in paragraph at lines 6--6
+\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 001\OML/cmm/m/it/10 ; ^^O \OT1/cmr/m/n/10 = 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 35)$, $[](\OML/cmm/m/it/10 n[]neighbors \OT1/cmr/m/n/10 = 7\OML/cmm/m/it/10 ; p \OT1/cmr/m/n/10 =
+ []
 
-Underfull \hbox (badness 1661) in paragraph at lines 43--44
+
+Underfull \hbox (badness 1648) in paragraph at lines 6--6
+\OT1/cmr/m/n/10 2\OML/cmm/m/it/10 ; [] \OT1/cmr/m/n/10 = [])$, $[](\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 10\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 ; ^^M \OT1/cmr/m/n/10 =
+ []
+
+) (./tables/year_song_test.tex
+Underfull \hbox (badness 5563) in paragraph at lines 3--3
+[]\OT1/cmr/m/n/10 Table 3: []Test per-for-mance of best mod-els.
+ []
+
+
+Overfull \hbox (38.16716pt too wide) in paragraph at lines 5--14
+ [][] 
+ []
+
+) [1{/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+]
+Underfull \hbox (badness 1661) in paragraph at lines 49--50
 \OT1/cmr/m/n/10 year the song was re-leased. This prob-lem is
  []
 
 
-Underfull \hbox (badness 3547) in paragraph at lines 43--44
+Underfull \hbox (badness 3547) in paragraph at lines 49--50
 \OT1/cmr/m/n/10 re-gres-sion, and ro-bust meth-ods like RANSAC
  []
 
 
-Underfull \hbox (badness 3312) in paragraph at lines 43--44
+Underfull \hbox (badness 3312) in paragraph at lines 49--50
 \OT1/cmr/m/n/10 (PCA) are ex-plored to im-prove com-pu-ta-tional
  []
 
 
-Underfull \hbox (badness 2600) in paragraph at lines 47--48
+Underfull \hbox (badness 2600) in paragraph at lines 53--54
 \OT1/cmr/m/n/10 For the clas-si-fi-ca-tion task, we work with the
  []
 
 
-Underfull \hbox (badness 1014) in paragraph at lines 47--48
+Underfull \hbox (badness 1014) in paragraph at lines 53--54
 \OT1/cmr/m/n/10 is to clas-sify these im-ages ac-cu-rately into their
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 49--50
+Underfull \hbox (badness 10000) in paragraph at lines 55--56
 []\OT1/cmr/m/n/10 Both tasks in-volve model se-lec-tion,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 49--50
+Underfull \hbox (badness 10000) in paragraph at lines 55--56
 \OT1/cmr/m/n/10 hy-per-pa-ram-e-ter tun-ing, and eval-u-a-tion us-ing
  []
 
-[1{/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-
-] [2
-
-] (./Lab1.aux)
+[2] (./Lab1.aux)
  ***********
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-08-11>
@@ -641,18 +659,18 @@ Package logreq Info: Writing requests to 'Lab1.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 17150 strings out of 475189
- 299693 string characters out of 5763832
- 1932254 words of memory out of 5000000
- 38259 multiletter control sequences out of 15000+600000
- 563297 words of font info for 54 fonts, out of 8000000 for 9000
+ 17181 strings out of 475189
+ 300511 string characters out of 5763832
+ 1946254 words of memory out of 5000000
+ 38277 multiletter control sequences out of 15000+600000
+ 563751 words of font info for 56 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  66i,8n,81p,777b,803s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb>
-Output written on Lab1.pdf (2 pages, 85693 bytes).
+</usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb>
+Output written on Lab1.pdf (2 pages, 100364 bytes).
 PDF statistics:
- 67 PDF objects out of 1000 (max. 8388607)
- 50 compressed objects within 1 object stream
- 7 named destinations out of 1000 (max. 500000)
+ 75 PDF objects out of 1000 (max. 8388607)
+ 56 compressed objects within 1 object stream
+ 10 named destinations out of 1000 (max. 500000)
  33 words of extra memory for PDF output out of 10000 (max. 10000000)
 

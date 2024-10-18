@@ -1,0 +1,17 @@
+\begin{table}
+    \centering
+    \caption{Cross validation of best models. $ \text{Huber}(\alpha=0.001, \epsilon=1.35)$,
+     $ \text{KNN}(n\_neighbors=7, p=2, \text{weights}=\text{'uniform'})$, 
+     $ \text{SVR}(C=10.0, \gamma=\text{'scale'}, \text{kernel}=\text{'rbf'})$. 
+    Time = time elapsed for all folds. Metrics are the mean over the 5 folds.}
+    \label{tab:year_song_cross_validation}
+    \begin{tabular}{|l|c|c|c|}
+    \toprule
+    Model & MAE & MedAE  & Time (s) \\
+    \midrule
+    Huber & 6.80 & 4.69  & 1.2 \\ 
+    SVR & 6.01 & 3.89  & 960.0 \\
+    KNN & 6.79 & 4.91  & 10.9 \\
+    \bottomrule
+    \end{tabular}
+\end{table}

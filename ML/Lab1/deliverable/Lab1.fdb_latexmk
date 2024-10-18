@@ -1,13 +1,13 @@
 # Fdb version 4
-["biber Lab1"] 1728944617 "Lab1.bcf" "Lab1.bbl" "Lab1" 1728944617 0
-  "Lab1.bcf" 1728944617 107351 0470ecce0075ae5b433b575e6548d19b "pdflatex"
+["biber Lab1"] 1729279034 "Lab1.bcf" "Lab1.bbl" "Lab1" 1729279034 0
+  "Lab1.bcf" 1729279034 107351 0470ecce0075ae5b433b575e6548d19b "pdflatex"
   "references.bib" 0 -1 0 ""
   (generated)
   "Lab1.bbl"
   "Lab1.blg"
   (rewritten before read)
-["pdflatex"] 1728944616 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Lab1/deliverable/Lab1.tex" "Lab1.pdf" "Lab1" 1728944617 0
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Lab1/deliverable/Lab1.tex" 1728944614 3579 612d1e48f51be2c1fb266b6213be064e ""
+["pdflatex"] 1729279033 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Lab1/deliverable/Lab1.tex" "Lab1.pdf" "Lab1" 1729279034 0
+  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/ML/Lab1/deliverable/Lab1.tex" 1729278887 3701 5b466adbacd86b291dd7b214d10cde7a ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -27,6 +27,7 @@
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1136768653 1120 8b7d695260f3cff42e636090a8002094 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1248133631 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1248133631 32080 340ef9bf63678554ee606688e7b5339d ""
+  "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1248133631 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1248133631 32362 179c33bbf43f19adbb3825bb4e36e57a ""
@@ -106,11 +107,14 @@
   "/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1691836396 4647401 00ff9efb2ef8bbb46dd24b87a26bdf62 ""
   "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1691844456 8173128 4e9fee7949b5ce7b1faebac18332615e ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
-  "Lab1.aux" 1728944617 1143 0b813f326091f5c9634d5691e6d24268 "pdflatex"
+  "Lab1.aux" 1729279034 2919 435a6f664ee2a746c6be79de236298b1 "pdflatex"
   "Lab1.bbl" 0 -1 0 "biber Lab1"
-  "Lab1.out" 1728944617 496 a39aaf1ed2a99f45fc051bf3adcdd5bb "pdflatex"
-  "Lab1.run.xml" 1728944617 2305 0ea3626f376e87fcfc5f805f78927801 "pdflatex"
-  "Lab1.tex" 1728944614 3579 612d1e48f51be2c1fb266b6213be064e ""
+  "Lab1.out" 1729279034 496 a39aaf1ed2a99f45fc051bf3adcdd5bb "pdflatex"
+  "Lab1.run.xml" 1729279034 2305 0ea3626f376e87fcfc5f805f78927801 "pdflatex"
+  "Lab1.tex" 1729278887 3701 5b466adbacd86b291dd7b214d10cde7a ""
+  "tables/year_song_cross_validation.tex" 1729279031 641 d37a9308c1bfd27eb1d16736737fb960 ""
+  "tables/year_song_screening.tex" 1729279032 670 3c6faec4fa79af2db4b3520559032f16 ""
+  "tables/year_song_test.tex" 1729279032 587 abe7f09eb0cf343371f5b131109130ba ""
   (generated)
   "Lab1.aux"
   "Lab1.bcf"
