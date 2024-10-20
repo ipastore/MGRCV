@@ -1,0 +1,80 @@
+sudo perf stat -r 5 ./my_eigen_matmult_gettimeofday 1500
+
+ Performance counter stats for './my_eigen_matmult_gettimeofday 1500' (5 runs):
+
+            657,17 msec task-clock                #    0,967 CPUs utilized            ( +-  1,72% )
+                 6      context-switches          #    8,834 /sec                     ( +- 17,95% )
+                 0      cpu-migrations            #    0,000 /sec                   
+            19.375      page-faults               #   28,527 K/sec                    ( +-  0,01% )
+     2.066.738.370      cycles                    #    3,043 GHz                      ( +-  0,38% )
+     6.234.227.228      instructions              #    3,00  insn per cycle           ( +-  0,00% )
+       124.434.077      branches                  #  183,214 M/sec                    ( +-  0,01% )
+           298.994      branch-misses             #    0,24% of all branches          ( +- 25,12% )
+
+            0,6796 +- 0,0113 seconds time elapsed  ( +-  1,67% )
+
+
+sudo perf stat -r 5 ./standard_matrix_heap_gettimeofday 1500
+
+ Performance counter stats for './standard_matrix_heap_gettimeofday 1500' (5 runs):
+
+         13.561,47 msec task-clock                #    0,959 CPUs utilized            ( +-  2,64% )
+                58      context-switches          #    4,101 /sec                     ( +- 27,86% )
+                 4      cpu-migrations            #    0,283 /sec                     ( +- 43,01% )
+            13.360      page-faults               #  944,549 /sec                     ( +-  0,00% )
+    33.811.730.234      cycles                    #    2,390 GHz                      ( +-  1,68% )
+    30.810.076.435      instructions              #    0,88  insn per cycle           ( +-  0,00% )
+     3.467.350.069      branches                  #  245,141 M/sec                    ( +-  0,00% )
+         2.551.717      branch-misses             #    0,07% of all branches          ( +-  0,94% )
+
+            14,147 +- 0,358 seconds time elapsed  ( +-  2,53% )
+
+
+The performance results compare two different matrix multiplication implementations: `my_eigen_matmult_gettimeofday` and `standard_matrix_heap_gettimeofday`, both executed with a matrix size of 1500.
+
+### `my_eigen_matmult_gettimeofday` Results:
+- **Initialization Time**: 
+    - Average: (0.101646 + 0.0705719 + 0.0673909 + 0.06673 + 0.067481) / 5 ≈ 0.074764 seconds
+- **Multiplication Time**: 
+    - Average: (0.612638 + 0.605037 + 0.591631 + 0.597872 + 0.584058) / 5 ≈ 0.598247 seconds
+- **Performance Counters**:
+    - Task Clock: 657.17 msec
+    - Context Switches: 6
+    - CPU Migrations: 0
+    - Page Faults: 19,375
+    - Cycles: 2,066,738,370
+    - Instructions: 6,234,227,228
+    - Branches: 124,434,077
+    - Branch Misses: 298,994
+    - Time Elapsed: 0.6796 ± 0.0113 seconds
+
+### `standard_matrix_heap_gettimeofday` Results:
+- **Initialization Time**: 
+    - Average: (0.108791 + 0.0815721 + 0.086951 + 0.082128 + 0.0882461) / 5 ≈ 0.089538 seconds
+- **Multiplication Time**: 
+    - Average: (13.5178 + 13.4498 + 14.6399 + 15.1769 + 13.4676) / 5 ≈ 14.0504 seconds
+- **Performance Counters**:
+    - Task Clock: 13,561.47 msec
+    - Context Switches: 58
+    - CPU Migrations: 4
+    - Page Faults: 13,360
+    - Cycles: 33,811,730,234
+    - Instructions: 30,810,076,435
+    - Branches: 3,467,350,069
+    - Branch Misses: 2,551,717
+    - Time Elapsed: 14.147 ± 0.358 seconds
+
+### Analysis:
+1. **Initialization Time**:
+        - `my_eigen_matmult_gettimeofday` has a slightly faster initialization time (0.074764 seconds) compared to `standard_matrix_heap_gettimeofday` (0.089538 seconds).
+
+2. **Multiplication Time**:
+        - `my_eigen_matmult_gettimeofday` is significantly faster in matrix multiplication (0.598247 seconds) compared to `standard_matrix_heap_gettimeofday` (14.0504 seconds).
+
+3. **Performance Counters**:
+        - `my_eigen_matmult_gettimeofday` utilizes fewer CPU cycles and has a higher instructions per cycle (3.00) compared to `standard_matrix_heap_gettimeofday` (0.88).
+        - `my_eigen_matmult_gettimeofday` has fewer context switches and CPU migrations, indicating more efficient CPU usage.
+        - `my_eigen_matmult_gettimeofday` has more page faults, which might be due to different memory access patterns.
+
+### Conclusion:
+`my_eigen_matmult_gettimeofday` is more efficient in terms of both initialization and multiplication times. It also demonstrates better CPU utilization and efficiency, making it the superior implementation for matrix multiplication in this comparison.

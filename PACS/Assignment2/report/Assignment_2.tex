@@ -1,0 +1,246 @@
+% Authors: David Padilla Orenga, Ignacio Pastore Benaim
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e} 
+\usepackage[top=0.25in, bottom=1in, left=0.75in, right=0.75in]{geometry} % Ajuste de márgenes verticales y horizontales
+\title{Assignment 2 \\ \small Profiling: Instrumented and Event-based Techniques.}
+\author{David Padilla Orenga\\ Ignacio Pastore Benaim}
+\date{}  % No date will be shown
+
+% \date{\today}   % You can use \date{\today}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\usepackage{filecontents}
+\usepackage{pgfplotstable}
+
+
+% Hyphen penalty
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\sloppy
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+The goal of this assignment is to evaluate and compare the performance of two matrix multiplication implementations: one using a standard 2D array approach in C++ and another using the Eigen library. Performance metrics such as execution time are analyzed using both the \texttt{clock()} function and the \texttt{gettimeofday()} system call for different matrix sizes and compared to the metrics of the \texttt{time} command. The results help to draw conclusions about the efficiency of the two approaches, particularly in how they handle matrix initialization, memory allocation, and multiplication.
+
+
+\section{Methodology}
+
+The matrix multiplication implementations were evaluated by varying the matrix size (\(N = 100, 250, 500, 600, 700, 800, 900, 1000, 1200, 1500\)) for both approaches. Each matrix size was tested 10 times to ensure statistical accuracy. We used the \texttt{-O2} optimization level, as it is widely employed in the industry and demonstrated excellent performance in the previous assignment without being as aggressive as \texttt{-O3}. The tests were conducted on Ubuntu 20.04 LTS, running on an Intel Core i7-6700HQ with x86\_64 architecture.
+
+
+\section{Results and Discussion}
+
+The \texttt{clock()} function measures CPU time used by the program, offering insights into the computational cost incurred by the CPU during the entire execution of the program, including matrix initialization, memory allocation, and matrix multiplication. On the other hand, \texttt{gettimeofday()} offers wall-clock time, which includes the real elapsed time of program execution. We have instrumented the code to capture the initialization and multiplication phases separately using \texttt{gettimeofday()}, allowing us to break down the time taken by each part.
+The results of the matrix multiplication timing tests for various matrix sizes are summarized in Figure \ref{fig:1}. 
+
+
+    \begin{figure}[h]
+        \centering
+        \begin{minipage}{0.30\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.7]
+                \begin{axis}[
+                    title={Clock Time},
+                    xlabel={Matrix Size (N)},
+                    ylabel={Time (s)},
+                    xmax=1500,
+                    legend pos=north west,
+                    grid=major,
+                    legend cell align=left
+                ]
+    
+                \addplot [color=blue, solid, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_clock_time, col sep=comma] {../test/clock/standard_matrix_heap_clock_stats.csv};
+                \addlegendentry{2D Array}
+                
+                \addplot [color=red, solid, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_clock_time, col sep=comma] {../test/clock/my_eigen_matmult_clock_stats.csv};
+                \addlegendentry{Eigen}
+            
+                
+                \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+        \hfill
+        \begin{minipage}{0.30\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.7] 
+                \begin{axis}[
+                    title={GetTimeofDay Initialization Time},
+                    xlabel={Matrix Size (N)},
+                    xmax=1500,
+                    legend pos=north west,
+                    grid=major,
+                    legend cell align=left
+                ]
+    
+                \addplot [color=blue, solid, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_initialization_time, col sep=comma] {../test/gettimeofday/standard_matrix_heap_gettimeofday_stats.csv};
+                \addlegendentry{2D Array}
+                
+                \addplot [color=red, solid, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_initialization_time, col sep=comma] {../test/gettimeofday/my_eigen_matmult_gettimeofday_stats.csv};
+                \addlegendentry{Eigen}
+                
+                \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+        \hfill
+        \begin{minipage}{0.30\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.7] 
+                \begin{axis}[
+                    title={GetTimeofDay Multiplication Time},
+                    xlabel={Matrix Size (N)},
+                    xmax=1500,
+                    grid=major,
+                    legend pos=north west,
+                    legend cell align=left
+                ]
+            
+                \addplot [color=blue, solid, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_multiplication_time, col sep=comma] {../test/gettimeofday/standard_matrix_heap_gettimeofday_stats.csv};
+                \addlegendentry{2D Array}
+                
+                \addplot [color=red, solid, mark=o, mark options={solid}]
+                table [x=Matrix Size, y=mean_multiplication_time, col sep=comma] {../test/gettimeofday/my_eigen_matmult_gettimeofday_stats.csv};
+                \addlegendentry{Eigen}
+                
+                \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+        \caption{Comparison of clock, initialization, and multiplication times for both implementations.}
+        \label{fig:1}
+    \end{figure}
+
+
+
+    \subsection{Clock and Time Command Comparison}
+    
+    Figure \ref{fig:1} shows the clock time registered by the tests, with the Eigen-based implementation significantly outperforming the 2D array approach, consistent with the results observed in the previous lab. 
+    Although theoretically, following our clock implementation, the \texttt{clock()} function is expected to measure exclusively the CPU time used by the process, experiments have shown that its values are closer to the real time than to the user time, as shown in Table \ref{tab:1}. This may be due to the fact that \texttt{clock()} includes not only user time, but also external factors such as I/O locks or waiting for resources in multitasking systems. Another possible explanation for the discrepancy is because it has lower accuracy, as it measures time in CPU ticks, the granularity of which varies by operating system.  In contrast, the \texttt{system} time remains relatively low across all matrix sizes, indicating minimal involvement of kernel-level operations such as memory management or I/O during matrix multiplication. The standard deviation for the \texttt{clock()} times remains small, indicating consistent CPU usage across runs.
+
+    \begin{table}[h!]   
+        \centering
+        \begin{tabular}{|l|l|l|l|l|l|}    
+            \hline
+            \textbf{Executable} & \textbf{N}    & \textbf{t\_clock (s)}  & \textbf{t\_real (s)}  & \textbf{t\_user (s)}    & \textbf{t\_sys (s)} \\
+            \hline
+            Eigen mult    & 500           & \(0.063 \pm 0.007\)     & \(0.062 \pm 0.007\)    & \(0.052 \pm 0.010\)     & \(0.005 \pm 0.005\) \\
+            Eigen mult    & 700           & \(0.115 \pm 0.011\)     & \(0.113 \pm 0.014\)    & \(0.101 \pm 0.009\)     & \(0.007 \pm 0.006\) \\
+            Eigen mult    & 1000          & \(0.231 \pm 0.007\)     & \(0.228 \pm 0.007\)    & \(0.196 \pm 0.009\)     & \(0.029 \pm 0.009\) \\
+            Eigen mult    & 1200          & \(0.355 \pm 0.017\)     & \(0.356 \pm 0.017\)    & \(0.320 \pm 0.022\)     & \(0.030 \pm 0.009\) \\
+            Eigen mult    & 1500          & \(0.624 \pm 0.005\)     & \(0.625 \pm 0.007\)    & \(0.569 \pm 0.015\)     & \(0.048 \pm 0.013\) \\
+            \hline
+            2D matrix     & 500           & \(0.222 \pm 0.002\)     & \(0.221 \pm 0.003\)    & \(0.217 \pm 0.004\)     & \(0.000 \pm 0.000\) \\
+            2D matrix     & 700           & \(0.608 \pm 0.034\)     & \(0.606 \pm 0.035\)    & \(0.598 \pm 0.035\)     & \(0.002 \pm 0.004\) \\
+            2D matrix     & 1000          & \(2.726 \pm 0.076\)     & \(2.726 \pm 0.076\)    & \(2.703 \pm 0.077\)     & \(0.016 \pm 0.008\) \\
+            2D matrix     & 1200          & \(5.828 \pm 0.039\)     & \(5.831 \pm 0.040\)    & \(5.791 \pm 0.038\)     & \(0.034 \pm 0.006\) \\
+            2D matrix     & 1500          & \(13.125 \pm 0.207\)    & \(13.129 \pm 0.207\)   & \(13.076 \pm 0.205\)    & \(0.045 \pm 0.008\) \\
+            \hline
+        \end{tabular}
+        \caption{Resume for the clock tests for both implementations including the mean and standard deviation.}
+        \label{tab:1}
+    \end{table}
+        \vspace{-0.5cm}  % Ajusta este valor según lo necesario
+
+    
+    \subsection{Gettimeofday Analysis}
+
+    In this section, we examine the performance of the matrix multiplication implementations by separately measuring the time spent on initialization and multiplication using \texttt{gettimeofday()}. Figure \ref{fig:1} displays the initialization and multiplication times for the Eigen-based and 2D array implementations.
+
+    As seen in Figure \ref{fig:1}, the initialization time remains relatively small compared to the multiplication time for both implementations (two orders), even as the matrix size increases. For small matrix sizes (\(N < 600\)), both methods are comparable, but as N increases, the implementation with Eigen scales more efficiently. Regarding the multiplication time, the implementation with Eigen is considerably more efficient resulting in significantly lower execution time, indicating that advanced optimizations and better memory management are leveraged compared to the 2D array in C++, as seen in lab 1. It can be observed for high N values, how multiplication times for the 2D array version are increasing exponentially, spending most of the execution time in multiplication, not initialization.
+
+    \begin{table}[h!]   
+        \centering
+        \begin{tabular}{|l|l|l|l|l|l|l|}    
+            \hline
+            \textbf{Executable} & \textbf{N} & \textbf{t\_init (s)} & \textbf{t\_mult (s)} & \textbf{t\_real (s)} & \textbf{t\_user (s)} & \textbf{t\_sys (s)} \\
+            \hline
+            Eigen mult    & 500   & \(0.010 \pm 0.000\) & \(0.056 \pm 0.002\) & \(0.064 \pm 0.005\) & \(0.053 \pm 0.004\) & \(0.007 \pm 0.004\) \\
+            Eigen mult    & 700   & \(0.020 \pm 0.002\) & \(0.088 \pm 0.006\) & \(0.108 \pm 0.004\) & \(0.091 \pm 0.012\) & \(0.013 \pm 0.009\) \\
+            Eigen mult    & 1000  & \(0.048 \pm 0.003\) & \(0.184 \pm 0.010\) & \(0.231 \pm 0.011\) & \(0.197 \pm 0.014\) & \(0.031 \pm 0.008\) \\
+            Eigen mult    & 1200  & \(0.065 \pm 0.004\) & \(0.293 \pm 0.013\) & \(0.359 \pm 0.017\) & \(0.317 \pm 0.017\) & \(0.034 \pm 0.009\) \\
+            Eigen mult    & 1500  & \(0.088 \pm 0.001\) & \(0.538 \pm 0.004\) & \(0.627 \pm 0.006\) & \(0.572 \pm 0.013\) & \(0.050 \pm 0.014\) \\
+            \hline
+            2D matrix     & 500   & \(0.011 \pm 0.002\) & \(0.212 \pm 0.004\) & \(0.222 \pm 0.006\) & \(0.218 \pm 0.006\) & \(0.000 \pm 0.000\) \\
+            2D matrix     & 700   & \(0.031 \pm 0.001\) & \(0.575 \pm 0.031\) & \(0.604 \pm 0.030\) & \(0.594 \pm 0.031\) & \(0.002 \pm 0.004\) \\
+            2D matrix     & 1000  & \(0.064 \pm 0.004\) & \(2.645 \pm 0.074\) & \(2.710 \pm 0.075\) & \(2.682 \pm 0.076\) & \(0.020 \pm 0.008\) \\
+            2D matrix     & 1200  & \(0.086 \pm 0.001\) & \(5.704 \pm 0.050\) & \(5.791 \pm 0.049\) & \(5.749 \pm 0.051\) & \(0.038 \pm 0.007\) \\
+            2D matrix     & 1500  & \(0.112 \pm 0.002\) & \(12.928 \pm 0.227\) & \(13.043 \pm 0.226\) & \(12.989 \pm 0.226\) & \(0.043 \pm 0.009\) \\
+            \hline 
+        \end{tabular}
+        \caption{Resume for the gettimeofday tests for both implementations including the mean and standard deviation.}
+        \label{tab:2}
+    \end{table}
+    \vspace{-0.5cm}  % Ajusta este valor según lo necesario
+
+    \paragraph{Conclusion:}
+    The overhead of the initialization phase remains minimal for both implementations, though it becomes more significant in the standard matrix implementation as matrix size increases. The Eigen-based implementation consistently demonstrates lower multiplication times, thanks to its optimized memory access and matrix operations. The separation of initialization and multiplication times helps identify where optimizations are most effective, with the multiplication phase dominating the overall execution time. The \texttt{gettimeofday()} function measures time with high precision in microseconds, recording the elapsed time based on the system clock. By adding the initialization time and the multiplication time, we obtain a measure very close to real time (\textit{real time}), since \texttt{gettimeofday()} captures both the CPU time used and any other system activity that affects the total execution time. This makes it an accurate and reliable measure for evaluating program performance.
+
+    \subsubsection{strace System Call Analysis}
+
+    We used \texttt{strace} to analyze the system call behavior of both implementations. Table \ref{tab:strace} shows the most frequent system calls during the execution of both the
+    Eigen-based and standard implementations with a matrix size of $N=1500$. The system calls analyzed include memory management-related calls (e.g., \texttt{mmap}, \texttt{brk}), I/O calls (e.g., \texttt{read}, \texttt{write}), and process management calls (e.g., \texttt{execve}, \texttt{mprotect}).
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|l|l|r|r|r|}
+            \hline
+            \textbf{Executable} & \textbf{System Call} & \textbf{Calls} & \textbf{Time (s)} & \textbf{Percentage (\%)} \\ \hline
+            Eigen-based (N=1500) & \texttt{munmap} & 7 & 0.005472 & 85.85\% \\ \hline
+            Eigen-based (N=1500) & \texttt{mmap} & 28 & 0.000429 & 6.73\% \\ \hline
+            Eigen-based (N=1500) & \texttt{mprotect} & 7 & 0.000152 & 2.38\% \\ \hline
+            Standard (N=1500) & \texttt{brk} & 392 & 0.001172 & 99.49\% \\ \hline
+            Standard (N=1500) & \texttt{write} & 2 & 0.000004 & 0.34\% \\ \hline
+            Standard (N=1500) & \texttt{fstat} & 6 & 0.000002 & 0.17\% \\ \hline
+        \end{tabular}
+        \caption{System calls and execution time percentages for Eigen-based and standard implementations using \texttt{strace}.}
+        \label{tab:strace}
+    \end{table}
+
+    Most of the time (99.49\%) is spent in the brk call, which is used to adjust the heap size. This indicates that the standard implementation relies heavily on dynamic memory allocation. Calls to other functions such as write, fstat, and mmap are negligible in terms of total time. A total of 454 system calls were reported, reflecting a moderate use of system resources. About the Eigen usage, the most used call is \texttt{munmap}, which frees previously allocated memory, occupies 85.85\% of the total time. This suggests that the implementation with Eigen performs more intensive memory management, especially in freeing resources. Also noteworthy is the frequent use of \texttt{mmap} (6.73\%) and \texttt{mprotect} (2.38\%), indicating more dynamic memory management compared to the standard implementation. In total, there were 77 system calls, considerably fewer than the 454 calls in the standard implementation. This suggests that Eigen optimizes the number of interactions with the system, even though the time cost per call is higher.
+
+    \paragraph{Conclusion:}
+    The analysis suggests that the standard implementation makes more system calls, especially for memory allocation, while Eigen reduces the total number of calls, but spends more time on memory release and management. These differences reflect specific optimizations in the Eigen implementation, which improves performance at the expense of higher cost in individual memory management operations.
+
+
+    \subsubsection{perf Hardware Performance Metrics}
+
+    To better understand the hardware-level efficiency of the implementations, we used \texttt{perf}
+    to measure key performance metrics, including CPU cycles, instructions per cycle, and branch
+    misses. Table \ref{tab:perf} provides a comparison of these metrics for both the Eigen-based and
+    standard matrix implementations with $N=1500$.
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|l|r|r|r|r|}
+            \hline
+            \textbf{Metric} & \textbf{Eigen-based (N=1500)} & \textbf{Std Dev} & \textbf{Standard (N=1500)} & \textbf{Std Dev} \\ \hline
+            Task Clock (ms) & 657.17 & 1.72\% & 13,561.47 & 2.64\% \\ \hline
+            CPU Cycles & 2,066,738,370 & 0.38\% & 33,811,730,234 & 1.68\% \\ \hline
+            Instructions & 6,234,227,228 & 0.00\% & 30,810,076,435 & 0.00\% \\ \hline
+            Instructions per Cycle & 3.00 & 0.00\% & 0.88 & 0.00\% \\ \hline
+            Branch Misses (\%) & 0.24\% & 25.12\% & 0.07\% & 0.94\% \\ \hline
+        \end{tabular}
+        \caption{Comparison of hardware performance metrics using \texttt{perf}.}
+        \label{tab:perf}
+    \end{table}
+
+        The Eigen-based implementation executes fewer CPU cycles compared to the standard implementation, highlighting its optimized algorithmic efficiency. The instruction-per-cycle (IPC) metric shows that the Eigen-based implementation makes better use of CPU resources, with 3 instructions executed per cycle, compared to only 0.88 instructions per cycle for the standard implementation. The Eigen-based implementation incurs a higher percentage of branch misses, but thisis likely due to the higher complexity of its optimizations, which involve more branching. The standard matrix implementation consumes significantly more CPU time, as indicated
+        by the task clock and CPU cycle counts. This correlates with its longer real time and user time observed in the previous sections.
+
+    \paragraph{Conclusion:}
+    The Eigen method demonstrates higher efficiency at the hardware level, with fewer cycles and higher IPC, making it more suitable for larger matrix sizes. However, the standard implementation, while simpler, incurs significant overhead due to its less optimized use of CPU resources. As conclusion, the advantages of using the Eigen library for matrix multiplication, especially for larger matrix sizes are clear, outperforming the standard matrix implementation across all metrics, including CPU time, real time, and hardware efficiency.
+
+\end{document}

@@ -1,0 +1,39 @@
+{
+	"folders": [
+		{
+			"path": "Assignment1"
+		},
+		{
+			"path": "Assignment2"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"ostream": "cpp",
+			"iostream": "cpp",
+			"core": "cpp",
+			"superlusupport": "cpp",
+			"*.evaluator": "cpp",
+			"*.traits": "cpp",
+			"adolcforward": "cpp",
+			"alignedvector3": "cpp",
+			"autodiff": "cpp",
+			"bvh": "cpp",
+			"eulerangles": "cpp",
+			"fft": "cpp",
+			"kroneckerproduct": "cpp",
+			"mprealsupport": "cpp",
+			"numericaldiff": "cpp",
+			"openglsupport": "cpp",
+			"specialfunctions": "cpp",
+			"splines": "cpp"
+		},
+		"ros.distro": "noetic",
+		"python.autoComplete.extraPaths": [
+			"/opt/ros/noetic/lib/python3/dist-packages"
+		],
+		"python.analysis.extraPaths": [
+			"/opt/ros/noetic/lib/python3/dist-packages"
+		]
+	}
+}

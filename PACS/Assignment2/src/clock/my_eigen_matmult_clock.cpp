@@ -1,10 +1,13 @@
 #include <iostream>
 #include <ctime>
 #include <Eigen/Dense>
+#include <iomanip>
 
 using namespace std;
 
 int main (int argc, char* argv[]){
+
+    clock_t timer_1 = clock();
 
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <matrix_size>" << endl;
@@ -19,14 +22,8 @@ int main (int argc, char* argv[]){
 
     C = A * B;
 
-    // cout <<  endl << "Matrix A:" << endl;
-    // cout << A << endl;
-
-    // cout << "Matrix B:" << endl;
-    // cout << B << endl;
-
-    // cout << "Matrix C:" << endl;
-    // cout << C << endl;
+    timer_1 = clock() - timer_1;
+    cout << "Seconds of execution: " << fixed << setprecision(4) << ((float)timer_1)/CLOCKS_PER_SEC << endl;
 }
 
 

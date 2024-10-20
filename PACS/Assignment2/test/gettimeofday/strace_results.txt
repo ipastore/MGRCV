@@ -1,0 +1,46 @@
+Give me an analysois . This is the outyput of using strace -c for a N=1500 for both implementations
+I need the analysis sfor lattex
+
+
+standard_matrix_heap_gettimeofday
+N=1500
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 99,49    0,001172           2       392           brk
+  0,34    0,000004           2         2           write
+  0,17    0,000002           0         6           fstat
+  0,00    0,000000           0         4           read
+  0,00    0,000000           0         5           close
+  0,00    0,000000           0        22           mmap
+  0,00    0,000000           0         7           mprotect
+  0,00    0,000000           0         1           munmap
+  0,00    0,000000           0         6           pread64
+  0,00    0,000000           0         1         1 access
+  0,00    0,000000           0         1           execve
+  0,00    0,000000           0         2         1 arch_prctl
+  0,00    0,000000           0         5           openat
+------ ----------- ----------- --------- --------- ----------------
+100.00    0,001178                   454         2 total
+
+
+/my_eigen_matmult_gettimeofday 
+N=1500
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 85,85    0,005472         781         7           munmap
+  6,73    0,000429          15        28           mmap
+  2,38    0,000152          21         7           mprotect
+  1,26    0,000080          16         5           openat
+  1,21    0,000077          12         6           pread64
+  0,72    0,000046           7         6           fstat
+  0,71    0,000045          11         4           read
+  0,55    0,000035           7         5           close
+  0,38    0,000024           8         3           brk
+  0,19    0,000012           6         2         1 arch_prctl
+  0,03    0,000002           1         2           write
+  0,00    0,000000           0         1         1 access
+  0,00    0,000000           0         1           execve
+------ ----------- ----------- --------- --------- ----------------
+100.00    0,006374                    77         2 total
