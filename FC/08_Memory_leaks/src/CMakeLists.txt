@@ -29,6 +29,12 @@ target_compile_options(correct_factorial PRIVATE ${MY_CPP_FLAGS})
 add_executable(circular_dependency circular_dependency.cpp)
 target_compile_options(circular_dependency PRIVATE ${MY_CPP_FLAGS})
 
+add_executable(correct_find_memory_leaks correct_find_memory_leaks.cpp)
+target_compile_options(find_memory_leaks PRIVATE ${MY_CPP_FLAGS})
+
+
+
+
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
   add_executable(buffer_overflow ./buffer_overflow.cpp)
   target_compile_options(buffer_overflow PRIVATE ${MY_CPP_FLAGS} -fsanitize=address)

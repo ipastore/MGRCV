@@ -96,7 +96,8 @@
 			"iomanip": "cpp",
 			"mutex": "cpp",
 			"thread": "cpp",
-			"cinttypes": "cpp"
+			"cinttypes": "cpp",
+			"cassert": "cpp"
 		}
 	}
 }

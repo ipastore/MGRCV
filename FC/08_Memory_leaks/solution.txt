@@ -1,0 +1,97 @@
+Initial Questions:
+
+1. Whas is the effect of VERBOSE=1 in the output of the make step?
+
+ipastore@linuxserver:~/MGRCV/FC/08_Memory_leaks/src/build-debug$ make VERBOSE=1 -j4
+/usr/bin/cmake -S/home/ipastore/MGRCV/FC/08_Memory_leaks/src -B/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/progress.marks
+make -f CMakeFiles/Makefile2 all
+make[1]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make -f CMakeFiles/correct_factorial.dir/build.make CMakeFiles/correct_factorial.dir/depend
+make -f CMakeFiles/leak_factorial.dir/build.make CMakeFiles/leak_factorial.dir/depend
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+cd /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/correct_factorial.dir/DependInfo.cmake --color=
+make -f CMakeFiles/circular_dependency.dir/build.make CMakeFiles/circular_dependency.dir/depend
+make -f CMakeFiles/incorrect_delete.dir/build.make CMakeFiles/incorrect_delete.dir/depend
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+cd /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/leak_factorial.dir/DependInfo.cmake --color=
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+cd /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/circular_dependency.dir/DependInfo.cmake --color=
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+cd /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/incorrect_delete.dir/DependInfo.cmake --color=
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/leak_factorial.dir/DependInfo.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/leak_factorial.dir/depend.internal".
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/leak_factorial.dir/depend.internal".
+Scanning dependencies of target leak_factorial
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/correct_factorial.dir/DependInfo.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/correct_factorial.dir/depend.internal".
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/correct_factorial.dir/depend.internal".
+Scanning dependencies of target correct_factorial
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make -f CMakeFiles/leak_factorial.dir/build.make CMakeFiles/leak_factorial.dir/build
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make -f CMakeFiles/correct_factorial.dir/build.make CMakeFiles/correct_factorial.dir/build
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/circular_dependency.dir/DependInfo.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/circular_dependency.dir/depend.internal".
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/circular_dependency.dir/depend.internal".
+Scanning dependencies of target circular_dependency
+[ 20%] Building CXX object CMakeFiles/leak_factorial.dir/leak_factorial.cpp.o
+[ 20%] Building CXX object CMakeFiles/correct_factorial.dir/correct_factorial.cpp.o
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make -f CMakeFiles/circular_dependency.dir/build.make CMakeFiles/circular_dependency.dir/build
+/usr/bin/c++    -O3 -DNDEBUG   -Wall -Wextra -pedantic -Werror -std=gnu++17 -o CMakeFiles/correct_factorial.dir/correct_factorial.cpp.o -c /home/ipastore/MGRCV/FC/08_Memory_leaks/src/correct_factorial.cpp
+/usr/bin/c++    -O3 -DNDEBUG   -Wall -Wextra -pedantic -Werror -std=gnu++17 -o CMakeFiles/leak_factorial.dir/leak_factorial.cpp.o -c /home/ipastore/MGRCV/FC/08_Memory_leaks/src/leak_factorial.cpp
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/incorrect_delete.dir/DependInfo.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/incorrect_delete.dir/depend.internal".
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/incorrect_delete.dir/depend.internal".
+Scanning dependencies of target incorrect_delete
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make -f CMakeFiles/incorrect_delete.dir/build.make CMakeFiles/incorrect_delete.dir/build
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+[ 30%] Building CXX object CMakeFiles/circular_dependency.dir/circular_dependency.cpp.o
+/usr/bin/c++    -O3 -DNDEBUG   -Wall -Wextra -pedantic -Werror -std=gnu++17 -o CMakeFiles/circular_dependency.dir/circular_dependency.cpp.o -c /home/ipastore/MGRCV/FC/08_Memory_leaks/src/circular_dependency.cpp
+[ 40%] Building CXX object CMakeFiles/incorrect_delete.dir/incorrect_delete.cpp.o
+/usr/bin/c++    -O3 -DNDEBUG   -Wall -Wextra -pedantic -Werror -std=gnu++17 -o CMakeFiles/incorrect_delete.dir/incorrect_delete.cpp.o -c /home/ipastore/MGRCV/FC/08_Memory_leaks/src/incorrect_delete.cpp
+[ 50%] Linking CXX executable incorrect_delete
+/usr/bin/cmake -E cmake_link_script CMakeFiles/incorrect_delete.dir/link.txt --verbose=1
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/incorrect_delete.dir/incorrect_delete.cpp.o  -o incorrect_delete 
+[ 60%] Linking CXX executable leak_factorial
+/usr/bin/cmake -E cmake_link_script CMakeFiles/leak_factorial.dir/link.txt --verbose=1
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/leak_factorial.dir/leak_factorial.cpp.o  -o leak_factorial 
+[ 70%] Linking CXX executable correct_factorial
+/usr/bin/cmake -E cmake_link_script CMakeFiles/correct_factorial.dir/link.txt --verbose=1
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/correct_factorial.dir/correct_factorial.cpp.o  -o correct_factorial 
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+[ 70%] Built target incorrect_delete
+make -f CMakeFiles/find_memory_leaks.dir/build.make CMakeFiles/find_memory_leaks.dir/depend
+[ 70%] Built target leak_factorial
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+cd /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/find_memory_leaks.dir/DependInfo.cmake --color=
+[ 80%] Linking CXX executable circular_dependency
+/usr/bin/cmake -E cmake_link_script CMakeFiles/circular_dependency.dir/link.txt --verbose=1
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/circular_dependency.dir/circular_dependency.cpp.o  -o circular_dependency 
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/find_memory_leaks.dir/DependInfo.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/find_memory_leaks.dir/depend.internal".
+Dependee "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" is newer than depender "/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles/find_memory_leaks.dir/depend.internal".
+Scanning dependencies of target find_memory_leaks
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+make -f CMakeFiles/find_memory_leaks.dir/build.make CMakeFiles/find_memory_leaks.dir/build
+make[2]: Entering directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+[ 90%] Building CXX object CMakeFiles/find_memory_leaks.dir/find_memory_leaks.cpp.o
+/usr/bin/c++    -O3 -DNDEBUG   -Wall -Wextra -pedantic -Werror -std=gnu++17 -o CMakeFiles/find_memory_leaks.dir/find_memory_leaks.cpp.o -c /home/ipastore/MGRCV/FC/08_Memory_leaks/src/find_memory_leaks.cpp
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+[ 90%] Built target correct_factorial
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+[ 90%] Built target circular_dependency
+[100%] Linking CXX executable find_memory_leaks
+/usr/bin/cmake -E cmake_link_script CMakeFiles/find_memory_leaks.dir/link.txt --verbose=1
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/find_memory_leaks.dir/find_memory_leaks.cpp.o  -o find_memory_leaks 
+make[2]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+[100%] Built target find_memory_leaks
+make[1]: Leaving directory '/home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug'
+/usr/bin/cmake -E cmake_progress_start /home/ipastore/MGRCV/FC/08_Memory_leaks/src/build-debug/CMakeFiles 0
+
+Clearly, the outpt is giving in-depth details for the build and linking process of the compiler.
+
+2. With make's output, could you verify the requirements to use valgrind?
+
+With the previous otuput we can detect that program is compiled in Release mode with optimization -O3. In order to use Valgrind we need to compile in Debug mode.

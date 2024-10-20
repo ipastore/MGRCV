@@ -1,4 +1,11 @@
-/* Modified from The developer's guide to debugging */
+/*
+ * Developed by: 
+ *     - David Padilla Orenga, NIA: 946874
+ *     - Inacio Pastore Benaim, NIP: 920576
+ *     - Alisson Zapatier Troya, NIA: 717171
+ * 
+ */
+
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -28,7 +35,6 @@ int leak_factorial(int n)
     }
 
     auto next_val = std::make_unique<int>(leak_factorial(n-1) * n);
-    // int* next_val = new int(leak_factorial(n-1) * n);
 
     return *next_val;
  }
