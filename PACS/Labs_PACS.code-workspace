@@ -1,10 +1,20 @@
 {
 	"folders": [
 		{
+			"name": "PACS",
+			"path": "."
+		},
+		{
+			"name": "Assignment1",
 			"path": "Assignment1"
 		},
 		{
+			"name": "Assignment2",
 			"path": "Assignment2"
+		},
+		{
+			"name": "Assignment3",
+			"path": "Assignment3"
 		}
 	],
 	"settings": {
