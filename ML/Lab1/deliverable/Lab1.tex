@@ -21,38 +21,71 @@
 
 \maketitle
 
-\section{Introduction}
 
 
-The complete code used for this analysis can be found in a \href{https://colab.research.google.com/drive/1Gg35b8epwsI3nkCeiqCgBeFCd3aNdahI?usp=sharing}{Google Colab Notebook}.
 
 \section{Introduction}
 
-Recordar que
+- En este laboratorio se realizan tareas de regresion sobre el dataset year-song y clasificacion sobre el dataset CIFAR-10. 
+En las dos secciones se sigue la misma metodología. Primero un screening de modelos con los parametros por defecto y PCA=0.95 (explicar como se eligio el PCA)
+. Luego gridsearch, luego cross-validation con 5 folds y Finalmente se se eligen los mejores modelos para probar sobre el data test.
+- AClarar que en el CIFAR-10 solo se utilizó el primer batch de los 5 (usando 10000 imagenes) por cuestiones de tiempo de computo.
 
-no hice poly2 en gridsearch porque explotaba el computat
-SVR lo mismo en el gridsearch
-Ademas todos los gridsearchs dan un R2 negativo, por que?
-Es mejor separar todos los gridsearc para no tener que volver a correrlos todos
-Antes de hacer los gridsearch tengo que hacer test separados para ver si tiene sentid o no.
+- Finalmente para el dataset CIFAR-10 se realiza una busqueda de descriptores con GIST. Gracias a esto se ve un ahorro de tiempo de computo considerable
+pero bajan las meetricas por la mitad. Esto podria solucionarse alimentando el modelo con todo el dataset. 
+
+- En el year son dataset: no se utilizaron features polinomailes por que era costoso computacionlmente. Tampoco se pudo explorar en profundidad 
+los parametros para el SVR y el MLP por la misma razon
+
+- En cuanto a metricas: explicar que se utilizo MAE y MedAE (dejando afuera a R2 por que es un dataset completo y a RMSE o MSE porque hay datos espureos) 
+para regresion y Acc, F1, Prec y Rec para clasificacion. Aunque no se muestra en el reporte por falta de espacio, en el notebook también se utilizo confusion matrix.
+
+- Explicar el dataset de year song
+- Explicar el dataset de CIFAR-10
+
 
 \input{tables/year_song_screening.tex}
+
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{images/songs/year_songs.png}
+    \caption{Quantity of songs per year in dataset.}
+    \label{fig:year_songs}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{images/songs/correlation_best_features.png}
+    \caption{Distribution and relation with output of features which correlation with output > 0.12.}
+    \label{fig:correlation_best_features}
+\end{figure}
+
 
 \input{tables/year_song_cross_validation.tex}
 
 \input{tables/year_song_test.tex}
 
-In this lab, we aim to solve two fundamental machine learning tasks: regression and classification. Both tasks utilize different datasets and methods, and each presents unique challenges in model training and evaluation. For the regression problem, we utilize the \textbf{YearPredictionMSD} dataset, which aims to predict the release year of songs based on a variety of acoustic features. For the classification task, we use the \textbf{CIFAR-10} dataset, a widely recognized dataset for image classification, where the objective is to classify images into one of 10 possible categories.
+\input{tables/CIFAR_screening.tex}
 
-\subsection{Regression Task}
+\input{tables/CIFAR_cross_validation.tex}
 
-The \textbf{YearPredictionMSD} dataset consists of over 500,000 examples, each representing a song with a collection of numerical features that describe its acoustic properties. The target variable is the year the song was released. This problem is inherently non-linear and affected by noise, making it an excellent case for testing various regression techniques, including linear regression, polynomial regression, and robust methods like RANSAC and Huber regression. Furthermore, due to the large number of features, dimensionality reduction techniques such as Principal Component Analysis (PCA) are explored to improve computational efficiency and model performance.
+\input{tables/CIFAR_test.tex}
 
-\subsection{Classification Task}
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{images/CIFAR/missclasification_SVM.png}
+    \caption{Missclasification of 9 images with $\text{SVC}(C=1)$ and PCA=0.95 over the CIFAR-10 dataset.}
+    \label{fig:missclasification_SVM}
+\end{figure}
 
-For the classification task, we work with the \textbf{CIFAR-10} dataset, which consists of 60,000 32x32 color images from 10 different classes (e.g., airplanes, cats, cars, etc.). Each image is represented as a feature vector of pixel values. The objective is to classify these images accurately into their respective categories using models such as k-Nearest Neighbors (k-NN), Support Vector Machines (SVM), and Voting Classifiers. Dimensionality reduction is again considered through PCA to speed up training, particularly for computationally intensive models like SVM.
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{images/CIFAR/succes_classification_CIFAR.png}
+    \caption{Correct classification of 9 imagaes with $\text{SVC}(C=1)$ and PCA=0.95 over the CIFAR-10 dataset.}
+    \label{fig:polynomial_data}
+\end{figure}
 
-Both tasks involve model selection, hyperparameter tuning, and evaluation using appropriate metrics. In regression, we will use metrics such as Mean Squared Error (MSE) and the Median Absolute Error (MedAE), which is robust to outliers. For classification, accuracy, precision, recall, and F1-score will be employed to measure model performance. Through this lab, we aim to gain a deeper understanding of model behavior in different scenarios and explore techniques to address the challenges presented by high-dimensional and noisy data.
 
 \end{document}
 

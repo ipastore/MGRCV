@@ -1,0 +1,13 @@
+\begin{table}
+    \centering
+    \caption{Test performance of SVC models over the CIFAR-10 dataset. $\text{SVC + G = SVC + GIST}$. Both $\text{SVC}(C=1)$. $SVC + G()$ without PCA.}
+    \label{tab:test_svc_performance}
+    \begin{tabular}{|l|c|c|c|c|c|}
+    \toprule
+    Model & Acc. & F1 & Prec. & Rec. & Fit. T.(s)\\
+    \midrule
+    SVC & 0.47 & 0.46 & 0.46 & 0.46 & 43.91\\
+    $SVC + G$  & 0.25 & 0.24 & 0.24 & 0.25 & 7.63 \\
+    \bottomrule
+    \end{tabular}
+\end{table}

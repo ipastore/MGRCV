@@ -1,0 +1,15 @@
+\begin{table}
+    \centering
+    \caption{Cross-validation performance of classification models wit PCA=0.95.
+     $ \text{SVC}(C=1$), $ \text{MLP}(hidden layers =(100,))$.  
+     Time = cross-validation time over 5 folds.}
+    \label{tab:CIFAR_cross_validation}
+    \begin{tabular}{|l|c|c|c|c|c|}
+    \toprule
+    Model & Acc. & F1 & Prec. & Rec. & T.(s) \\
+    \midrule
+    SVC & 0.4581 & 0.4561 & 0.4587 & 0.4580 & 87.13 \\
+    MLP & 0.3786 & 0.3784 & 0.3795 & 0.3782 & 82.19 \\
+    \bottomrule
+    \end{tabular}
+\end{table}
