@@ -29,9 +29,14 @@ target_compile_options(correct_factorial PRIVATE ${MY_CPP_FLAGS})
 add_executable(circular_dependency circular_dependency.cpp)
 target_compile_options(circular_dependency PRIVATE ${MY_CPP_FLAGS})
 
-add_executable(correct_find_memory_leaks correct_find_memory_leaks.cpp)
-target_compile_options(find_memory_leaks PRIVATE ${MY_CPP_FLAGS})
+add_executable(fixed_find_memory_leaks fixed_find_memory_leaks.cpp)
+target_compile_options(fixed_find_memory_leaks PRIVATE ${MY_CPP_FLAGS})
 
+add_executable(fixed_incorrect_delete fixed_incorrect_delete.cpp)
+target_compile_options(fixed_incorrect_delete PRIVATE ${MY_CPP_FLAGS})
+
+add_executable(fixed_circular_dependency fixed_circular_dependency.cpp)
+target_compile_options(fixed_circular_dependency PRIVATE ${MY_CPP_FLAGS})
 
 
 

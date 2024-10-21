@@ -11,11 +11,11 @@
  *    b. In the function `allocate_many_ref`, where memory is allocated to the 
  *       reference pointer but also not freed, leading to a memory leak.
  * 
- * 2. Solve the memory leaks with smart pointers in the new correct_factorial.cpp file, that your submission should include. 
- *    Done in correct_find_memory_leaks.cpp
+ * 2. Solve the memory leaks with smart pointers :
+ *    Done in fixed_find_memory_leaks.cpp
  * 
  * 3. Verify with Valgrind that correct_factorial does not have any memory leak. 
- *     Done in correct_find_memory_leaks.cpp: "==5107== All heap blocks were freed -- no leaks are possible"
+ *     Done in fixed_find_memory_leaks.cpp: "==5107== All heap blocks were freed -- no leaks are possible"
  * 
  */
  

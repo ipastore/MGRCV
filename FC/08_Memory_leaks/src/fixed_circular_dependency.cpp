@@ -3,20 +3,9 @@
  *     - David Padilla Orenga, NIA: 946874
  *     - Inacio Pastore Benaim, NIP: 920576
  *     - Alisson Zapatier Troya, NIA: 717171
- * 1. First, please build and run the circular_dependency program and verify whether all required destructors are fired, 
- * if there is a memory leak? If yes, please identify the nonreleased objects.
- *    There is a memory leak due to circular dependency with shared pointers between a and b nodes. 
  * 
- * 2. Could you identify which class is causing the trouble, if any?
- *    The class causing trouble is node. The circular dependency is caused by line 27 std::shared_ptr<node> _next;
-
- * 
- * 3. Read the documentation of std::shared_ptr to check how C++ provides support to solve circular dependencies.
- *    Done.
- * 
- * 4. Write a fixed version of fixed_circular_dependency.cpp to include it in your submission.
- *    Done in fixed_circular_dependency.cpp
  */
+
 
 #include <iostream>
 #include <memory>
@@ -24,7 +13,7 @@
 class node
 {
   size_t _id;
-  std::shared_ptr<node> _next;
+  std::weak_ptr<node> _next;
 
   public:
 
