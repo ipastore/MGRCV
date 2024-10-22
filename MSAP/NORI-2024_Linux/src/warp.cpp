@@ -47,16 +47,32 @@ float Warp::squareToUniformDiskPdf(const Point2f &p) {
 }
 
 Point2f Warp::squareToUniformTriangle(const Point2f& sample) {
-    throw NoriException("Warp::squareToUniformTriangle() is not yet implemented!");
+
+    // Reflect the point into the triangle if necessary
+    if (sample.x() + sample.y() > 1.0f) {
+        return Point2f(1.0f - sample.x(), 1.0f - sample.y());
+    }
+
+    return sample;
 }
 
 float Warp::squareToUniformTrianglePdf(const Point2f& p) {
-    throw NoriException("Warp::squareToUniformTrianglePdf() is not yet implemented!");
+    return (p.x() >= 0.0f && p.y() >= 0.0f && p.x() + p.y() <= 1.0f) ? 2.0f : 0.0f;
 }
 
+Vector3f Warp::squareToUniformSphere(const Point2f& sample) {
 
-Vector3f Warp::squareToUniformSphere(const Point2f &sample) {
-    throw NoriException("Warp::squareToUniformSphere() is not yet implemented!");
+    // Calculate the azimuthal and polar angles
+    float phi = 2.0f * M_PI * sample.x();           // Azimuthal angle, ranges from 0 to 2pi
+    float theta = std::acos(1.0f - 2.0f * sample.y()); // Polar angle, ranges from 0 to pi
+
+    // Convert spherical coordinates to Cartesian coordinates (x, y, z)
+    float x = std::sin(theta) * std::cos(phi);
+    float y = std::sin(theta) * std::sin(phi);
+    float z = std::cos(theta);
+
+    // Return the 3D point on the unit sphere
+    return Vector3f(x, y, z);
 }
 
 float Warp::squareToUniformSpherePdf(const Vector3f &v) {
@@ -64,7 +80,17 @@ float Warp::squareToUniformSpherePdf(const Vector3f &v) {
 }
 
 Vector3f Warp::squareToUniformHemisphere(const Point2f &sample) {
-    throw NoriException("Warp::squareToUniformHemisphere() is not yet implemented!");
+    // Calculate the azimuthal and polar angles
+    float phi = 2.0f * M_PI * sample.x();
+    float theta = 0.5f * M_PI * sample.y(); 
+
+    // Convert spherical coordinates to Cartesian coordinates (x, y, z)
+    float x = std::sin(theta) * std::cos(phi);
+    float y = std::sin(theta) * std::sin(phi);
+    float z = std::cos(theta);
+
+    // Return the 3D point on the unit sphere
+    return Vector3f(x, y, z);
 }
 
 float Warp::squareToUniformHemispherePdf(const Vector3f &v) {
