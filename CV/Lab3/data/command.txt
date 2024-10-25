@@ -1,0 +1,1 @@
+python ./match_pairs.py --resize 752 --superglue indoor --max_keypoints 1024 --input_dir ../data --input_pairs ../data/images_paired.txt --output_dir ../data --viz

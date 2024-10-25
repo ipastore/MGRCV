@@ -83,7 +83,31 @@ def matchWith2NNDR_v2(desc1, desc2, distRatio, minDist):
     for kDesc1 in range(nDesc1):
         dist = np.sqrt(np.sum((desc2 - desc1[kDesc1, :]) ** 2, axis=1))
         indexSort = np.argsort(dist)
-        if (dist[indexSort[0]] < minDist):
+        d1 = dist[indexSort[0]]  # Smallest distance (nearest neighbor)
+        d2 = dist[indexSort[1]]  # Second smallest distance (second nearest neighbor)
+        if (d1>d2*distRatio ) and (d1 < minDist):
+            matches.append([kDesc1, indexSort[0], d1])
+    return matches
+
+def matchWith2NNDR_v3(desc1, desc2, distRatio, minDist):
+    """
+        Nearest Neighbours Matching algorithm checking the Distance Ratio.
+        A match is accepted only if its distance is less than distRatio times
+        the distance to the second match.
+        -input:
+            desc1: descriptors from image 1 nDesc x 128
+            desc2: descriptors from image 2 nDesc x 128
+            distRatio:
+        -output:
+            matches: nMatches x 3 --> [[indexDesc1,indexDesc2,descriptorDistance],...]]
+    """
+    matches = []
+    nDesc1 = desc1.shape[0]
+    for kDesc1 in range(nDesc1):
+        dist = np.sqrt(np.sum((desc2 - desc1[kDesc1, :]) ** 2, axis=1))
+        indexSort = np.argsort(dist)
+        NNDR_ratio = dist[indexSort[0]] / dist[indexSort[1]]
+        if ((NNDR_ratio < distRatio) and (dist[indexSort[0]] < minDist)):
             matches.append([kDesc1, indexSort[0], dist[indexSort[0]]])
     return matches
 
@@ -94,8 +118,8 @@ if __name__ == '__main__':
     timestamp1 = '1403715282262142976'
     timestamp2 = '1403715413262142976'
 
-    path_image_1 = 'image1.png'
-    path_image_2 = 'image2.png'
+    path_image_1 = './data/image1.png'
+    path_image_2 = './data/image2.png'
 
     # Read images
     image_pers_1 = cv2.imread(path_image_1)
@@ -107,8 +131,10 @@ if __name__ == '__main__':
     keypoints_sift_2, descriptors_2 = sift.detectAndCompute(image_pers_2, None)
 
     distRatio = 0.8
-    minDist = 65
-    matchesList = matchWith2NNDR(descriptors_1, descriptors_2, distRatio, minDist)
+    minDist = 70
+    # matchesList = matchWith2NNDR(descriptors_1, descriptors_2, distRatio, minDist)
+    matchesList = matchWith2NNDR_v2(descriptors_1, descriptors_2, distRatio, minDist)
+    print(f"Number of matches for minDist {minDist}: {len(matchesList)}")
     dMatchesList = indexMatrixToMatchesList(matchesList)
     dMatchesList = sorted(dMatchesList, key=lambda x: x.distance)
 
@@ -129,7 +155,3 @@ if __name__ == '__main__':
     # Matched points in homogeneous coordinates
     x1 = np.vstack((srcPts.T, np.ones((1, srcPts.shape[0]))))
     x2 = np.vstack((dstPts.T, np.ones((1, dstPts.shape[0]))))
-
-python ./match_pairs.py --resize 752 --superglue indoor --max_keypoints 2048 --nms_radius 3 --resize_float --input_dir ./assets/phototourism_sample_images --input_pairs ./assets/phototourism_sample_pairs.txt --output_dir ../SuperGlue_output --viz
-
-python ./match_pairs.py --resize 752 --superglue indoor --max_keypoints 2048 --nms_radius 3 --resize_float --input_dir ../data --input_pairs ../data/images_paired.txt --output_dir ../SuperGlue_output --viz

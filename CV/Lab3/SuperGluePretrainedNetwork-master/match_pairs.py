@@ -276,14 +276,23 @@ if __name__ == '__main__':
             kpts0, kpts1 = pred['keypoints0'], pred['keypoints1']
             matches, conf = pred['matches0'], pred['matching_scores0']
             timer.update('matcher')
+            
+            # Assuming kpts0, kpts1, matches, conf, pred['descriptors0'], pred['descriptors1'] are already defined
+            dsc0 = pred['descriptors0']  # Descriptors from image 1
+            dsc1 = pred['descriptors1']  # Descriptors from image 2
 
-            # Write the matches to disk.
-            dsc0 = pred['descriptors0']
-            dsc1 = pred['descriptors1']
-            out_matches = {'keypoints0': kpts0, 'keypoints1': kpts1,
-                            'matches': matches, 'match_confidence':conf,
-                            'descriptors0': dsc0, 'descriptors1': dsc1 }
-            np.savez(str(matches_path), **out_matches)
+            # Dictionary to hold the keypoints, matches, match confidence, and descriptors
+            out_matches = {
+                'keypoints0': kpts0,  # Keypoints from image 1
+                'keypoints1': kpts1,  # Keypoints from image 2
+                'matches': matches,   # Match indices between keypoints
+                'match_confidence': conf,  # Confidence scores of the matches
+                'descriptors0': dsc0,  # Descriptors from image 1
+                'descriptors1': dsc1   # Descriptors from image 2
+            }
+
+            # Save the dictionary to a .npz file
+            np.savez(matches_path, **out_matches)
 
         # Keep the matching keypoints.
         valid = matches > -1
