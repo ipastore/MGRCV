@@ -94,6 +94,8 @@ add_executable(nori
   src/ttest.cpp
   src/warp.cpp
   src/normals.cpp
+  src/pointlight.cpp
+  src/direct_whitted.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
