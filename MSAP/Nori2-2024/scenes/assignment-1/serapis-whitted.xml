@@ -5,7 +5,7 @@
 	</sampler>
 
 	<!-- Use the ambient occlusion integrator -->
-    <integrator type="direct_whitted"/>
+    <integrator type="depth"/>
 
 	<!-- Load the Serapis bust -->
 	<mesh type="obj">
