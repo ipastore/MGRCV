@@ -94,7 +94,7 @@ def matchWith2NNDR_v2(desc1, desc2, distRatio, minDist):
         indexSort = np.argsort(dist)
         d1 = dist[indexSort[0]]  # Smallest distance (nearest neighbor)
         d2 = dist[indexSort[1]]  # Second smallest distance (second nearest neighbor)
-        if (d1>d2*distRatio ) and (d1 < minDist):
+        if (d1<d2*distRatio ) and (d1 < minDist):
             matches.append([kDesc1, indexSort[0], d1])
     return matches
 
@@ -318,7 +318,7 @@ def calculate_epipolar_distance(points, lines):
     distances = numerators / denominators
     return distances
 
-def ransac_fundamental_matrix(matched_keypoints1, matched_keypoints2, image1, image2, inlier_ratio=1000, P = 3, threshold=0.01):
+def ransac_fundamental_matrix(matched_keypoints1, matched_keypoints2, image1, image2, nIter=1000, P = 3, threshold=0.01):
     """
     RANSAC algorithm to estimate the fundamental matrix between two images.
     - input:
@@ -331,8 +331,7 @@ def ransac_fundamental_matrix(matched_keypoints1, matched_keypoints2, image1, im
         best_inliers: mask of inliers corresponding to best_F
     """
     
-    nIter= np.log(1 - P) / np.log(1 - inlier_ratio**8)
-    nIter = int(nIter) 
+
     print("Número de iteraciones: ", nIter)
     best_inliers_count = 0
     best_F = None
@@ -543,12 +542,12 @@ if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=1024, suppress=True)
     
     # Flags exercices
-    flg_exercise_1 = False
-    flg_exercise_2 = False
+    flg_exercise_1 = True
+    flg_exercise_2 = True
     flg_exercise_4 = True
     flg_exercise_4_1 = True
-    flg_exercise_5 = False
-    flg_exercise_5_1 = False
+    flg_exercise_5 = True
+    flg_exercise_5_1 = True
 
     # Images path
     timestamp1 = '1403715282262142976'
@@ -762,7 +761,7 @@ if __name__ == '__main__':
         keypoints_sift_2, descriptors_2 = sift.detectAndCompute(image_pers_2, None)
 
         distRatio = 0.8
-        minDist = 200
+        minDist = 400
         # matchesList = matchWith2NNDR(descriptors_1, descriptors_2, distRatio, minDist)
         matchesList = matchWith2NNDR_v2(descriptors_1, descriptors_2, distRatio, minDist)
         print(f"Number of matches for minDist {minDist}: {len(matchesList)}")    
@@ -782,16 +781,139 @@ if __name__ == '__main__':
         
         #### ESTIMATE FUNDAMENTAL MATRIX ####
         # RANSAC homography estimation
-        RANSAC_inlier_ratio = 0.4
-        RANSAC_confidence = 0.999
         RANSAC_pixel_threshold = 1
-        F, inliers_FUNDAMENTAL_mask = ransac_fundamental_matrix(x1, x2, image_pers_1, image_pers_2, inlier_ratio = RANSAC_inlier_ratio, P = RANSAC_confidence, threshold = RANSAC_pixel_threshold)
+        F, inliers_FUNDAMENTAL_mask = ransac_fundamental_matrix(x1, x2, image_pers_1, image_pers_2, nIter=50000, threshold = RANSAC_pixel_threshold)
         print("Fundamental Matrix F:\n", F)
                 
         visualize_epipolar_lines(F, image_pers_1, image_pers_2, show_epipoles=True)
         # visualize_epipolar_lines(F.T, image_pers_2, image_pers_1, show_epipoles=True)
+        
+        imgMatched_RANSAC = cv2.drawMatches(image_pers_1, keypoints_sift_1, image_pers_2, keypoints_sift_2, dMatchesList_ransac[:],
+                                    None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS and cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        # Plot only the first 100 inliers and outliers
+        inliers_matches = [dMatchesList_ransac[i] for i in range(len(dMatchesList_ransac)) if inliers_FUNDAMENTAL_mask[i]][:]
+        imgInliersMatched = cv2.drawMatches(image_pers_1, keypoints_sift_1, image_pers_2, keypoints_sift_2,
+                            inliers_matches, None, matchColor=(0, 255, 0),
+                            flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+
+        outliers_matches = [dMatchesList_ransac[i] for i in range(len(dMatchesList_ransac)) if not inliers_FUNDAMENTAL_mask[i]][:]
+        imgOutliersMatched = cv2.drawMatches(image_pers_1, keypoints_sift_1, image_pers_2, keypoints_sift_2,
+                            outliers_matches, None, matchColor=(0, 0, 255),
+                            flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        # Configure the first subplot (Image 1)
+        ax1.imshow(imgInliersMatched, cmap='gray')
+        ax1.set_title("Inliers Matches")
+        # Configure the second subplot (Image 2)
+        ax2.imshow(imgOutliersMatched, cmap='gray')
+        ax2.set_title("Outliers Matches")
+        # Show the figure and wait until it is closed
+        plt.show(block=True)  # This will block execution until the figure is closed
+        
+        # # Filter x1 and x2 with inliers_FUNDAMENTAL_mask
+        # x1_inliers = x1[:, inliers_FUNDAMENTAL_mask]
+        # x2_inliers = x2[:, inliers_FUNDAMENTAL_mask]
+        
+        # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+        # # Configuración del primer subplot
+        # ax1.set_xlabel('Coordinates X (píxeles)')
+        # ax1.set_ylabel('Coordinates Y (píxeles)')
+        # ax1.imshow(image_pers_1) 
+        # ax1.set_title('Image 1 - Select Point')
+        
+        # # Plot inliers in ax1
+        # ax1.plot(x1_inliers[0, :], x1_inliers[1, :], 'go', markersize=5)  # Green circles for inliers
+        
+        # # Segundo subplot para la segunda imagen
+        # ax2.set_xlabel('Coordinates X (píxeles)')
+        # ax2.set_ylabel('Coordinates Y (píxeles)')
+        # ax2.imshow(image_pers_2)
+        # ax2.set_title('Image 2 - Epipolar Lines')
+        
+        # ax2.plot(x2_inliers[0, :], x2_inliers[1, :], 'go', markersize=5)  # Green circles for inliers
+        # plt.show(block=True)
+                     
 
     if flg_exercise_5_1:
-        print("\nExercise 5.1: Epipolar lines and epipoles\n")
+        print("\nExercise 5.1: Fundamental amtrix comparation with superglue\n")
+                
+        # Load SuperGlue matches (assuming they are saved in .npz format)
+        superglue_matches = np.load("./data/image1_image2_matches.npz")
+        keypoints0_SG = superglue_matches["keypoints0"]  # Keypoints in image 1
+        keypoints1_SG = superglue_matches["keypoints1"]  # Keypoints in image 2
+        matches_SG = superglue_matches["matches"]  # Indices of matches
+        confidence_SG = superglue_matches["match_confidence"]
+        descriptors0_SG = superglue_matches["descriptors0"]
+        descriptors1_SG = superglue_matches["descriptors1"]
+        
+        # Convert keypoints from arrays to OpenCV KeyPoint format
+        def array_to_keypoints(array):
+            return [cv2.KeyPoint(x=float(pt[0]), y=float(pt[1]), _size=1) for pt in array]
+
+        keypoints0_SG_cv = array_to_keypoints(keypoints0_SG)
+        keypoints1_SG_cv = array_to_keypoints(keypoints1_SG)
+
+        # Filter valid matches
+        valid_matches = matches_SG > -1  # Boolean mask where matches_SG > -1 are valid matches
+        matched_keypoints0 = keypoints0_SG[valid_matches]  # x1 points from image 1
+        matched_keypoints1 = keypoints1_SG[matches_SG[valid_matches]]  # x2 points from image 2
+
+        # Create DMatch objects for valid matches
+        dMatchesList_SG = [cv2.DMatch(_queryIdx=i, _trainIdx=matches_SG[i], _distance=confidence_SG[i])
+                        for i in range(len(matches_SG)) if valid_matches[i]]
+
+        # Convert matched points to homogeneous coordinates for RANSAC
+        x1_superglue = np.vstack((matched_keypoints0.T, np.ones((1, matched_keypoints0.shape[0]))))
+        x2_superglue = np.vstack((matched_keypoints1.T, np.ones((1, matched_keypoints1.shape[0]))))
+        
+        RANSAC_inlier_ratio = 0.4
+        RANSAC_pixel_threshold = 2
+        F_SG, inliers_mask_superglue = ransac_fundamental_matrix(x1_superglue, x2_superglue, image_pers_1, image_pers_2, nIter = 50000, threshold = RANSAC_pixel_threshold)
+        print("Fundamental Matrix F:\n", F_SG)
+        visualize_epipolar_lines(F_SG, image_pers_1, image_pers_2, show_epipoles=True)
+
+        
+        # Generate inliers and outliers for SuperGlue
+        inliers_matches_superglue = [
+            dMatchesList_SG[i] for i in range(len(dMatchesList_SG)) if inliers_mask_superglue[i]
+        ]
+        outliers_matches_superglue = [
+            dMatchesList_SG[i] for i in range(len(dMatchesList_SG)) if not inliers_mask_superglue[i]
+        ]
+
+        # Draw SuperGlue inliers and outliers
+        imgMatched_RANSAC_SG = cv2.drawMatches(image_pers_1, keypoints0_SG_cv, image_pers_2, keypoints1_SG_cv, dMatchesList_SG[:300],
+                                    None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS and cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        
+        imgInliersMatched_SG = cv2.drawMatches(image_pers_1, keypoints0_SG_cv, image_pers_2, keypoints1_SG_cv,
+                                            inliers_matches_superglue, None, matchColor=(0, 255, 0),
+                                            flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+
+        imgOutliersMatched_SG = cv2.drawMatches(image_pers_1, keypoints0_SG_cv, image_pers_2, keypoints1_SG_cv,
+                                                outliers_matches_superglue, None, matchColor=(0, 0, 255),
+                                                flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+        
+        # Display the comparison between SIFT and SuperGlue matches
+        fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6),) = plt.subplots(3, 2, figsize=(12, 8))
+        ax1.imshow(imgMatched_RANSAC, cmap='gray')
+        ax1.set_title("SIFT Matches")
+        
+        ax2.imshow(imgMatched_RANSAC_SG, cmap='gray')
+        ax2.set_title("SuperGlue Matches")
+        
+        ax3.imshow(imgInliersMatched, cmap='gray')
+        ax3.set_title("Inliers Matches SIFT")
+        
+        ax4.imshow(imgInliersMatched_SG, cmap='gray')
+        ax4.set_title("Inliers Matches SuperGlue")
+        
+        ax5.imshow(imgOutliersMatched, cmap='gray')
+        ax5.set_title("Outliers Matches SIFT")
+        
+        ax6.imshow(imgOutliersMatched_SG, cmap='gray')
+        ax6.set_title("Outliers Matches SuperGlue")
+        plt.tight_layout()
+        plt.show(block=True)  # Block execution until the figure is closed
         
     print("\EXECUTION ENDED\n")
