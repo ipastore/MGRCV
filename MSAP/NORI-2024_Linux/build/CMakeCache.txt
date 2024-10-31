@@ -27,13 +27,15 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 CMAKE_BUILD_TYPE:STRING=Release
 
 //CXX compiler
-CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-10
+CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/c++
 
-//LLVM archiver
-CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/lib/llvm-10/bin/llvm-ar
+//A wrapper around 'ar' adding the appropriate '--plugin' option
+// for the GCC compiler
+CMAKE_CXX_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-9
 
-//Generate index for LLVM archive
-CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/lib/llvm-10/bin/llvm-ranlib
+//A wrapper around 'ranlib' adding the appropriate '--plugin' option
+// for the GCC compiler
+CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-9
 
 //Flags used by the CXX compiler during all build types.
 CMAKE_CXX_FLAGS:STRING=
@@ -51,13 +53,15 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
 //C compiler
-CMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-10
+CMAKE_C_COMPILER:FILEPATH=/usr/bin/cc
 
-//LLVM archiver
-CMAKE_C_COMPILER_AR:FILEPATH=/usr/lib/llvm-10/bin/llvm-ar
+//A wrapper around 'ar' adding the appropriate '--plugin' option
+// for the GCC compiler
+CMAKE_C_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-9
 
-//Generate index for LLVM archive
-CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/lib/llvm-10/bin/llvm-ranlib
+//A wrapper around 'ranlib' adding the appropriate '--plugin' option
+// for the GCC compiler
+CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-9
 
 //Flags used by the C compiler during all build types.
 CMAKE_C_FLAGS:STRING=
@@ -392,7 +396,7 @@ TBB_BUILD_TESTS:BOOL=OFF
 TBB_CI_BUILD:BOOL=OFF
 
 //First time that TBB was configured
-TBB_CONFIG_DATE:STRING=jue, 31 oct 2024 12:38:51 +0100
+TBB_CONFIG_DATE:STRING=jue, 31 oct 2024 21:14:16 +0100
 
 //Do not save the configure date in the version string
 TBB_NO_DATE:BOOL=OFF
@@ -833,14 +837,6 @@ Fontconfig_LIBRARY-ADVANCED:INTERNAL=1
 HAS_CPP11_FLAG:INTERNAL=1
 //Test HAS_CPP14_FLAG
 HAS_CPP14_FLAG:INTERNAL=1
-//Test HAS_LIBCPP
-HAS_LIBCPP:INTERNAL=1
-//Test HAS_LIBCPPABI
-HAS_LIBCPPABI:INTERNAL=1
-//Result of TRY_COMPILE
-HAS_LIBCPPABI_COMPILED:INTERNAL=TRUE
-//Result of TRY_RUN
-HAS_LIBCPPABI_EXITCODE:INTERNAL=0
 //Test HAVE_GCC_INLINE_ASM_AVX
 HAVE_GCC_INLINE_ASM_AVX:INTERNAL=1
 //Test HAVE_SYSCONF_NPROCESSORS_ONLN
@@ -886,6 +882,8 @@ PKG_FONTCONFIG_fontconfig_PREFIX:INTERNAL=
 PKG_FONTCONFIG_fontconfig_VERSION:INTERNAL=
 //ADVANCED property for variable: RT_LIBRARY
 RT_LIBRARY-ADVANCED:INTERNAL=1
+//Test SUPPORTS_FLIFETIME
+SUPPORTS_FLIFETIME:INTERNAL=1
 //Test SUPPORTS_MRTM
 SUPPORTS_MRTM:INTERNAL=1
 //Test SUPPORTS_STDCXX11

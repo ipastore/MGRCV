@@ -1,15 +1,15 @@
 Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
 Change Dir: /home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_Linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_bfa30 && [1/2] Building C object CMakeFiles/cmTC_bfa30.dir/src.c.o
-[2/2] Linking C executable cmTC_bfa30
-FAILED: cmTC_bfa30 
-: && /usr/bin/clang-10 -Wno-deprecated-declarations -DCMAKE_HAVE_LIBC_PTHREAD  -rdynamic CMakeFiles/cmTC_bfa30.dir/src.c.o  -o cmTC_bfa30   && :
-/usr/bin/ld: CMakeFiles/cmTC_bfa30.dir/src.c.o: in function `main':
-src.c:(.text+0x35): undefined reference to `pthread_create'
-/usr/bin/ld: src.c:(.text+0x41): undefined reference to `pthread_detach'
-/usr/bin/ld: src.c:(.text+0x53): undefined reference to `pthread_join'
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
+Run Build Command(s):/usr/bin/ninja cmTC_a9b4c && [1/2] Building C object CMakeFiles/cmTC_a9b4c.dir/src.c.o
+[2/2] Linking C executable cmTC_a9b4c
+FAILED: cmTC_a9b4c 
+: && /usr/bin/cc -DCMAKE_HAVE_LIBC_PTHREAD  -rdynamic CMakeFiles/cmTC_a9b4c.dir/src.c.o  -o cmTC_a9b4c   && :
+/usr/bin/ld: CMakeFiles/cmTC_a9b4c.dir/src.c.o: in function `main':
+src.c:(.text+0x46): undefined reference to `pthread_create'
+/usr/bin/ld: src.c:(.text+0x52): undefined reference to `pthread_detach'
+/usr/bin/ld: src.c:(.text+0x63): undefined reference to `pthread_join'
+collect2: error: ld returned 1 exit status
 ninja: build stopped: subcommand failed.
 
 
@@ -36,12 +36,12 @@ int main(void)
 Determining if the function pthread_create exists in the pthreads failed with the following output:
 Change Dir: /home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_Linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/ninja cmTC_8ac35 && [1/2] Building C object CMakeFiles/cmTC_8ac35.dir/CheckFunctionExists.c.o
-[2/2] Linking C executable cmTC_8ac35
-FAILED: cmTC_8ac35 
-: && /usr/bin/clang-10 -Wno-deprecated-declarations -DCHECK_FUNCTION_EXISTS=pthread_create  -rdynamic CMakeFiles/cmTC_8ac35.dir/CheckFunctionExists.c.o  -o cmTC_8ac35  -lpthreads && :
+Run Build Command(s):/usr/bin/ninja cmTC_c0604 && [1/2] Building C object CMakeFiles/cmTC_c0604.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_c0604
+FAILED: cmTC_c0604 
+: && /usr/bin/cc -DCHECK_FUNCTION_EXISTS=pthread_create  -rdynamic CMakeFiles/cmTC_c0604.dir/CheckFunctionExists.c.o  -o cmTC_c0604  -lpthreads && :
 /usr/bin/ld: cannot find -lpthreads
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
+collect2: error: ld returned 1 exit status
 ninja: build stopped: subcommand failed.
 
 
