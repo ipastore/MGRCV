@@ -1,0 +1,75 @@
+<scene>
+	<!-- Independent sample generator -->
+	<sampler type="independent">
+		<integer name="sampleCount" value="1"/>
+	</sampler>
+
+	<!-- Use the ambient occlusion integrator -->
+    <integrator type="direct_whitted"/>
+
+	<!-- Load the Serapis bust -->
+	<mesh type="obj">
+		<string name="filename" value="serapis.obj"/>
+
+		<bsdf type="diffuse"/>
+	</mesh>
+
+
+	<!-- Define the light source -->
+	<emitter type="pointlight">
+		<color name="radiance" value="12, 3, 3"/>
+		<point name="position" value="-4, 4, 0"/>
+	</emitter>
+
+
+	<emitter type="pointlight">
+		<color name="radiance" value="12, 3, 3"/>
+		<point name="position" value="4, 4, 0"/>
+	</emitter>
+
+
+	<emitter type="pointlight">
+		<color name="radiance" value="3, 3, 12"/>
+		<point name="position" value="0, 4, 4"/>
+	</emitter>
+
+
+	<emitter type="pointlight">
+		<color name="radiance" value="3, 3, 12"/>
+		<point name="position" value="0, 4, -4"/>
+	</emitter>
+
+	<emitter type="pointlight">
+		<color name="radiance" value="12, 12, 3"/>
+		<point name="position" value="-4, 4, -4"/>
+	</emitter>
+
+	<emitter type="pointlight">
+		<color name="radiance" value="12, 12, 3"/>
+		<point name="position" value="4, 4, -4"/>
+	</emitter>
+
+	<emitter type="pointlight">
+		<color name="radiance" value="50, 50, 50"/>
+		<point name="position" value="0, 2, -6"/>
+	</emitter>
+	
+	
+
+	<!-- Render the scene viewed by a perspective camera -->
+	<camera type="perspective">
+        <!-- 3D origin, target point, and 'up' vector -->
+		<transform name="toWorld">
+			<lookat target="-0.478183, -0.395269, -0.301977" 
+					origin="-0.958452, -0.38327, -1.17902" 
+					up="0.00576335, 0.999928, 0.0105247"/>
+		</transform>
+
+		<!-- Field of view: 45 degrees -->
+		<float name="fov" value="45"/>
+
+		<!-- 768 x 768 pixels -->
+		<integer name="width" value="768"/>
+		<integer name="height" value="576"/>
+	</camera>
+</scene>
