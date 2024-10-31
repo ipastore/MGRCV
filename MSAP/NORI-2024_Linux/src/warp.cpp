@@ -39,11 +39,21 @@ float Warp::squareToTentPdf(const Point2f &p) {
 }
 
 Point2f Warp::squareToUniformDisk(const Point2f &sample) {
-    throw NoriException("Warp::squareToUniformDisk() is not yet implemented!");
+    float r = std::sqrt(sample.x());
+    float theta = 2 * M_PI * sample.y();
+
+    float x = r * std::cos(theta);
+    float y = r * std::sin(theta);
+
+    return Point2f(x,y);
 }
 
 float Warp::squareToUniformDiskPdf(const Point2f &p) {
-    throw NoriException("Warp::squareToUniformDiskPdf() is not yet implemented!");
+    if (p.norm() <= 1.0f) {
+        return 1.0f / M_PI;
+    }else{
+        return 0.0f;
+    }
 }
 
 Point2f Warp::squareToUniformTriangle(const Point2f& sample) {
@@ -62,7 +72,7 @@ float Warp::squareToUniformTrianglePdf(const Point2f& p) {
 
 Vector3f Warp::squareToUniformSphere(const Point2f& sample) {
 
-    // Calculate the azimuthal and polar angles
+    // Calculate spherical coordinates
     float phi = 2.0f * M_PI * sample.x();           // Azimuthal angle, ranges from 0 to 2pi
     float theta = std::acos(1.0f - 2.0f * sample.y()); // Polar angle, ranges from 0 to pi
 
@@ -76,34 +86,57 @@ Vector3f Warp::squareToUniformSphere(const Point2f& sample) {
 }
 
 float Warp::squareToUniformSpherePdf(const Vector3f &v) {
-    throw NoriException("Warp::squareToUniformSpherePdf() is not yet implemented!");
+    // Check if the point lies on the unit sphere (approximately, due to float precision)
+    if (std::abs(v.norm() - 1.0f) < 1e-4f) {
+        return 1.0f / (4.0f * M_PI); // PDF for uniform sampling on a sphere
+    }
+    return 0.0f; // Points outside the unit sphere should have a PDF of zero}
 }
 
 Vector3f Warp::squareToUniformHemisphere(const Point2f &sample) {
     // Calculate the azimuthal and polar angles
-    float phi = 2.0f * M_PI * sample.x();
-    float theta = 0.5f * M_PI * sample.y(); 
+    float phi = 2.0f * M_PI * sample.x();          // Azimuthal angle
+    float theta = std::acos(sample.y());     // Correct polar angle for hemisphere
 
     // Convert spherical coordinates to Cartesian coordinates (x, y, z)
     float x = std::sin(theta) * std::cos(phi);
     float y = std::sin(theta) * std::sin(phi);
     float z = std::cos(theta);
 
-    // Return the 3D point on the unit sphere
+    // Return the 3D point on the unit hemisphere
     return Vector3f(x, y, z);
 }
 
 float Warp::squareToUniformHemispherePdf(const Vector3f &v) {
-    throw NoriException("Warp::squareToUniformHemispherePdf() is not yet implemented!");
+    // Check if the point lies on the unit sphere (approximately, due to float precision)
+    if (std::abs(v.norm() - 1.0f) < 1e-4f && v.z() >= 0.0f) {
+        return 1.0f / (2.0f * M_PI); // PDF for uniform sampling on a sphere
+    }
+    return 0.0f; // Points outside the unit sphere should have a PDF of zero}
 }
 
 Vector3f Warp::squareToCosineHemisphere(const Point2f &sample) {
-    throw NoriException("Warp::squareToCosineHemisphere() is not yet implemented!");
+    float r_d = std::sqrt(sample.x());
+    float theta_d = 2 * M_PI * sample.y();
+
+    float theta = theta_d;
+    float sigma = std::asin(r_d);
+
+    float x = r_d * std::cos(theta_d);
+    float y = r_d * std::sin(theta_d);
+    float z = std::sqrt(1.0f - r_d*r_d);
+
+    return Vector3f(x,y,z);
 }
 
 float Warp::squareToCosineHemispherePdf(const Vector3f &v) {
-    throw NoriException("Warp::squareToCosineHemispherePdf() is not yet implemented!");
+// Ensure that the point lies on the unit hemisphere (norm ~ 1) and z >= 0
+    if ((v.norm() - 1.0f) < 1e-4f && v.z() >= 0.0f) {
+        return v.z() / M_PI; // PDF for cosine-weighted sampling
+    }
+    return 0.0f;
 }
+
 
 Vector3f Warp::squareToBeckmann(const Point2f &sample, float alpha) {
     throw NoriException("Warp::squareToBeckmann() is not yet implemented!");
