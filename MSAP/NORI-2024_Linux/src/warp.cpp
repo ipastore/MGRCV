@@ -70,80 +70,106 @@ float Warp::squareToUniformTrianglePdf(const Point2f& p) {
     return (p.x() >= 0.0f && p.y() >= 0.0f && p.x() + p.y() <= 1.0f) ? 2.0f : 0.0f;
 }
 
-Vector3f Warp::squareToUniformSphere(const Point2f& sample) {
+// Vector3f Warp::squareToUniformSphere(const Point2f& sample) {
 
-    // Calculate spherical coordinates
-    float phi = 2.0f * M_PI * sample.x();           // Azimuthal angle, ranges from 0 to 2pi
-    float theta = std::acos(1.0f - 2.0f * sample.y()); // Polar angle, ranges from 0 to pi
+//     // Calculate spherical coordinates
+//     float phi = 2.0f * M_PI * sample.x();           // Azimuthal angle, ranges from 0 to 2pi
+//     float theta = std::acos(1.0f - 2.0f * sample.y()); // Polar angle, ranges from 0 to pi
 
-    // Convert spherical coordinates to Cartesian coordinates (x, y, z)
-    float x = std::sin(theta) * std::cos(phi);
-    float y = std::sin(theta) * std::sin(phi);
-    float z = std::cos(theta);
+//     // Convert spherical coordinates to Cartesian coordinates (x, y, z)
+//     float x = std::sin(theta) * std::cos(phi);
+//     float y = std::sin(theta) * std::sin(phi);
+//     float z = std::cos(theta);
 
-    // Return the 3D point on the unit sphere
-    return Vector3f(x, y, z);
-}
+//     // Return the 3D point on the unit sphere
+//     return Vector3f(x, y, z);
+// }
 
-float Warp::squareToUniformSpherePdf(const Vector3f &v) {
-    // Check if the point lies on the unit sphere (approximately, due to float precision)
-    if (std::abs(v.norm() - 1.0f) < 1e-4f) {
-        return 1.0f / (4.0f * M_PI); // PDF for uniform sampling on a sphere
-    }
-    return 0.0f; // Points outside the unit sphere should have a PDF of zero}
-}
+// float Warp::squareToUniformSpherePdf(const Vector3f &v) {
+//     // Check if the point lies on the unit sphere (approximately, due to float precision)
+//     if (std::abs(v.norm() - 1.0f) < 1e-4f) {
+//         return 1.0f / (4.0f * M_PI); // PDF for uniform sampling on a sphere
+//     }
+//     return 0.0f; // Points outside the unit sphere should have a PDF of zero}
+// }
 
-Vector3f Warp::squareToUniformHemisphere(const Point2f &sample) {
-    // Calculate the azimuthal and polar angles
-    float phi = 2.0f * M_PI * sample.x();          // Azimuthal angle
-    float theta = std::acos(sample.y());     // Correct polar angle for hemisphere
+// Vector3f Warp::squareToUniformHemisphere(const Point2f &sample) {
+//     // Calculate the azimuthal and polar angles
+//     float phi = 2.0f * M_PI * sample.x();          // Azimuthal angle
+//     float theta = std::acos(sample.y());     // Correct polar angle for hemisphere
 
-    // Convert spherical coordinates to Cartesian coordinates (x, y, z)
-    float x = std::sin(theta) * std::cos(phi);
-    float y = std::sin(theta) * std::sin(phi);
-    float z = std::cos(theta);
+//     // Convert spherical coordinates to Cartesian coordinates (x, y, z)
+//     float x = std::sin(theta) * std::cos(phi);
+//     float y = std::sin(theta) * std::sin(phi);
+//     float z = std::cos(theta);
 
-    // Return the 3D point on the unit hemisphere
-    return Vector3f(x, y, z);
-}
+//     // Return the 3D point on the unit hemisphere
+//     return Vector3f(x, y, z);
+// }
 
-float Warp::squareToUniformHemispherePdf(const Vector3f &v) {
-    // Check if the point lies on the unit sphere (approximately, due to float precision)
-    if (std::abs(v.norm() - 1.0f) < 1e-4f && v.z() >= 0.0f) {
-        return 1.0f / (2.0f * M_PI); // PDF for uniform sampling on a sphere
-    }
-    return 0.0f; // Points outside the unit sphere should have a PDF of zero}
-}
+// float Warp::squareToUniformHemispherePdf(const Vector3f &v) {
+//     // Check if the point lies on the unit sphere (approximately, due to float precision)
+//     if (std::abs(v.norm() - 1.0f) < 1e-4f && v.z() >= 0.0f) {
+//         return 1.0f / (2.0f * M_PI); // PDF for uniform sampling on a sphere
+//     }
+//     return 0.0f; // Points outside the unit sphere should have a PDF of zero}
+// }
 
-Vector3f Warp::squareToCosineHemisphere(const Point2f &sample) {
-    float r_d = std::sqrt(sample.x());
-    float theta_d = 2 * M_PI * sample.y();
+// Vector3f Warp::squareToCosineHemisphere(const Point2f &sample) {
+//     float r_d = std::sqrt(sample.x());
+//     float theta_d = 2 * M_PI * sample.y();
 
-    float theta = theta_d;
-    float sigma = std::asin(r_d);
+//     float sigma = std::asin(r_d);
 
-    float x = r_d * std::cos(theta_d);
-    float y = r_d * std::sin(theta_d);
-    float z = std::sqrt(1.0f - r_d*r_d);
+//     float x = r_d * std::cos(theta_d);
+//     float y = r_d * std::sin(theta_d);
+//     float z = std::sqrt(1.0f - r_d*r_d);
 
-    return Vector3f(x,y,z);
-}
+//     return Vector3f(x,y,z);
+// }
 
-float Warp::squareToCosineHemispherePdf(const Vector3f &v) {
-// Ensure that the point lies on the unit hemisphere (norm ~ 1) and z >= 0
-    if ((v.norm() - 1.0f) < 1e-4f && v.z() >= 0.0f) {
-        return v.z() / M_PI; // PDF for cosine-weighted sampling
-    }
-    return 0.0f;
-}
+// float Warp::squareToCosineHemispherePdf(const Vector3f &v) {
+// // Ensure that the point lies on the unit hemisphere (norm ~ 1) and z >= 0
+//     if ((v.norm() - 1.0f) < 1e-4f && v.z() >= 0.0f) {
+//         return v.z() / M_PI; // PDF for cosine-weighted sampling
+//     }
+//     return 0.0f;
+// }
 
 
-Vector3f Warp::squareToBeckmann(const Point2f &sample, float alpha) {
-    throw NoriException("Warp::squareToBeckmann() is not yet implemented!");
-}
+// Vector3f Warp::squareToBeckmann(const Point2f &sample, float alpha) {
 
-float Warp::squareToBeckmannPdf(const Vector3f &m, float alpha) {
-    throw NoriException("Warp::squareToBeckmannPdf() is not yet implemented!");
-}
+//     // Step 1: Sample polar angle theta
+//     float tanTheta2 = -alpha * alpha * std::log(1.0f - sample.x()); // x in [0, 1]
+//     float theta = std::atan(std::sqrt(tanTheta2)); // theta is in [0, pi/2]
+
+//     // Step 2: Sample azimuthal angle phi uniformly
+//     float phi = 2.0f * M_PI * sample.y(); // y in [0, 1]
+
+//     // Step 3: Convert spherical coordinates to Cartesian
+//     float sinTheta = std::sin(theta);
+//     float x = sinTheta * std::cos(phi);
+//     float y = sinTheta * std::sin(phi);
+//     float z = std::cos(theta);
+
+//     return Vector3f(x, y, z); // Beckmann-sampled direction
+//     }
+
+// float Warp::squareToBeckmannPdf(const Vector3f &m, float alpha) {
+    
+//     // Ensure the vector is on the upper hemisphere
+//     if (m.z() <= 0.0f) return 0.0f;
+
+//     // Compute cos(theta) and tan^2(theta)
+//     float cosTheta = m.z();
+//     float tanTheta2 = (1.0f - cosTheta * cosTheta) / (cosTheta * cosTheta);
+
+//     // Compute the Beckmann PDF
+//     float exponent = -tanTheta2 / (alpha * alpha);
+//     float pdf = (std::exp(exponent) / (M_PI * alpha * alpha * cosTheta * cosTheta * cosTheta));
+
+//     return pdf;
+
+// }
 
 NORI_NAMESPACE_END

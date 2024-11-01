@@ -25,7 +25,7 @@ rule CUSTOM_COMMAND
 rule CXX_COMPILER__warptest
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -33,7 +33,7 @@ rule CXX_COMPILER__warptest
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__warptest
-  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/c++  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -44,7 +44,7 @@ rule CXX_EXECUTABLE_LINKER__warptest
 rule CXX_COMPILER__nori
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -52,7 +52,7 @@ rule CXX_COMPILER__nori
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__nori
-  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/c++  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -63,7 +63,7 @@ rule CXX_EXECUTABLE_LINKER__nori
 rule CXX_COMPILER__pugixml
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -82,7 +82,7 @@ rule CXX_STATIC_LIBRARY_LINKER__pugixml
 rule CXX_COMPILER__Half
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -101,7 +101,7 @@ rule CXX_STATIC_LIBRARY_LINKER__Half
 rule CXX_COMPILER__toFloat
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -109,7 +109,7 @@ rule CXX_COMPILER__toFloat
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__toFloat
-  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/c++  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -120,7 +120,7 @@ rule CXX_EXECUTABLE_LINKER__toFloat
 rule CXX_COMPILER__eLut
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -128,7 +128,7 @@ rule CXX_COMPILER__eLut
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__eLut
-  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/c++  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -139,7 +139,7 @@ rule CXX_EXECUTABLE_LINKER__eLut
 rule CXX_COMPILER__Iex
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -158,7 +158,7 @@ rule CXX_STATIC_LIBRARY_LINKER__Iex
 rule CXX_COMPILER__IexMath
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -177,7 +177,7 @@ rule CXX_STATIC_LIBRARY_LINKER__IexMath
 rule CXX_COMPILER__Imath
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -196,7 +196,7 @@ rule CXX_STATIC_LIBRARY_LINKER__Imath
 rule CXX_COMPILER__IlmThread
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -215,7 +215,7 @@ rule CXX_STATIC_LIBRARY_LINKER__IlmThread
 rule CXX_COMPILER__IlmImf
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -234,7 +234,7 @@ rule CXX_STATIC_LIBRARY_LINKER__IlmImf
 rule CXX_COMPILER__IlmImf-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -244,7 +244,7 @@ rule CXX_COMPILER__IlmImf-obj
 rule CXX_COMPILER__dwaLookups
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -252,7 +252,7 @@ rule CXX_COMPILER__dwaLookups
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__dwaLookups
-  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/c++  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -263,7 +263,7 @@ rule CXX_EXECUTABLE_LINKER__dwaLookups
 rule CXX_COMPILER__b44ExpLogTable
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -271,7 +271,7 @@ rule CXX_COMPILER__b44ExpLogTable
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__b44ExpLogTable
-  command = $PRE_LINK && /usr/bin/clang++-10  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  command = $PRE_LINK && /usr/bin/c++  $FLAGS  $LINK_FLAGS $in  -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
 
@@ -282,7 +282,7 @@ rule CXX_EXECUTABLE_LINKER__b44ExpLogTable
 rule CXX_COMPILER__tbb_static
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -310,7 +310,7 @@ rule CXX_STATIC_LIBRARY_LINKER__nanogui
 rule C_COMPILER__nanogui-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang-10 $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out   -c $in
+  command = /usr/bin/cc $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out   -c $in
   description = Building C object $out
 
 
@@ -320,7 +320,7 @@ rule C_COMPILER__nanogui-obj
 rule CXX_COMPILER__nanogui-obj
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang++-10  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  command = /usr/bin/c++  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building CXX object $out
 
 
@@ -339,7 +339,7 @@ rule C_STATIC_LIBRARY_LINKER__glfw
 rule C_COMPILER__glfw_objects
   depfile = $DEP_FILE
   deps = gcc
-  command = /usr/bin/clang-10 $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out   -c $in
+  command = /usr/bin/cc $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out   -c $in
   description = Building C object $out
 
 
