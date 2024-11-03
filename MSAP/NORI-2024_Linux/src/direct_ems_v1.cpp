@@ -40,17 +40,17 @@ public:
         
 
         // Número de muestras por píxel, ajustable según la calidad deseada
-        int N = 64;
+        int N = 128;
         // Para acumular la radiancia total de las muestras
         Color3f accumulatedRadiance(0.0f);
 
         // Iteramos sobre el numero de sample por cada emisor.
         for (int i = 0; i < N; ++i) {
             
-            // // Paso 1: Muestrear un emisor aleatorio en la escena
-            // float pdfEmitter; // PDF de seleccionar este emisor
-            // const Emitter* em = scene->sampleEmitter(sampler->next1D(), pdfEmitter);
-            // if (pdfEmitter == 0) continue; // Si la PDF es cero (no hay emisor), sanitizacion por dividir por 0.
+            // Paso 1: Muestrear un emisor aleatorio en la escena
+            float pdfEmitter; // PDF de seleccionar este emisor
+            const Emitter* em = scene->sampleEmitter(sampler->next1D(), pdfEmitter);
+            if (pdfEmitter == 0) continue; // Si la PDF es cero (no hay emisor), sanitizacion por dividir por 0.
 
             // Paso 2: Muestrear un punto en el emisor seleccionado
             EmitterQueryRecord emitterRecord(its.p);  // Inicializamos el sample point a nuestro punto de referncia para la muestra.

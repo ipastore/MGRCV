@@ -46,58 +46,30 @@ public:
 	// We don't assume anything about the visibility of points specified in 'ref' and 'p' in the EmitterQueryRecord.
 	virtual Color3f eval(const EmitterQueryRecord & lRec) const {
 		if (!m_mesh)
-			
-			throw NoriException("There is no shape attached to this Area light!");
-
-		// This function call can be done by bsdf sampling routines.
-		// Hence the ray was already traced for us - i.e a visibility test was already performed.
-		// Hence just check if the associated normal in emitter query record and incoming direction are not backfacing
+        	throw NoriException("There is no shape attached to this Area light!");
 		// throw NoriException("AreaEmitter::eval() is not yet implemented!");
-
-		// Check backfacing
-		if (lRec.n.dot(-lRec.wi) <= 0.){
-			return Color3f(0.0f);
-		} else {
-			return m_scale * m_radiance->eval(lRec.uv);
-    	}	
-		
+		if (lRec.n.dot(-lRec.wi) < 0.0f) // check if backfacing
+        	return Color3f(0.0f);
+    	return m_radiance->eval(lRec.uv);
 	}
 
 	virtual Color3f sample(EmitterQueryRecord & lRec, const Point2f & sample, float optional_u) const {
 		if (!m_mesh)
 			throw NoriException("There is no shape attached to this Area light!");
-		
-		// throw NoriException("AreaEmitter::sample() is not yet implemented!");
 
-		// Sampleams punto en la malla
-		Point3f p;
-		Normal3f n;
-		Point2f uv;
-		m_mesh->samplePosition(sample, p, n, uv);
+		//throw NoriException("AreaEmitter::sample() is not yet implemented!");
+		if (lRec.n.dot(-lRec.wi) < 0.0f)	// check if backfacing
+			return Color3f(0.0f);
+		// sample a point on the mesh
 		m_mesh->samplePosition(sample, lRec.p, lRec.n, lRec.uv);
-
-
-		//EmitterQueryRecord para el punto en la malla
-		lRec.p = p;
-		lRec.n = n;
-		lRec.uv = uv;
+		// update the values on the record
 		lRec.dist = (lRec.p - lRec.ref).norm();
 		lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
-
-	
-		// Get solid angle pdf
 		lRec.pdf = pdf(lRec);
-
-		return eval(lRec);
-				// update the values on the record
-		// lRec.dist = (lRec.p - lRec.ref).norm();
-		// lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
-		// lRec.pdf = pdf(lRec);
-		// if (lRec.pdf < 1e-3) {	// if pdf is too small, assume it is black
-		// 	return Color3f(0.0f);
-		// }
-		// return m_radiance->eval(lRec.uv);
-
+		if (lRec.pdf < 1e-3) {	// if pdf is too small, assume it is black
+			return Color3f(0.0f);
+		}
+		return m_radiance->eval(lRec.uv);
 	}
 
 	// Returns probability with respect to solid angle given by all the information inside the emitterqueryrecord.
@@ -109,14 +81,14 @@ public:
 			throw NoriException("There is no shape attached to this Area light!");
 		// throw NoriException("AreaEmitter::pdf() is not yet implemented!");
 
-        // Positional a Solid Angle
 		float cos_theta = lRec.n.dot(-lRec.wi);
 		if (cos_theta <= 0.0f) // check if backfacing
 			return 0.0f;
-        float pdfPositional = m_mesh->pdf(lRec.p);
-        // return pdfPositional * (lRec.dist * lRec.dist) / std::abs(lRec.n.dot(lRec.wi));
-		return pdfPositional * (lRec.dist * lRec.dist) / std::abs(cos_theta);
- 
+		// get the pdf of the mesh
+		float m_pdf = m_mesh->pdf(lRec.p);
+		float squared_dist = static_cast<float>(pow(lRec.dist, 2));
+		
+		return m_pdf * squared_dist / cos_theta;
 	}
 
 
@@ -148,7 +120,7 @@ public:
 		}
 	}
 protected:
-	Texture* m_radiance;
+	Texture *m_radiance;
 	float m_scale;
 };
 

@@ -70,33 +70,33 @@ public:
 		// throw NoriException("AreaEmitter::sample() is not yet implemented!");
 
 		// Sampleams punto en la malla
-		Point3f p;
-		Normal3f n;
-		Point2f uv;
-		m_mesh->samplePosition(sample, p, n, uv);
+		// Point3f p;
+		// Normal3f n;
+		// Point2f uv;
+		// m_mesh->samplePosition(sample, p, n, uv);
 		m_mesh->samplePosition(sample, lRec.p, lRec.n, lRec.uv);
 
 
-		//EmitterQueryRecord para el punto en la malla
-		lRec.p = p;
-		lRec.n = n;
-		lRec.uv = uv;
-		lRec.dist = (lRec.p - lRec.ref).norm();
-		lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
-
-	
-		// Get solid angle pdf
-		lRec.pdf = pdf(lRec);
-
-		return eval(lRec);
-				// update the values on the record
+		// EmitterQueryRecord para el punto en la malla
+		// lRec.p = p;
+		// lRec.n = n;
+		// lRec.uv = uv;
 		// lRec.dist = (lRec.p - lRec.ref).norm();
 		// lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
+
+	
+		// // Get solid angle pdf
 		// lRec.pdf = pdf(lRec);
-		// if (lRec.pdf < 1e-3) {	// if pdf is too small, assume it is black
-		// 	return Color3f(0.0f);
-		// }
-		// return m_radiance->eval(lRec.uv);
+
+		// return eval(lRec);
+				// update the values on the record
+		lRec.dist = (lRec.p - lRec.ref).norm();
+		lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
+		lRec.pdf = pdf(lRec);
+		if (lRec.pdf < 1e-3) {	// if pdf is too small, assume it is black
+			return Color3f(0.0f);
+		}
+		return m_radiance->eval(lRec.uv);
 
 	}
 
