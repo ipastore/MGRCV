@@ -46,11 +46,11 @@ void Mesh::activate() {
 
     // Inicializamos la m_pdf para reservar espacio para cada una de las superficies (triangle) de m_F
     m_pdf.reserve(m_F.cols());
-    // for (n_UINT i = 0; i < m_F.cols(); ++i) {
-    //     float area = surfaceArea(i);  // Compute area of each triangle
-    //     m_pdf.append(area);            
-    // }
-    // m_pdf.normalize();
+    for (n_UINT i = 0; i < m_F.cols(); ++i) {
+        float area = surfaceArea(i);  // Compute area of each triangle
+        m_pdf.append(area);            
+    }
+    m_pdf.normalize();
 }
 
 /// Return the surface area of the given triangle
@@ -128,64 +128,60 @@ Point3f Mesh::getCentroid(n_UINT index) const {
  * respect to surface area. Returns both position and normal
  */
 void Mesh::samplePosition(const Point2f &sample, Point3f &p, Normal3f &n, Point2f &uv) const {
-    // // Paso 1: Seleccionar el triángulo
+    // Paso 1: Seleccionar el triángulo
 
-    // float pdfTriangle;
-    // size_t triangleIndex = m_pdf.sampleReuse(sample.x(), pdfTriangle);
+    float sample_x = sample.x();
+    float sample_y = sample.y();
+    size_t triangleIndex = m_pdf.sampleReuse(sample_x);
 
 
-    // n_UINT i0 = m_F(0, triangle_index);  // Índice del primer vértice
-    // n_UINT i1 = m_F(1, triangle_index);  // Índice del segundo vértice
-    // n_UINT i2 = m_F(2, triangle_index);  // Índice del tercer vértice
+    n_UINT i0 = m_F(0, triangleIndex);  // Índice del primer vértice
+    n_UINT i1 = m_F(1, triangleIndex);  // Índice del segundo vértice
+    n_UINT i2 = m_F(2, triangleIndex);  // Índice del tercer vértice
 
-    // // Obtener las posiciones de los vértices del triángulo
-    // const Point3f &v0 = m_V.col(i0);
-    // const Point3f &v1 = m_V.col(i1);
-    // const Point3f &v2 = m_V.col(i2);
+    // Obtener las posiciones de los vértices del triángulo
+    const Point3f &v0 = m_V.col(i0);
+    const Point3f &v1 = m_V.col(i1);
+    const Point3f &v2 = m_V.col(i2);
 
-    // // Paso 2: Generamos las coordenadas baricéntricas uniformes dentro del triángulo
-    // Point2f barycentric = Warp::squareToUniformTriangle(sample); // Reuse sample.y() for the barycentric coordinates
-    // float b0 = 1.0f - barycentric.x() - barycentric.y(); // Coordenada baricéntrica para v0
-    // float b1 = barycentric.x();                          // Coordenada baricéntrica para v1
-    // float b2 = barycentric.y();                          // Coordenada baricéntrica para v2
+    // Paso 2: Generamos las coordenadas baricéntricas uniformes dentro del triángulo
+    Point2f barycentric = Warp::squareToUniformTriangle(Point2f(sample_x, sample_y)); // Reuse sample.y() for the barycentric coordinates
+    float b0 = 1.0f - barycentric.x() - barycentric.y(); // Coordenada baricéntrica para v0
+    float b1 = barycentric.x();                          // Coordenada baricéntrica para v1
+    float b2 = barycentric.y();                          // Coordenada baricéntrica para v2
 
-    // // Paso 3: Interpolamos la posición en el triángulo usando las coordenadas baricéntricas
-    // p = b0 * v0 + b1 * v1 + b2 * v2;
+    // Paso 3: Interpolamos la posición en el triángulo usando las coordenadas baricéntricas
+    p = b0 * v0 + b1 * v1 + b2 * v2;
 
-    // // Paso 4: Interpolamos la normal (si las normales están definidas)
-    // if (m_N.size() > 0) {  // Verificamos si existen normales
-    //     const Normal3f &n0 = m_N.col(i0);
-    //     const Normal3f &n1 = m_N.col(i1);
-    //     const Normal3f &n2 = m_N.col(i2);
-    //     n = (b0 * n0 + b1 * n1 + b2 * n2).normalized();
-    // } else {
-    //     // Si no hay normales, calcular la normal del triángulo usando el producto cruzado
-    //     n = (v1 - v0).cross(v2 - v0).normalized();
-    // }
+    // Paso 4: Interpolamos la normal (si las normales están definidas)
+    if (m_N.size() > 0) {  // Verificamos si existen normales
+        const Normal3f &n0 = m_N.col(i0);
+        const Normal3f &n1 = m_N.col(i1);
+        const Normal3f &n2 = m_N.col(i2);
+        n = (b0 * n0 + b1 * n1 + b2 * n2).normalized();
+    } else {
+        // Si no hay normales, calcular la normal del triángulo usando el producto cruzado
+        n = (v1 - v0).cross(v2 - v0).normalized();
+    }
 
-    // // Paso 5: Interpolamoa las coordenadas UV (si existen)
-    // if (m_UV.size() > 0) {  // Verificamos si existen coordenadas UV
-    //     const Point2f &uv0 = m_UV.col(i0);
-    //     const Point2f &uv1 = m_UV.col(i1);
-    //     const Point2f &uv2 = m_UV.col(i2);
-    //     uv = b0 * uv0 + b1 * uv1 + b2 * uv2;
-    // } else {
-    //     // Si no existen coordenadas UV, asignamos un valor predeterminado
-    //     uv = Point2f(0.0f, 0.0f);
-    // }
-
-    throw NoriException("Mesh::samplePosition() is not yet implemented!");	
+    // Paso 5: Interpolamoa las coordenadas UV (si existen)
+    if (m_UV.size() > 0) {  // Verificamos si existen coordenadas UV
+        const Point2f &uv0 = m_UV.col(i0);
+        const Point2f &uv1 = m_UV.col(i1);
+        const Point2f &uv2 = m_UV.col(i2);
+        uv = b0 * uv0 + b1 * uv1 + b2 * uv2;
+    } else {
+        // Si no existen coordenadas UV, asignamos un valor predeterminado
+        uv = Point2f(0.0f, 0.0f);
+    }
 
 }
 
 /// Return the surface area of the given triangle
 float Mesh::pdf(const Point3f &p) const {
-    // float totalArea = m_pdf.getNormalization();
-    // return (totalArea > 0.0f) ? (1.0f / totalArea) : 0.0f;
+    float totalArea = m_pdf.getNormalization();
+    return (totalArea > 0.0f) ? (1.0f / totalArea) : 0.0f;
     
-    throw NoriException("Mesh::pdf() is not yet implemented!");	
-	
-	return 0.;
 }
 
 
