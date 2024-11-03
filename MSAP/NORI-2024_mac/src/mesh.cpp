@@ -180,7 +180,7 @@ void Mesh::samplePosition(const Point2f &sample, Point3f &p, Normal3f &n, Point2
 /// Return the surface area of the given triangle
 float Mesh::pdf(const Point3f &p) const {
     float totalArea = m_pdf.getNormalization();
-    return (totalArea > 0.0f) ? (1.0f / totalArea) : 0.0f;
+    return (totalArea > 0.0f) ? (totalArea) : 0.0f;
     
 }
 

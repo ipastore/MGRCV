@@ -46,19 +46,46 @@ public:
 	// We don't assume anything about the visibility of points specified in 'ref' and 'p' in the EmitterQueryRecord.
 	virtual Color3f eval(const EmitterQueryRecord & lRec) const {
 		if (!m_mesh)
+			
 			throw NoriException("There is no shape attached to this Area light!");
 
 		// This function call can be done by bsdf sampling routines.
 		// Hence the ray was already traced for us - i.e a visibility test was already performed.
 		// Hence just check if the associated normal in emitter query record and incoming direction are not backfacing
-		throw NoriException("AreaEmitter::eval() is not yet implemented!");
+		// throw NoriException("AreaEmitter::eval() is not yet implemented!");
+
+		// Check backfacing
+		if (lRec.n.dot(lRec.wi) <= 0.)
+			return Color3f(0.f);
+		
+		return m_radiance->eval(lRec.uv) * m_scale;
 	}
 
 	virtual Color3f sample(EmitterQueryRecord & lRec, const Point2f & sample, float optional_u) const {
 		if (!m_mesh)
 			throw NoriException("There is no shape attached to this Area light!");
+		
+		// throw NoriException("AreaEmitter::sample() is not yet implemented!");
 
-		throw NoriException("AreaEmitter::sample() is not yet implemented!");
+		// Sampleams punto en la malla
+		Point3f p;
+		Normal3f n;
+		Point2f uv;
+		m_mesh->samplePosition(sample, p, n, uv);
+
+		// EmitterQueryRecord para el punto en la malla
+		lRec.p = p;
+		lRec.n = n;
+		lRec.uv = uv;
+		lRec.dist = (lRec.p - lRec.ref).norm();
+		lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
+
+	
+		// Get solid angle pdf
+		lRec.pdf = pdf(lRec);
+
+		return eval(lRec);
+
 	}
 
 	// Returns probability with respect to solid angle given by all the information inside the emitterqueryrecord.
@@ -68,8 +95,12 @@ public:
 	virtual float pdf(const EmitterQueryRecord &lRec) const {
 		if (!m_mesh)
 			throw NoriException("There is no shape attached to this Area light!");
+		// throw NoriException("AreaEmitter::pdf() is not yet implemented!");
 
-		throw NoriException("AreaEmitter::pdf() is not yet implemented!");
+        // Positional a Solid Angle
+        float pdfPositional = m_mesh->pdf(lRec.p);
+        return pdfPositional * (lRec.dist * lRec.dist) / std::abs(lRec.n.dot(lRec.wi));
+
 	}
 
 
