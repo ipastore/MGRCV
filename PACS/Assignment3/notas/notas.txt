@@ -1,0 +1,25 @@
+
+\begin{figure}[h]
+        \centering
+        \begin{minipage}{0.30\textwidth}
+            \centering
+            \begin{tikzpicture}[scale=0.7]
+                \begin{axis}[
+                    title={Clock Time},
+                    xlabel={N Steps},
+                    ylabel={Time (s)},
+                    legend pos=north west,
+                    grid=major,
+                    legend cell align=left
+                ]
+    
+                \addplot [color=blue, solid, mark=o, mark options={solid}]
+                table [x=Steps, y=mean, col sep=comma] {./pi_taylor_sequential_summary_statistics.csv};
+                \addlegendentry{2D Array}
+                
+                 \end{axis}
+            \end{tikzpicture}
+        \end{minipage}
+    \caption{Comparison of clock, initialization, and multiplication times for both implementations.}
+    \label{fig:1}
+\end{figure}

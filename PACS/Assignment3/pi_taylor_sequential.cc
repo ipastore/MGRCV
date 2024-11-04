@@ -22,8 +22,6 @@ my_float pi_taylor(size_t steps) {
 	    n++;
     }
 
-    
-
     return 4.0 * pi_aprox;
 }
 
@@ -47,6 +45,8 @@ int main(int argc, const char *argv[]) {
     std::chrono::duration<double> duration = end - start;
 
     // Print the results
-    std::cout << "For " << steps << " steps, pi value: " << pi << std::endl;
+    std::cout << "For " << steps << ", pi value: "
+        << std::setprecision(std::numeric_limits<long double>::digits10 + 1)
+        << pi << std::endl;
     std::cout << "Execution time: " << duration.count() << " seconds" << std::endl;
 }
