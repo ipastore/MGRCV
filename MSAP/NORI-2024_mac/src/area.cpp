@@ -89,14 +89,6 @@ public:
 		lRec.pdf = pdf(lRec);
 
 		return eval(lRec);
-				// update the values on the record
-		// lRec.dist = (lRec.p - lRec.ref).norm();
-		// lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
-		// lRec.pdf = pdf(lRec);
-		// if (lRec.pdf < 1e-3) {	// if pdf is too small, assume it is black
-		// 	return Color3f(0.0f);
-		// }
-		// return m_radiance->eval(lRec.uv);
 
 	}
 

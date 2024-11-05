@@ -57,18 +57,21 @@ float Warp::squareToUniformDiskPdf(const Point2f &p) {
 }
 
 Point2f Warp::squareToUniformTriangle(const Point2f& sample) {
-    float sqrtU = std::sqrt(sample.x());
-    float u = 1.0f - sqrtU;
-    float v = sample.y() * sqrtU;
-    return Point2f(u, v);
+    if (sample.x() + sample.y() > 1.0f) {
+        return Point2f(1.0f - sample.x(), 1.0f - sample.y());
+    }
+    else {
+        return sample;
+    }
+    
 }
 
 float Warp::squareToUniformTrianglePdf(const Point2f& p) {
-    // Check if the point lies within the bounds of the unit triangle
-    if (p.x() + p.y() <= 1.0f) {
-        return 2.0f;
-    } else {
+    if (p.x() + p.y() > 1.0f) {
         return 0.0f;
+    }
+    else {
+        return 2.0f;    // 1 / 0.5f = 2.0f
     }
 }
 
