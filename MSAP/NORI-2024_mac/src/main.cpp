@@ -188,51 +188,61 @@ int main(int argc, char **argv) {
 
             continue;
         }
-        if (token == "--nogui" || token == "-b")
+        else if(token == "--nogui" || token == "-b")
             nogui = true;
+        else
+        {
+            filesystem::path path(argv[i]);
 
-        filesystem::path path(argv[i]);
+            try {
+                if (path.extension() == "xml") {
+                    sceneName = argv[i];
 
-        try {
-            if (path.extension() == "xml") {
-                sceneName = argv[i];
-                /* Add the parent directory of the scene file to the
-                   file resolver. That way, the XML file can reference
-                   resources (OBJ files, textures) using relative paths */
-                getFileResolver()->prepend(path.parent_path());
-            } else if (path.extension() == "exr") {
-                /* Alternatively, provide a basic OpenEXR image viewer */
-                Bitmap bitmap(argv[1]);
-                ImageBlock block(Vector2i((int) bitmap.cols(), (int) bitmap.rows()), nullptr);
-                block.fromBitmap(bitmap);
-                nanogui::init();
-                NoriScreen *screen = new NoriScreen(block);
-                nanogui::mainloop();
-                delete screen;
-                nanogui::shutdown();
-            } else {
-                cerr << "Fatal error: unknown file \"" << argv[1]
-                     << "\", expected an extension of type .xml or .exr" << endl;
+                    /* Add the parent directory of the scene file to the
+                       file resolver. That way, the XML file can reference
+                       resources (OBJ files, textures) using relative paths */
+                    getFileResolver()->prepend(path.parent_path());
+                }
+                else if (path.extension() == "exr") {
+                    /* Alternatively, provide a basic OpenEXR image viewer */
+                    Bitmap bitmap(argv[1]);
+                    ImageBlock block(Vector2i((int)bitmap.cols(), (int)bitmap.rows()), nullptr);
+                    block.fromBitmap(bitmap);
+                    nanogui::init();
+                    NoriScreen* screen = new NoriScreen(block);
+                    nanogui::mainloop();
+                    delete screen;
+                    nanogui::shutdown();
+                }
+                else {
+                    cerr << "Fatal error: unknown file \"" << argv[1]
+                        << "\", expected an extension of type .xml or .exr" << endl;
+                }
             }
-        } catch (const std::exception &e) {
-            cerr << "Fatal error: " << e.what() << endl;
-            return -1;
+            catch (const std::exception& e) {
+                cerr << "Fatal error: " << e.what() << endl;
+                return -1;
+            }
         }
     }
+
     if (threadCount < 0) {
         threadCount = tbb::task_scheduler_init::automatic;
     }
-    try { // this fixes silent crashes on Windows (seems like Linux already catches exceptions)
-        if (sceneName != "") {
+
+    if (sceneName != "") {
+        try {
             std::unique_ptr<NoriObject> root(loadFromXML(argv[1]));
+
             /* When the XML root object is a scene, start rendering it .. */
             if (root->getClassType() == NoriObject::EScene)
-                render(static_cast<Scene *>(root.get()), argv[1], nogui);
+                render(static_cast<Scene*>(root.get()), argv[1], nogui);
+        }
+        catch (const std::exception& e) {
+            cerr << "[FATAL ERROR]: " << e.what() << endl;
+            return -1;
         }
     }
-    catch (const std::exception &e) {
-        cerr << "Fatal error: " << e.what() << endl;
-        return -1;
-    }
+
     return 0;
 }
