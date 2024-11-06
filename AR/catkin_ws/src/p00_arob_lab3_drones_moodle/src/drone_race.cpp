@@ -282,48 +282,52 @@ void DroneRace::drawGateMarkers_(geometry_msgs::Pose gate, int &id){
     float gate_size = 0.75;
 
     //Generate the gate corners and edges
+    // POSITION 1: UP-LEFT
     Eigen::Matrix<double, 3, 1> move_gate;
     move_gate << 0.0, gate_size, gate_size;
-    Eigen::Matrix<double, 3, 1> position2 = pos_gate + rotate_gate * move_gate;
-    marker.pose.position.x = position2(0);
-    marker.pose.position.y = position2(1);
-    marker.pose.position.z = position2(2);
-    marker.id = id + 1;
-    line_marker.points.push_back(marker.pose.position);
-    marker_array.markers.push_back(marker);
-
-    move_gate << 0.0, -gate_size, gate_size;
     Eigen::Matrix<double, 3, 1> position = pos_gate + rotate_gate * move_gate;
     marker_sphere.pose.position.x = position(0);
     marker_sphere.pose.position.y = position(1);
     marker_sphere.pose.position.z = position(2);
-    marker_sphere.id = id + 2;
+    marker_sphere.id = id + 1;
     line_marker.points.push_back(marker_sphere.pose.position);
     marker_array.markers.push_back(marker_sphere);
 
-    move_gate << 0.0, -gate_size, -gate_size;
-    position = pos_gate + rotate_gate * move_gate;
-    marker_sphere.pose.position.x = position(0);
-    marker_sphere.pose.position.y = position(1);
-    marker_sphere.pose.position.z = position(2);
-    marker_sphere.id = id + 3;
-    line_marker.points.push_back(marker_sphere.pose.position);
-    marker_array.markers.push_back(marker_sphere);
-
-    move_gate << 0.0, gate_size, -gate_size;
-    position = pos_gate + rotate_gate * move_gate;
-    marker.pose.position.x = position(0);
-    marker.pose.position.y = position(1);
-    marker.pose.position.z = position(2);
-
-    marker.id = id + 4;
-    marker_array.markers.push_back(marker);
-    line_marker.points.push_back(marker.pose.position);
-
+    // POSITION 2: UP-RIGHT
+    move_gate << 0.0, -gate_size, gate_size;
+    Eigen::Matrix<double, 3, 1> position2 = pos_gate + rotate_gate * move_gate;
     marker.pose.position.x = position2(0);
     marker.pose.position.y = position2(1);
     marker.pose.position.z = position2(2);
+    marker.id = id + 2;
     line_marker.points.push_back(marker.pose.position);
+    marker_array.markers.push_back(marker);
+
+    // POSITION 3: DOWN-RIGHT
+    move_gate << 0.0, -gate_size, -gate_size;
+    Eigen::Matrix<double, 3, 1> position3 = pos_gate + rotate_gate * move_gate;
+    marker.pose.position.x = position3(0);
+    marker.pose.position.y = position3(1);
+    marker.pose.position.z = position3(2);
+    marker.id = id + 3;
+    line_marker.points.push_back(marker.pose.position);
+    marker_array.markers.push_back(marker);
+
+    // POSITION 4: DOWN-LEFT
+    move_gate << 0.0, gate_size, -gate_size;
+    Eigen::Matrix<double, 3, 1> position4 = pos_gate + rotate_gate * move_gate;
+    marker_sphere.pose.position.x = position4(0);
+    marker_sphere.pose.position.y = position4(1);
+    marker_sphere.pose.position.z = position4(2);
+    marker_sphere.id = id + 4;
+    marker_array.markers.push_back(marker_sphere);
+    line_marker.points.push_back(marker_sphere.pose.position);
+
+    // Same first point to close the gate
+    marker_sphere.pose.position.x = position(0);
+    marker_sphere.pose.position.y = position(1);
+    marker_sphere.pose.position.z = position(2);
+    line_marker.points.push_back(marker_sphere.pose.position);
     id+=5;
     marker_array.markers.push_back(line_marker);
     pub_gate_markers_.publish(marker_array);

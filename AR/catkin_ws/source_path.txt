@@ -1,0 +1,2 @@
+source /opt/ros/noetic/setup.bash 
+source /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/setup.bash 
