@@ -1,4 +1,4 @@
-hector_quadrotor_noetic/hector_models/hector_components_description
+hector-quadrotor-noetic/hector_models/hector_components_description
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_components_description/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_components_description/share/hector_components_description/cmake/hector_components_descriptionConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_components_description/cmake/hector_components_descriptionConfig-version.cmake
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_components_description/share/hector_components_description/cmake/hector_components_descriptionConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_components_description/cmake/hector_components_descriptionConfig.cmake

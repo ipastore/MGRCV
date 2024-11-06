@@ -1,4 +1,4 @@
-hector_quadrotor_noetic/hector_gazebo/hector_gazebo_worlds
+hector-quadrotor-noetic/hector_gazebo/hector_gazebo_worlds
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_gazebo_worlds/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_gazebo_worlds/share/hector_gazebo_worlds/cmake/hector_gazebo_worldsConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_gazebo_worlds/cmake/hector_gazebo_worldsConfig-version.cmake
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_gazebo_worlds/share/hector_gazebo_worlds/cmake/hector_gazebo_worldsConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_gazebo_worlds/cmake/hector_gazebo_worldsConfig.cmake

@@ -1,0 +1,20 @@
+<launch>
+  <node
+    pkg="turtlesim"
+    type="turtlesim_node"
+    name="turtlesim"
+    respawn="true"
+  />
+  <node
+    pkg="turtle_comunic"
+    type="pubvel"
+    name="pubvel"
+    launch-prefix="xterm -e"
+  />
+   <node
+    pkg="turtle_comunic"
+    type="subpose"
+    name="subpose"
+    launch-prefix="xterm -e"
+ />
+</launch>

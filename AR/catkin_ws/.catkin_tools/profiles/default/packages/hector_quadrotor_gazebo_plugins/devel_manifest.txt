@@ -1,4 +1,4 @@
-hector_quadrotor_noetic/hector_quadrotor/hector_quadrotor_gazebo_plugins
+hector-quadrotor-noetic/hector_quadrotor/hector_quadrotor_gazebo_plugins
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_gazebo_plugins/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_gazebo_plugins/share/hector_quadrotor_gazebo_plugins/cmake/hector_quadrotor_gazebo_pluginsConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_quadrotor_gazebo_plugins/cmake/hector_quadrotor_gazebo_pluginsConfig-version.cmake
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_gazebo_plugins/share/hector_quadrotor_gazebo_plugins/cmake/hector_quadrotor_gazebo_pluginsConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_quadrotor_gazebo_plugins/cmake/hector_quadrotor_gazebo_pluginsConfig.cmake

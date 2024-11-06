@@ -1,4 +1,4 @@
-hector_quadrotor_noetic/hector_quadrotor/hector_uav_msgs
+hector-quadrotor-noetic/hector_quadrotor/hector_uav_msgs
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_uav_msgs/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_uav_msgs/include/hector_uav_msgs/HeightCommand.h /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/include/hector_uav_msgs/HeightCommand.h
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_uav_msgs/include/hector_uav_msgs/RawRC.h /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/include/hector_uav_msgs/RawRC.h

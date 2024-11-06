@@ -1,4 +1,4 @@
-hector_quadrotor_noetic/hector_localization/hector_pose_estimation
+hector-quadrotor-noetic/hector_localization/hector_pose_estimation
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_pose_estimation/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_pose_estimation/share/hector_pose_estimation/cmake/hector_pose_estimationConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_pose_estimation/cmake/hector_pose_estimationConfig.cmake
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_pose_estimation/share/hector_pose_estimation/cmake/hector_pose_estimationConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_pose_estimation/cmake/hector_pose_estimationConfig-version.cmake
