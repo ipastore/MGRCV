@@ -38,8 +38,7 @@ DroneRace::DroneRace(ros::NodeHandle nh) : nh_(nh)
     sleeptime.sleep(); // Sleep for a moment before trying to draw
 
     drawGates_();
-    // generateTrajectoryExample_();
-    generateTrajectory_();
+    generateTrajectoryExample_();
 
     cmd_timer_ = nh_.createTimer(ros::Duration(0.01), &DroneRace::commandTimerCallback_, this);
     ROS_INFO("DroneRace initialized");
@@ -104,28 +103,14 @@ void DroneRace::generateTrajectory_() {
     vertices.push_back(start);
 
     mav_trajectory_generation::Vertex gate1(dimension);
-    Eigen::Vector3d pos_gate_1(gates_[0].position.x, gates_[0].position.y, gates_[0].position.z);
-    gate1.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_1);
+    gate1.addConstraint(mav_trajectory_generation::derivative_order::POSITION, gates_[0]);
     // gate1.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
     vertices.push_back(gate1);
 
     mav_trajectory_generation::Vertex gate2(dimension);
-    Eigen::Vector3d pos_gate_2(gates_[1].position.x, gates_[1].position.y, gates_[1].position.z);
-    gate2.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_2);
+    gate2.addConstraint(mav_trajectory_generation::derivative_order::POSITION, gates_[1]);
     // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
     vertices.push_back(gate2);
-
-    mav_trajectory_generation::Vertex gate3(dimension);
-    Eigen::Vector3d pos_gate_3(gates_[2].position.x, gates_[2].position.y, gates_[2].position.z);
-    gate3.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_3);
-    // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    vertices.push_back(gate3);
-
-    mav_trajectory_generation::Vertex gate4(dimension);
-    Eigen::Vector3d pos_gate_4(gates_[3].position.x, gates_[3].position.y, gates_[3].position.z);
-    gate4.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_4);
-    // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    vertices.push_back(gate4);
 
     // ENDING POINT: (0,0,0)
     // Constraints for the ENDING vertice to have zero derivatives up to snap
