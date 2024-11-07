@@ -68,6 +68,38 @@ void DroneRace::getGateNormal() {
     ROS_INFO("Calculated normals for %lu gates.", gate_normals_.size());
 }
 
+
+void DroneRace::getGateAngles() {
+    gate_angles_.clear(); // Clear the angles vector
+
+    if (gate_normals_.size() < 2) {
+        ROS_WARN("Not enough gates to calculate angles. At least 2 gates are required.");
+        return;
+    }
+
+    for (size_t i = 0; i < gate_normals_.size() - 1; ++i) {
+        Eigen::Vector3d n1 = gate_normals_[i];
+        Eigen::Vector3d n2 = gate_normals_[i + 1];
+
+        // Calculate the dot product and clamp to [-1, 1]
+        double dot_product = n1.dot(n2) / (n1.norm() * n2.norm());
+        dot_product = std::max(-1.0, std::min(1.0, dot_product)); // Clamp to avoid acos errors
+
+        // Compute the angle
+        double angle = std::acos(dot_product);
+        gate_angles_.push_back(angle);
+
+        // Debug: Print each angle and the normals
+        ROS_INFO("Angle between Gate %lu and Gate %lu: %.3f radians (%.3f degrees)",
+                 i, i + 1, angle, angle * 180.0 / M_PI);
+        ROS_DEBUG("Normal 1: [%.3f, %.3f, %.3f], Normal 2: [%.3f, %.3f, %.3f]",
+                  n1.x(), n1.y(), n1.z(), n2.x(), n2.y(), n2.z());
+    }
+
+    ROS_INFO("Calculated angles for %lu gates.", gate_normals_.size());
+}
+
+
 bool DroneRace::readGates_(string file_name) {
     //Open the file
     ifstream input_file;
@@ -96,6 +128,7 @@ bool DroneRace::readGates_(string file_name) {
     input_file.close();
 
     getGateNormal();
+    getGateAngles();
 
     return true;
 }
@@ -161,9 +194,20 @@ void DroneRace::generate_gates_vertex_(mav_trajectory_generation::Vertex::Vector
 
         // Gate velocity (aligned with the normal)
         Eigen::Vector3d normal = gate_normals_[i]; // Use precomputed normals
-        double velocity_magnitude = 1.0; // You can adjust this based on distance, curves, etc.
-        Eigen::Vector3d velocity = velocity_magnitude * normal.cast<double>(); // Ensure the type matches
-        gate_vertex.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, normal);
+        
+        // 
+        double velocity_magnitude = 2.0; // 
+        if (i > 0) { 
+            double angle = gate_angles_[i - 1]; 
+            if (angle < M_PI / 4) { 
+                velocity_magnitude = 0.5; 
+            } else if (angle < M_PI / 2) { 
+                velocity_magnitude = 0.75; 
+            }
+        }
+        
+        Eigen::Vector3d velocity = velocity_magnitude * normal; // Ensure the type matches
+        gate_vertex.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, velocity);
 
         // Debug: Print the normal
         ROS_INFO("Gate %lu Normal: [%.3f, %.3f, %.3f]", i, normal.x(), normal.y(), normal.z());
@@ -177,7 +221,7 @@ void DroneRace::generateTrajectory_() {
     //constants
     const int dimension = 3; //we only compute the trajectory in x, y and z
     const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP; //POSITION, VELOCITY, ACCELERATION, JERK, SNAP
-    const float vel_gate_mod = 1.0; // desired velocity to cross the gate. Adjust for max performance
+    const float vel_gate_mod = 2.0; // desired velocity to cross the gate. Adjust for max performance
 
     // Let's initialize the vertices vector that will contain the vertices of the trajectory
     mav_trajectory_generation::Vertex::Vector vertices;
@@ -192,30 +236,7 @@ void DroneRace::generateTrajectory_() {
     start.makeStartOrEnd(Eigen::Vector3d(0,0,0), derivative_to_optimize);
     vertices.push_back(start);
 
-    // mav_trajectory_generation::Vertex gate1(dimension);
-    // Eigen::Vector3d pos_gate_1(gates_[0].position.x, gates_[0].position.y, gates_[0].position.z);
-    // gate1.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_1);
-    // // gate1.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    // vertices.push_back(gate1);
-
-    // mav_trajectory_generation::Vertex gate2(dimension);
-    // Eigen::Vector3d pos_gate_2(gates_[1].position.x, gates_[1].position.y, gates_[1].position.z);
-    // gate2.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_2);
-    // // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    // vertices.push_back(gate2);
-
-    // mav_trajectory_generation::Vertex gate3(dimension);
-    // Eigen::Vector3d pos_gate_3(gates_[2].position.x, gates_[2].position.y, gates_[2].position.z);
-    // gate3.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_3);
-    // // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    // vertices.push_back(gate3);
-
-    // mav_trajectory_generation::Vertex gate4(dimension);
-    // Eigen::Vector3d pos_gate_4(gates_[3].position.x, gates_[3].position.y, gates_[3].position.z);
-    // gate4.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_4);
-    // // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    // vertices.push_back(gate4);
-
+    // INTERMEDIATE VERTICES: Gates
     generate_gates_vertex_(vertices);
 
     // ENDING POINT: (0,0,0)
