@@ -1,0 +1,1 @@
+rosrun lab3_drones drone_race _targets_file_path:="/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/src/p00_arob_lab3_drones_moodle/data/gates_hard.txt"

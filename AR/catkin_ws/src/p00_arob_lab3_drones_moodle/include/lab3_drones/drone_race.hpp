@@ -64,6 +64,7 @@ private:
 
     void generateTrajectoryExample_(); 
     void generateTrajectory_();
+    void generate_gates_vertex_(mav_trajectory_generation::Vertex::Vector &vertices);
 
     void commandTimerCallback_(const ros::TimerEvent& event);
 

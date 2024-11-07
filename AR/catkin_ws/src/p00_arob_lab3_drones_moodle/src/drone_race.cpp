@@ -23,6 +23,12 @@ DroneRace::DroneRace(ros::NodeHandle nh) : nh_(nh)
     // This variable will control if we are in pose or cmd_vel control mode
     is_pose_control_ = false;
 
+    if (is_pose_control_) {
+        cout << "Position control selected" << endl;
+    } else {
+        cout << "velocity control selected" << endl;
+    }
+
     pub_goal_ = nh_.advertise<geometry_msgs::PoseStamped>("/command/pose", 1000);
     pub_cmd_vel_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1000);
 
@@ -76,12 +82,63 @@ bool DroneRace::readGates_(string file_name) {
 }
 
 void DroneRace::commandTimerCallback_(const ros::TimerEvent& event) {
-    // INCLUDE YOUR CODE TO PUBLISH THE COMMANDS TO THE DRONE
-    // You should allow two control modes: one using the /cmd_vel topic
-    // and another using the /command/pose. Using one or the other mode
-    // should be controlled with the "is_control_pose_" variable.
-    // Remember to remove the /controller/pose for controlling with the
-    // /cmd_vel.
+    if (goal_list_.empty()) {
+        ROS_WARN("No trajectory generated or trajectory is empty.");
+        return; 
+
+    
+    }
+
+    if (is_pose_control_) {
+        // We are in pose control mode
+        // We publish the current goal
+        if (current_goal_idx_ < goal_list_.size() - 1) {
+            pub_goal_.publish(goal_);
+
+            // We update the next goal
+            goal_.pose.position.x = goal_list_[current_goal_idx_].x();
+            goal_.pose.position.y = goal_list_[current_goal_idx_].y();
+            goal_.pose.position.z = goal_list_[current_goal_idx_].z();
+        } else {
+            // If we have reached all goals, we stop the drone
+            goal_.pose.position.x = 0;
+            goal_.pose.position.y = 0;
+            goal_.pose.position.z = 0;
+            pub_goal_.publish(goal_);
+            ROS_INFO("All goals reached!");
+        }
+    } else {
+        if (current_goal_idx_ < goal_list_.size() - 1) {
+            // We are in velocity control mode
+            // We publish the current goal
+            pub_cmd_vel_.publish(goal_vel_);
+
+            // We update the next goal
+            goal_vel_.linear.x = goal_vel_list_[current_goal_idx_].x();
+            goal_vel_.linear.y = goal_vel_list_[current_goal_idx_].y();
+            goal_vel_.linear.z = goal_vel_list_[current_goal_idx_].z();
+        } else {
+            // If we have reached all goals, we stop the drone
+            goal_vel_.linear.x = 0;
+            goal_vel_.linear.y = 0;
+            goal_vel_.linear.z = 0;
+            pub_cmd_vel_.publish(goal_vel_);
+            ROS_INFO("All goals reached!");
+        }
+    }
+
+    // Update the current goal index
+    current_goal_idx_++;
+}
+
+void DroneRace::generate_gates_vertex_(mav_trajectory_generation::Vertex::Vector &vertices){
+
+    for (geometry_msgs::Pose gate : gates_) {
+        mav_trajectory_generation::Vertex gate_vertex(3);
+        Eigen::Vector3d pos_gate(gate.position.x, gate.position.y, gate.position.z);
+        gate_vertex.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate);
+        vertices.push_back(gate_vertex);
+    }
 }
 
 void DroneRace::generateTrajectory_() {
@@ -103,29 +160,31 @@ void DroneRace::generateTrajectory_() {
     start.makeStartOrEnd(Eigen::Vector3d(0,0,0), derivative_to_optimize);
     vertices.push_back(start);
 
-    mav_trajectory_generation::Vertex gate1(dimension);
-    Eigen::Vector3d pos_gate_1(gates_[0].position.x, gates_[0].position.y, gates_[0].position.z);
-    gate1.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_1);
-    // gate1.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    vertices.push_back(gate1);
+    // mav_trajectory_generation::Vertex gate1(dimension);
+    // Eigen::Vector3d pos_gate_1(gates_[0].position.x, gates_[0].position.y, gates_[0].position.z);
+    // gate1.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_1);
+    // // gate1.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
+    // vertices.push_back(gate1);
 
-    mav_trajectory_generation::Vertex gate2(dimension);
-    Eigen::Vector3d pos_gate_2(gates_[1].position.x, gates_[1].position.y, gates_[1].position.z);
-    gate2.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_2);
-    // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    vertices.push_back(gate2);
+    // mav_trajectory_generation::Vertex gate2(dimension);
+    // Eigen::Vector3d pos_gate_2(gates_[1].position.x, gates_[1].position.y, gates_[1].position.z);
+    // gate2.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_2);
+    // // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
+    // vertices.push_back(gate2);
 
-    mav_trajectory_generation::Vertex gate3(dimension);
-    Eigen::Vector3d pos_gate_3(gates_[2].position.x, gates_[2].position.y, gates_[2].position.z);
-    gate3.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_3);
-    // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    vertices.push_back(gate3);
+    // mav_trajectory_generation::Vertex gate3(dimension);
+    // Eigen::Vector3d pos_gate_3(gates_[2].position.x, gates_[2].position.y, gates_[2].position.z);
+    // gate3.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_3);
+    // // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
+    // vertices.push_back(gate3);
 
-    mav_trajectory_generation::Vertex gate4(dimension);
-    Eigen::Vector3d pos_gate_4(gates_[3].position.x, gates_[3].position.y, gates_[3].position.z);
-    gate4.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_4);
-    // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
-    vertices.push_back(gate4);
+    // mav_trajectory_generation::Vertex gate4(dimension);
+    // Eigen::Vector3d pos_gate_4(gates_[3].position.x, gates_[3].position.y, gates_[3].position.z);
+    // gate4.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate_4);
+    // // gate2.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, Eigen::Vector3d(1,0,0));
+    // vertices.push_back(gate4);
+
+    generate_gates_vertex_(vertices);
 
     // ENDING POINT: (0,0,0)
     // Constraints for the ENDING vertice to have zero derivatives up to snap
@@ -177,6 +236,18 @@ void DroneRace::generateTrajectory_() {
 
     // Generate list of commands to publish to the drone
     // INCLUDE YOUR CODE HERE
+    for (const auto& state : states) {
+        // Almacenar posición en goal_list_
+        goal_list_.push_back( Eigen::Vector3f(
+                                state.position_W.x(),
+                                state.position_W.y(),
+                                state.position_W.z()));
+        // Almacenar velocidad en goal_vel_list_
+        goal_vel_list_.push_back(Eigen::Vector3f(
+                                    state.velocity_W.x(),
+                                    state.velocity_W.y(),
+                                    state.velocity_W.z()));
+    }
 }
 
 void DroneRace::generateTrajectoryExample_() {

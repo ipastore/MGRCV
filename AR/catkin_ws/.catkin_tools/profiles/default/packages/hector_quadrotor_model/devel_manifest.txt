@@ -1,4 +1,4 @@
-hector-quadrotor-noetic/hector_quadrotor/hector_quadrotor_model
+hector_quadrotor_noetic/hector_quadrotor/hector_quadrotor_model
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_model/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_model/share/hector_quadrotor_model/cmake/hector_quadrotor_modelConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_quadrotor_model/cmake/hector_quadrotor_modelConfig-version.cmake
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_quadrotor_model/share/hector_quadrotor_model/cmake/hector_quadrotor_modelConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/hector_quadrotor_model/cmake/hector_quadrotor_modelConfig.cmake

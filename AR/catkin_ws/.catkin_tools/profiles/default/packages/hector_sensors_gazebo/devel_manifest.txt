@@ -1,2 +1,2 @@
-hector-quadrotor-noetic/hector_gazebo/hector_sensors_gazebo
+hector_quadrotor_noetic/hector_gazebo/hector_sensors_gazebo
 /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/hector_sensors_gazebo/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
