@@ -18,6 +18,7 @@
 
 #include <nori/bsdf.h>
 #include <nori/frame.h>
+#include <nori/reflectance.h>
 
 NORI_NAMESPACE_BEGIN
 
@@ -45,7 +46,7 @@ public:
     Color3f sample(BSDFQueryRecord &bRec, const Point2f &sample) const {
         
         float cosThetaI = Frame::cosTheta(bRec.wi);
-        float F = fresnel(cosThetaI, m_extIOR, m_intIOR);
+        float F = Reflectance::fresnel(cosThetaI, m_extIOR, m_intIOR);
 
         bRec.measure = EDiscrete;
         
@@ -57,26 +58,13 @@ public:
         }
         else
         {
-            float etaI = m_extIOR, etaT = m_intIOR;
-            /* Swap the indices of refraction if the interaction starts
-            at the inside of the object */
-            if (cosThetaI < 0.0f) {
-                std::swap(etaI, etaT);
-                cosThetaI = -cosThetaI;
-            }
+            bRec.wo = Reflectance::refract(bRec.wi, Vector3f(0,0,1), m_extIOR, m_intIOR);
+            if (cosThetaI < 0.0f) 
+                bRec.eta = m_extIOR / m_intIOR;
+            else
+                bRec.eta = m_intIOR / m_extIOR;
 
-            float eta = etaI / etaT;
-            
-            /* Using Snell's law, calculate the squared sine of the
-               angle between the normal and the transmitted ray */
-            float sinThetaTSqr = eta * eta * (1 - cosThetaI * cosThetaI);
-            float cosThetaT = std::sqrt(1.0f - sinThetaTSqr);
-
-            bRec.wo = Vector3f(-bRec.wi[0] * eta, -bRec.wi[1] * eta, (bRec.wi[2] > 0) ? -cosThetaT : cosThetaT);
-               
-            bRec.eta = eta;
-
-            return Color3f(eta);
+            return Color3f(bRec.eta);
         }
 
     }
