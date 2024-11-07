@@ -44,6 +44,7 @@ private:
     // Mission description
     std::string targets_file_path_;
     std::vector<geometry_msgs::Pose> gates_;
+    std::vector<Eigen::Vector3d> gate_normals_;
 
     // Trajectory
     mav_trajectory_generation::Trajectory trajectory_;
@@ -61,6 +62,7 @@ private:
     int id_marker = 0;
 
     bool readGates_(std::string file_name);
+    void getGateNormal();
 
     void generateTrajectoryExample_(); 
     void generateTrajectory_();

@@ -51,6 +51,22 @@ DroneRace::DroneRace(ros::NodeHandle nh) : nh_(nh)
     ROS_INFO("DroneRace initialized");
 }
 
+void DroneRace::getGateNormal() {
+
+    gate_normals_.clear(); // Clear the normals vector
+
+    for (const auto& gate : gates_) {
+        // Convert the gate's orientation (quaternion) to a rotation matrix
+        Eigen::Quaterniond quat(gate.orientation.w, gate.orientation.x, gate.orientation.y, gate.orientation.z);
+        Eigen::Matrix3d rotation_matrix = quat.toRotationMatrix();
+
+        // The normal vector to the gate plane is aligned with the local Y axis
+        Eigen::Vector3d normal = rotation_matrix.col(0); // Use the Y axis for the normal
+        gate_normals_.emplace_back(normal);
+    }
+
+    ROS_INFO("Calculated normals for %lu gates.", gate_normals_.size());
+}
 
 bool DroneRace::readGates_(string file_name) {
     //Open the file
@@ -78,6 +94,9 @@ bool DroneRace::readGates_(string file_name) {
 
     // Close the file
     input_file.close();
+
+    getGateNormal();
+
     return true;
 }
 
@@ -133,10 +152,23 @@ void DroneRace::commandTimerCallback_(const ros::TimerEvent& event) {
 
 void DroneRace::generate_gates_vertex_(mav_trajectory_generation::Vertex::Vector &vertices){
 
-    for (geometry_msgs::Pose gate : gates_) {
+    for (size_t i = 0; i < gates_.size(); ++i) {
         mav_trajectory_generation::Vertex gate_vertex(3);
-        Eigen::Vector3d pos_gate(gate.position.x, gate.position.y, gate.position.z);
+
+        // Centro del gate
+        Eigen::Vector3d pos_gate(gates_[i].position.x, gates_[i].position.y, gates_[i].position.z);
         gate_vertex.addConstraint(mav_trajectory_generation::derivative_order::POSITION, pos_gate);
+
+        // Gate velocity (aligned with the normal)
+        Eigen::Vector3d normal = gate_normals_[i]; // Use precomputed normals
+        double velocity_magnitude = 1.0; // You can adjust this based on distance, curves, etc.
+        Eigen::Vector3d velocity = velocity_magnitude * normal.cast<double>(); // Ensure the type matches
+        gate_vertex.addConstraint(mav_trajectory_generation::derivative_order::VELOCITY, normal);
+
+        // Debug: Print the normal
+        ROS_INFO("Gate %lu Normal: [%.3f, %.3f, %.3f]", i, normal.x(), normal.y(), normal.z());
+
+
         vertices.push_back(gate_vertex);
     }
 }
