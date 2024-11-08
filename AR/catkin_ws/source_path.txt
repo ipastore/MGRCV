@@ -1,7 +1,7 @@
 source /opt/ros/noetic/setup.bash 
 source /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/setup.bash 
 
-
+rosrun rviz rviz
 
 roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch
 
@@ -10,3 +10,12 @@ LAB 3
 
 rosrun lab3_drones drone_race _targets_file_path:="/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/src/p00_arob_lab3_drones_moodle/data/gates.txt"
 rosrun lab3_drones drone_race _targets_file_path:="/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/src/p00_arob_lab3_drones_moodle/data/gates_hard.txt"
+
+
+LAB 4
+
+roslaunch p06_arob_lab4 arob-p4-navigation-basic.launch
+roslaunch p06_arob_lab4 arob-p4-navigation-rviz.launch
+
+Exe 5
+roslaunch p06_arob_lab4 arob-p4-navigation-plugin.launch

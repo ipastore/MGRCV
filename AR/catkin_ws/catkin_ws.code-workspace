@@ -1,16 +1,23 @@
 {
 	"folders": [
 		{
+			"name": "catkin_ws",
 			"path": "."
 		},
 		{
-			"path": "src/pXX_arob_lab2_drones"
+			"name": "hector_quadrotor_noetic",
+			"path": "src/hector_quadrotor_noetic"
 		},
 		{
-			"path": "src/p00_arob_lab3_drones_moodle"
+			"name": "p06_arob_lab2_drones",
+			"path": "src/p06_arob_lab2_drones"
 		},
 		{
-			"path": "src/hector-quadrotor-noetic"
+			"name": "p06_arob_lab3_drones_moodle",
+			"path": "src/p06_arob_lab3_drones_moodle"
+		},
+		{
+			"path": "src/p06_arob_lab4"
 		}
 	],
 	"settings": {

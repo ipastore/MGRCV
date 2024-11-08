@@ -1,0 +1,8 @@
+<library path="lib/libp06_llc_local_planner_lib">
+  <class 
+    name="p06_llc_local_planner/LLCLocalPlanner" 
+    type="p06_llc_local_planner::LLCLocalPlanner" 
+    base_class_type="nav_core::BaseLocalPlanner">
+    <description>This is a local planner plugin.</description>
+  </class>
+</library>
