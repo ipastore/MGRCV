@@ -1,0 +1,31 @@
+name: tensorflow
+channels:
+  - apple
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.8
+  - h5py
+  - pyyaml
+  - flask
+  - boto3
+  - ipykernel
+  - numpy<1.20
+  - pandas-datareader
+  - matplotlib
+  - pillow
+  - tqdm
+  - requests
+  - tensorflow-deps
+  - pip
+  - pip:
+    - tensorflow-macos
+    - tensorflow-metal
+    - bayesian-optimization
+    - gym
+    - kaggle
+    - keras
+  - pytorch
+  - torchvision
+  - torchaudio
