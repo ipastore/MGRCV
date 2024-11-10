@@ -233,22 +233,24 @@ void DroneRace::generate_gates_vertex_(mav_trajectory_generation::Vertex::Vector
         // Gate velocity (aligned with the normal)
         Eigen::Vector3d direction = gate_normals_[i]; // Use precomputed normals
         
-        // if (i < gate_turn_angles_.size()) {
-        //     double angle = gate_turn_angles_[i]; // Ángulo actual
+        if (i < gate_turn_angles_.size()) {
+            double angle = gate_turn_angles_[i]; // Ángulo actual
 
-        //     if (angle > angle_threshold) { // Si el giro es moderado o cerrado
-        //         Eigen::Vector3d to_next_gate = gate_next_directions_[i]; // Vector hacia el siguiente gate
-        //         direction = (gate_normals_[i].cast<double>() + to_next_gate).normalized(); // Promedio entre normal y dirección
-        //     }
-        // }
+            if (angle > angle_threshold) { // Si el giro es moderado o cerrado
+                Eigen::Vector3d to_next_gate = gate_next_directions_[i]; // Vector hacia el siguiente gate
+                direction = (gate_normals_[i].cast<double>() + to_next_gate).normalized(); // Promedio entre normal y dirección
+            }
+        }
 
         double velocity_magnitude = 3.0; 
         if (i < gate_turn_angles_.size()) {
             double angle = gate_turn_angles_[i];
-            if (angle > M_PI / 3) { // Giro cerrado (> 60 grados)
-                velocity_magnitude = 0.65;
+            if (angle > 93*M_PI / 180) { // Giro muy cerrado (> 90 grados)
+                velocity_magnitude = 0.8;
+            } else if  (angle > M_PI / 3) { // Giro cerrado (> 60 grados)
+                velocity_magnitude = 2;
             } else if (angle > M_PI / 6) { // Giro moderado (> 30 grados)
-                velocity_magnitude = 0.95;
+                velocity_magnitude = 2;
             }
         }
 
