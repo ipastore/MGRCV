@@ -284,3 +284,5 @@ MSAP/NORI-2024_mac/build/ext_build/tbb/version_string.ver
 MSAP/NORI-2024_mac/build/ext_build/tbb/CMakeFiles/tbb_def_files.dir/progress.make
 MSAP/NORI-2024_mac/build/ext_build/tbb/CMakeFiles/tbb_static.dir/progress.make
 MSAP/NORI-2024_mac/build/ext_build/tbb/CMakeFiles/tbb_static.dir/src/tbb/tbb_misc.cpp.o
+MSAP/NORI-2024_mac/build/ext_build/nanogui/libnanogui.a
+MSAP/NORI-2024_mac/build/ext_build/openexr/IlmBase/IlmThread/CMakeFiles/progress.marks
