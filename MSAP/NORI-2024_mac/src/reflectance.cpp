@@ -42,12 +42,7 @@ Vector3f Reflectance::refract(const Vector3f& wi, const Vector3f& n, float extIO
     float cosThetaT = std::sqrt(1.0f - sinThetaTSqr);
 
     return Vector3f(-wi[0] * eta, -wi[1] * eta, (wi[2] > 0) ? -cosThetaT : cosThetaT);
-
-
-
-
 }
-
 
 
 float Reflectance::fresnel(float cosThetaI, float extIOR, float intIOR) {

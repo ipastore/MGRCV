@@ -67,6 +67,7 @@ add_executable(nori
   include/nori/vector.h
   include/nori/warp.h
   include/nori/normals.h
+  include/nori/reflectance.h
 
   # Source code files
   src/accel.cpp
@@ -99,6 +100,7 @@ add_executable(nori
   src/pointlight.cpp
   src/depth.cpp
   src/direct_ems.cpp
+  src/reflectance.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
@@ -112,6 +114,7 @@ add_executable(warptest
   src/object.cpp
   src/proplist.cpp
   src/common.cpp
+  src/reflectance.cpp
 )
 
 if (WIN32)
