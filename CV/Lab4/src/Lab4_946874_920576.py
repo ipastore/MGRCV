@@ -871,7 +871,7 @@ if __name__ == '__main__':
         optimized = least_squares(resBundleProjection, 
                         intial_guess, 
                         args=(x1_data, x2_data, K_C, nPoints),
-                        method='lm',
+                        method='lm'
                         )
         
 
