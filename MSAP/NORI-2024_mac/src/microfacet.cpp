@@ -54,31 +54,31 @@ public:
             || Frame::cosTheta(bRec.wo) <= 0)
             return Color3f(0.0f);
         
-    // Compute the half-vector
-    Vector3f wh = (bRec.wi + bRec.wo).normalized();
+        // Compute the half-vector
+        Vector3f wh = (bRec.wi + bRec.wo).normalized();
 
-    // Retrieve the roughness parameter alpha from the texture
-    float alpha = m_alpha->eval(bRec.uv).getLuminance();
+        // Retrieve the roughness parameter alpha from the texture
+        float alpha = m_alpha->eval(bRec.uv).getLuminance();
+        
+
+        // Calculate the Beckmann normal distribution function (NDF) D(wh)
+        float D = Reflectance::BeckmannNDF(wh, alpha);
+
+        float cosThetaI = Frame::cosTheta(bRec.wi);
+        Color3f R0 = m_R0->eval(bRec.uv);
+
+        // Calculate the Fresnel term F using Schlicks approximation
+        Color3f F = Reflectance::fresnel(cosThetaI, R0);
+
+        // Calculate the shadowing-masking term G using Smiths approximation
+        float G = Reflectance::G1(bRec.wi, wh, alpha) * Reflectance::G1(bRec.wo, wh, alpha);
+
+        // Calculate the final BRDF value
+        float denominator = 4.0f * Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo);
     
 
-    // Calculate the Beckmann normal distribution function (NDF) D(wh)
-    float D = Reflectance::BeckmannNDF(wh, alpha);
-
-    float cosThetaI = Frame::cosTheta(bRec.wi);
-    Color3f R0 = m_R0->eval(bRec.uv);
-
-    // Calculate the Fresnel term F using Schlicks approximation
-    Color3f F = Reflectance::fresnel(cosThetaI, R0);
-
-    // Calculate the shadowing-masking term G using Smiths approximation
-    float G = Reflectance::G1(bRec.wi, wh, alpha) * Reflectance::G1(bRec.wo, wh, alpha);
-
-    // Calculate the final BRDF value
-    float denominator = 4.0f * Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo);
-   
-
-    return (D * F * G) / denominator;
-        // throw NoriException("RoughConductor::eval() is not yet implemented!");
+        return (D * F * G) / denominator;
+            // throw NoriException("RoughConductor::eval() is not yet implemented!");
     }
 
     /// Evaluate the sampling density of \ref sample() wrt. solid angles
@@ -98,6 +98,10 @@ public:
         
         return Warp::squareToBeckmannPdf(wh, alpha);
 
+        // Incluye el Jacobiano
+        // float jacobian = 4.0f * std::abs(bRec.wi.dot(wh));
+        // return p_wh / jacobian;
+
         // throw NoriException("RoughConductor::eval() is not yet implemented!");
     }
 
@@ -113,20 +117,18 @@ public:
 
         bRec.measure = ESolidAngle;
 
-        // Retrieve the roughness parameter `alpha` by averaging the color channels of `m_alpha`
-       float alpha = m_alpha->eval(bRec.uv).getLuminance();
+        // We get the roughness parameter `alpha` by averaging the color channels of `m_alpha`
+        float alpha = m_alpha->eval(bRec.uv).getLuminance();
 
-        // Step 1: Sample the half-vector `wh` using the Beckmann distribution
+        // Then, we sample the half-vector `wh` using the Beckmann distribution
         Vector3f wh = Warp::squareToBeckmann(_sample, alpha);
 
         // Step 2: Reflect `wi` around `wh` to obtain the outgoing direction `wo`
         //right direction?
-        bRec.wo = bRec.wi - 2 * bRec.wi.dot(wh) * wh;
+        // bRec.wo = bRec.wi - 2 * bRec.wi.dot(wh) * wh;
 
-        // Step 3: Ensure the reflected direction is in the correct hemisphere
-        if (Frame::cosTheta(bRec.wo) <= 0) {
-            return Color3f(0.0f);
-        }
+        // Paso 2: Calcular la dirección de incidencia ωi usando la ley de reflexión
+        bRec.wi = 2.0f * bRec.wo.dot(wh) * wh - bRec.wo;
 
         // Step 4: Evaluate the BRDF value at the sampled direction
         Color3f fr = eval(bRec);
@@ -312,45 +314,45 @@ public:
             || Frame::cosTheta(bRec.wo) <= 0)
             return Color3f(0.0f);
         
-        // Half-vector for reflection
-    Vector3f wh = (bRec.wi + bRec.wo).normalized();
-
-    // Retrieve the roughness parameter `alpha` from the texture, averaged over color channels
-    float alpha = m_alpha->eval(bRec.uv).getLuminance();
-
-    // Fresnel term for diffuse component (Ashikhmin-Shirley model)
-    float etaRatio = (m_extIOR - m_intIOR) / (m_extIOR + m_intIOR);
-    float F_diff = etaRatio * etaRatio;  // Monochromatic Fresnel term
-
-    // Ashikhmin-Shirley diffuse term
-    Color3f kd = m_kd->eval(bRec.uv);  // Albedo (diffuse color)
-    float cosThetaI = Frame::cosTheta(bRec.wi);
-    float cosThetaO = Frame::cosTheta(bRec.wo);
-    
-    Color3f f_diff = (28.0f * kd / (23.0f * M_PI)) *
-        (1.0f - F_diff) *
-        (1.0f - pow(1.0f - 0.5f * cosThetaI, 5.0f)) *
-        (1.0f - pow(1.0f - 0.5f * cosThetaO, 5.0f));
-    
-    // Beckmann NDF for the half-vector `wh`
-    float D = Reflectance::BeckmannNDF(wh, alpha);
-
-    // Fresnel term for specular reflection using Schlick's approximation
-    float cosThetaH = bRec.wi.dot(wh);  // cos(theta) between `wi` and half-vector `wh`
-    Color3f F_spec = Reflectance::fresnel(cosThetaH, kd);
-
-    // Shadowing-masking term (using G1 for both directions)
-    float G = Reflectance::G1(bRec.wi, wh, alpha) * Reflectance::G1(bRec.wo, wh, alpha);
-
-    // Specular component of the microfacet BRDF
-    float denominator = 4.0f * cosThetaI * cosThetaO;
-    float f_mf = D * F_spec[0] * G / denominator;  // Using F_spec[0] for monochromatic
-
-    // Return the combined diffuse and specular components
-    return f_diff + f_mf;
+        // ** PARAMETRIZATION OF THE MICROFACET BRDF ** //
+        float alpha = m_alpha->eval(bRec.uv).getLuminance();
+        float etaExt = m_extIOR;
+        float etaInt = m_intIOR; 
+        Vector3f wh = (bRec.wi + bRec.wo).normalized();
+        float cosThetaI = Frame::cosTheta(bRec.wi);
+        float cosThetaO = Frame::cosTheta(bRec.wo);
+        Color3f kd = m_kd->eval(bRec.uv);  // Albedo (diffuse color)
 
 
-		// throw NoriException("RoughSubstrate::eval() is not yet implemented!");
+
+        // ** DIFUSE COMPONENT OF THE SUBSTRATE DUE TO SUBSURFACE TRANSPORT ** //
+
+        // Fresnel term for diffuse component (Ashikhmin-Shirley model)        
+        float etaRatio = (etaExt - etaInt) / (etaExt + etaInt);
+        float fresnelDiffuse = 1.0f - (etaRatio*etaRatio);
+        float diffuseFactorI = 1.0f - std::pow(1.0f - 0.5f * cosThetaI, 5.0f);
+        float diffuseFactorO = 1.0f - std::pow(1.0f - 0.5f * cosThetaO, 5.0f);
+        Color3f f_diff = (28.0f * kd / (23.0f * M_PI)) * fresnelDiffuse * diffuseFactorI * diffuseFactorO;
+
+
+
+        // ** THE CONTRIBUTION OF THE ROUGH DIELECTRIC BOUNDARY ** //
+
+        // Beckmann, Fresnel and Shadowing-Masking terms
+        float D = Reflectance::BeckmannNDF(wh, alpha);
+        float F = Reflectance::fresnel(bRec.wi.dot(wh), etaExt, etaInt);
+        float G = Reflectance::G1(bRec.wi, wh, alpha) * Reflectance::G1(bRec.wo, wh, alpha);
+
+        // Specular component of the microfacet BRDF
+        float denominator = 4.0f * cosThetaI * cosThetaO;
+        float f_mf = D * F * G / denominator;
+
+
+
+        // ** COMBINATION OF BOTH FACTORS ** // 
+
+        return f_diff + f_mf;
+
 	}
 
     /// Evaluate the sampling density of \ref sample() wrt. solid angles
@@ -385,25 +387,27 @@ public:
 
         bRec.measure = ESolidAngle;
 
-        // choose one component using russian roulette based on the F value
+        // Choose one component using russian roulette based on the F value
         float alpha = m_alpha->eval(bRec.uv).getLuminance();
-        // compute the fresnel term over the surface normal
         float fresnel = Reflectance::fresnel(Frame::cosTheta(bRec.wi), m_extIOR, m_intIOR);
         float random_number = std::rand() / (float)RAND_MAX;
 
         if (random_number < fresnel) {
-            // if microfacet, use beckmann distribution to sample the  microfacet normal
-            Vector3f wh = Warp::squareToBeckmann(_sample, alpha);   // this is the microfacet normal
+
+            // If microfacet, use Beckmann distribution to sample the microfacet normal
+            Vector3f wh = Warp::squareToBeckmann(_sample, alpha);
             // calculate the outgoing direction
-            bRec.wo = ((2.0f * bRec.wi.dot(wh) * wh) - bRec.wi);    // this is the outgoing direction
+            bRec.wo = ((2.0f * bRec.wi.dot(wh) * wh) - bRec.wi);
+
         } else {
-            // if diffuse, use cosine weighted hemisphere to sample the diffuse normal
-            bRec.wo = Warp::squareToCosineHemisphere(_sample);      // this is the outgoing direction
+            // We use Cosine Weighted Hemisphere to sample the diffuse normal
+            bRec.wo = Warp::squareToCosineHemisphere(_sample);
         }
-        // return the weight of the sample
+
+
+        // Weight of the sample
         return eval(bRec) * Frame::cosTheta(bRec.wo) / pdf(bRec);
 
-		// throw NoriException("RoughSubstrate::sample() is not yet implemented!");
 	}
 
     bool isDiffuse() const {
