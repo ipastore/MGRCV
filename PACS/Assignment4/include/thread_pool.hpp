@@ -9,52 +9,63 @@
 
 class thread_pool
 {
+  std::atomic_bool _done;
+  size_t _thread_count;
+  threadsafe_queue<std::function<void()>> _work_queue;
+  std::vector<std::thread> _threads;
   join_threads _joiner;
-  threadsafe_queue<std::function<void()>> _task_queue;
-  std::vector<std::thread> _threads;                  
-  std::atomic<bool> _done;                            
 
-  using task_type = std::function<void()>; 
+  using task_type = void();
 
   void worker_thread()
   {
-    while (!_done) {
-      task_type task;                              
-      if (_task_queue.try_pop(task)) {
-          task();                                     
-      } else {
-          std::this_thread::yield();                
+    while (!_done)
+    {
+      std::function<task_type> task;
+      if (_work_queue.try_pop(task))
+      {
+        // if i can pop, then do the task
+        task();
+      }
+      else
+      {
+        // if i can't pop, then yield ()
+        std::this_thread::yield();
       }
     }
-
   }
 
   public:
   thread_pool(size_t num_threads = std::thread::hardware_concurrency())
-    : _joiner(_threads), _done(false)
+    : _done(false), _thread_count(num_threads), _joiner(_threads)
   {
-      for (size_t i = 0; i < num_threads; ++i) {
-          _threads.emplace_back(&thread_pool::worker_thread, this); 
-      }
-
+    std::cout << "thread_pool::thread_pool() num_threads = " << num_threads << std::endl;
+    for (size_t i = 0; i < _thread_count; ++i)
+      _threads.push_back(std::thread(&thread_pool::worker_thread, this));
   }
 
   ~thread_pool()
   {
     wait();
-    _done = true;  
+    // then wait for the threads to finish their work
+    // destroy _joiner object
+    _done = true;
   }
 
   void wait()
   {
-    while (!_task_queue.empty()) {             
-        std::this_thread::yield();             
-    }
+      // wait for completion
+      // active waiting
+      // wait for the completion of all the tasks:
+      while (!_work_queue.empty()){ // this waits for the queue to be empty
+        std::this_thread::yield();
+      }
+      // _done = true;
   }
 
   template<typename F>
     void submit(F f)
     {
-      _task_queue.push(task_type(f));   
+      _work_queue.push(std::function<task_type>(f));
     }
 };
