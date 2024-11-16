@@ -53,7 +53,6 @@ class threadsafe_queue
         std::unique_lock<std::mutex> lock(_mutex);
         _cond_var.wait(lock, [this] { return !_queue.empty(); });
         auto result = std::make_shared<T>(std::move(_queue.front()));
-        // std::shared_ptr<T> res(std::make_shared<T>(_job_queue.front()));    // res is a shared pointer to a T
 
         _queue.pop();
         return result;

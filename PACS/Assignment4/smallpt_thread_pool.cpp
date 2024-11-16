@@ -250,20 +250,26 @@ int main(int argc, char *argv[]){
     thread_pool pool(num_threads);
 
 
-    // launch the tasks
     size_t region_width = w / w_div;
     size_t region_height = h / h_div;
 
-    for (size_t i = 0; i<h_div; ++i) {
-        for (size_t j = 0; j<w_div; ++j) {
-            size_t y0 = i*region_height;
-            size_t y1 = i == h_div - 1 ? h : y0 + region_height;
-            size_t x0 = j*region_width;
-            size_t x1 = j == w_div - 1 ? w : x0 + region_width;
+    for (size_t i = 0; i < w_div; ++i) {
+        for (size_t j = 0; j < h_div; ++j) {
+            // Define the region
+            int x0 = i * region_width;
+            int x1 = (i + 1) * region_width;
+            int y0 = j * region_height;
+            int y1 = (j + 1) * region_height;
+
             Region reg(x0, x1, y0, y1);
-            pool.submit([=]{render(w, h, samps, cam, cx, cy, c_ptr, reg);});
+
+            // Submit the task to the thread pool
+            pool.submit([=]() {
+                render(w, h, samps, cam, cx, cy, c_ptr, reg);
+            });
         }
     }
+
     // wait for completion
     pool.wait();
     }
