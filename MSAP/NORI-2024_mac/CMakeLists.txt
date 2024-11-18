@@ -100,6 +100,8 @@ add_executable(nori
   src/pointlight.cpp
   src/depth.cpp
   src/direct_ems.cpp
+  src/direct_mats.cpp
+  src/direct_mis.cpp
   src/reflectance.cpp
 )
 

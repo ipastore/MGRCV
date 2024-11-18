@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/Half.dir/half.cpp.o"
-  "CMakeFiles/Half.dir/half.cpp.o.d"
   "eLut.h"
   "libHalf.a"
   "libHalf.pdb"

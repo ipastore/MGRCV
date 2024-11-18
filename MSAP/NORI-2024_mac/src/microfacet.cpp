@@ -54,18 +54,15 @@ public:
             || Frame::cosTheta(bRec.wo) <= 0)
             return Color3f(0.0f);
         
-        // Compute the half-vector
+        // Compute the parameters needed
         Vector3f wh = (bRec.wi + bRec.wo).normalized();
-
-        // Retrieve the roughness parameter alpha from the texture
+        Color3f R0 = m_R0->eval(bRec.uv);
         float alpha = m_alpha->eval(bRec.uv).getLuminance();
-        
+        float cosThetaI = Frame::cosTheta(bRec.wi);
+
 
         // Calculate the Beckmann normal distribution function (NDF) D(wh)
         float D = Reflectance::BeckmannNDF(wh, alpha);
-
-        float cosThetaI = Frame::cosTheta(bRec.wi);
-        Color3f R0 = m_R0->eval(bRec.uv);
 
         // Calculate the Fresnel term F using Schlicks approximation
         Color3f F = Reflectance::fresnel(cosThetaI, R0);
@@ -76,9 +73,7 @@ public:
         // Calculate the final BRDF value
         float denominator = 4.0f * Frame::cosTheta(bRec.wi) * Frame::cosTheta(bRec.wo);
     
-
         return (D * F * G) / denominator;
-            // throw NoriException("RoughConductor::eval() is not yet implemented!");
     }
 
     /// Evaluate the sampling density of \ref sample() wrt. solid angles
@@ -96,13 +91,12 @@ public:
         // Retrieve the roughness parameter alpha from the texture
         float alpha = m_alpha->eval(bRec.uv).getLuminance();
         
-        return Warp::squareToBeckmannPdf(wh, alpha);
+        float p_wh = Warp::squareToBeckmannPdf(wh, alpha);
 
         // Incluye el Jacobiano
-        // float jacobian = 4.0f * std::abs(bRec.wi.dot(wh));
-        // return p_wh / jacobian;
+        float jacobian = 4.0f * std::abs(bRec.wo.dot(wh));
+        return p_wh / jacobian;
 
-        // throw NoriException("RoughConductor::eval() is not yet implemented!");
     }
 
     /// Sample the BRDF
@@ -125,10 +119,10 @@ public:
 
         // Step 2: Reflect `wi` around `wh` to obtain the outgoing direction `wo`
         //right direction?
-        // bRec.wo = bRec.wi - 2 * bRec.wi.dot(wh) * wh;
+        bRec.wo = bRec.wi - 2 * bRec.wi.dot(wh) * wh;
 
         // Paso 2: Calcular la dirección de incidencia ωi usando la ley de reflexión
-        bRec.wi = 2.0f * bRec.wo.dot(wh) * wh - bRec.wo;
+        // bRec.wi = 2.0f * bRec.wo.dot(wh) * wh - bRec.wo;
 
         // Step 4: Evaluate the BRDF value at the sampled direction
         Color3f fr = eval(bRec);
@@ -139,7 +133,6 @@ public:
         // Step 6: Return the BRDF value weighted by the cosine factor and divided by the PDF
         return fr * Frame::cosTheta(bRec.wo) / pdf_val;
 
-        // throw NoriException("RoughConductor::sample() is not yet implemented!");
     }
 
     bool isDiffuse() const {

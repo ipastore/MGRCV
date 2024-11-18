@@ -1,8 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/IlmImf.dir/ImfB44Compressor.cpp.o"
-  "CMakeFiles/IlmImf.dir/ImfB44Compressor.cpp.o.d"
   "CMakeFiles/IlmImf.dir/ImfDwaCompressor.cpp.o"
-  "CMakeFiles/IlmImf.dir/ImfDwaCompressor.cpp.o.d"
   "b44ExpLogTable.h"
   "dwaLookups.h"
   "libIlmImf.a"

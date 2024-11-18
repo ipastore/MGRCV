@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/dwaLookups.dir/dwaLookups.cpp.o"
-  "CMakeFiles/dwaLookups.dir/dwaLookups.cpp.o.d"
   "dwaLookups"
   "dwaLookups.pdb"
 )

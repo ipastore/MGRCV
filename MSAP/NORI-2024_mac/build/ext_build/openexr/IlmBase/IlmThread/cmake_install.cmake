@@ -1,4 +1,4 @@
-# Install script for directory: /Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread
+# Install script for directory: /home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -27,37 +27,29 @@ if(NOT CMAKE_INSTALL_COMPONENT)
   endif()
 endif()
 
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
+endif()
+
 # Is this installation the result of a crosscompile?
 if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-# Set path to fallback-tool for dependency-resolution.
-if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "/Library/Developer/CommandLineTools/usr/bin/objdump")
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/openexr/IlmBase/IlmThread/libIlmThread.a")
 endif()
 
-if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/build/ext_build/openexr/IlmBase/IlmThread/libIlmThread.a")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libIlmThread.a" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libIlmThread.a")
-    execute_process(COMMAND "/Library/Developer/CommandLineTools/usr/bin/ranlib" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libIlmThread.a")
-  endif()
-endif()
-
-if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  include("/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/build/ext_build/openexr/IlmBase/IlmThread/CMakeFiles/IlmThread.dir/install-cxx-module-bmi-Release.cmake" OPTIONAL)
-endif()
-
-if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/OpenEXR" TYPE FILE FILES
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadPool.h"
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThread.h"
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadSemaphore.h"
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadMutex.h"
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadNamespace.h"
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadExport.h"
-    "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadForward.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadPool.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThread.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadSemaphore.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadMutex.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadNamespace.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadExport.h"
+    "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/openexr/IlmBase/IlmThread/IlmThreadForward.h"
     )
 endif()
 

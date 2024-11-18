@@ -1,8 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/IexMath.dir/IexMathFloatExc.cpp.o"
-  "CMakeFiles/IexMath.dir/IexMathFloatExc.cpp.o.d"
   "CMakeFiles/IexMath.dir/IexMathFpu.cpp.o"
-  "CMakeFiles/IexMath.dir/IexMathFpu.cpp.o.d"
   "libIexMath.a"
   "libIexMath.pdb"
 )

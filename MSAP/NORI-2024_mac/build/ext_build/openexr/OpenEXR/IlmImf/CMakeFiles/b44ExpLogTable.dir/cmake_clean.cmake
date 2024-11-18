@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/b44ExpLogTable.dir/b44ExpLogTable.cpp.o"
-  "CMakeFiles/b44ExpLogTable.dir/b44ExpLogTable.cpp.o.d"
   "b44ExpLogTable"
   "b44ExpLogTable.pdb"
 )

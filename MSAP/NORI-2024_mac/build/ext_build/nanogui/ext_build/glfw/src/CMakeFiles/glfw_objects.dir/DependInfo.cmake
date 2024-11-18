@@ -1,34 +1,41 @@
-
-# Consider dependencies only in project.
-set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
-
 # The set of languages for which implicit dependencies are needed:
 set(CMAKE_DEPENDS_LANGUAGES
+  "C"
+  )
+# The set of files for implicit dependencies of each language:
+set(CMAKE_DEPENDS_CHECK_C
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/context.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/context.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/egl_context.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/egl_context.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/glx_context.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/glx_context.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/init.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/init.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/input.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/input.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/linux_joystick.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/linux_joystick.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/monitor.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/monitor.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/posix_time.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/posix_time.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/posix_tls.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/posix_tls.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/vulkan.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/vulkan.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/window.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/window.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/x11_init.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/x11_init.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/x11_monitor.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/x11_monitor.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/x11_window.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/x11_window.c.o"
+  "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/xkb_unicode.c" "/home/padidavid/Documents/unizar/master/repositorios/MGRCV/MSAP/NORI-2024_mac/build/ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/xkb_unicode.c.o"
+  )
+set(CMAKE_C_COMPILER_ID "GNU")
+
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_C
+  "_GLFW_USE_CONFIG_H"
   )
 
-# The set of dependency files which are needed:
-set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/cocoa_init.m" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_init.m.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_init.m.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/cocoa_joystick.m" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_joystick.m.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_joystick.m.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/cocoa_monitor.m" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_monitor.m.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_monitor.m.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/cocoa_time.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_time.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_time.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/cocoa_window.m" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_window.m.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/cocoa_window.m.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/context.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/context.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/context.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/init.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/init.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/init.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/input.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/input.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/input.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/monitor.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/monitor.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/monitor.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/nsgl_context.m" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/nsgl_context.m.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/nsgl_context.m.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/posix_tls.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/posix_tls.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/posix_tls.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/vulkan.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/vulkan.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/vulkan.c.o.d"
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/MSAP/NORI-2024_mac/ext/nanogui/ext/glfw/src/window.c" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/window.c.o" "gcc" "ext_build/nanogui/ext_build/glfw/src/CMakeFiles/glfw_objects.dir/window.c.o.d"
+# The include file search paths:
+set(CMAKE_C_TARGET_INCLUDE_PATH
+  "../ext/nanogui/ext/glfw/include"
+  "../ext/nanogui/ext/glfw/src"
+  "ext_build/nanogui/ext_build/glfw/src"
   )
 
-# Targets to which this target links which contain Fortran sources.
-set(CMAKE_Fortran_TARGET_LINKED_INFO_FILES
-  )
-
-# Targets to which this target links which contain Fortran sources.
-set(CMAKE_Fortran_TARGET_FORWARD_LINKED_INFO_FILES
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
   )
 
 # Fortran module output directory.
