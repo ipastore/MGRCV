@@ -88,12 +88,8 @@ public:
         // Compute the parameters needed
         Vector3f wh = (bRec.wi + bRec.wo).normalized();
         float alpha = m_alpha->eval(bRec.uv).getLuminance();
-        float p_wh = Warp::squareToBeckmannPdf(wh, alpha);
 
-        // Incluye el Jacobiano
-        float jacobian = 4.0f * std::abs(bRec.wo.dot(wh));
-        return p_wh / jacobian;
-
+        return Warp::squareToBeckmannPdf(wh, alpha);
     }
 
     /// Sample the BRDF
