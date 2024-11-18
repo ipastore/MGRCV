@@ -35,17 +35,14 @@ public:
 
 		// ** SAMPLING THE SECOND RAY ** //
         
-
 		BSDFQueryRecord bsdfQR(its.toLocal(-ray.d), sampler->next2D());
 		// We obtain the wo and the bsdf value
 		Color3f bsdf = its.mesh->getBSDF()->sample(bsdfQR, sampler->next2D());
+		
 		// We must check if the BSDF value is valid, if not we'll return black
-		if (!bsdf.isValid()){
-			return Color3f(0.f);
-		}
-
-
-		// ** CHECKING SECOND INTERSECTION ** //
+        if (bsdf.isZero() || bsdf.hasNaN()) {
+            return Color3f(0.0f);
+        }
 
 		Intersection its2;
 		Ray3f second_ray(its.p, its.toWorld(bsdfQR.wo));
@@ -53,7 +50,7 @@ public:
 		// Checking if the SECOND ray intersects with the scene (OUTPUT: Zero)
 		if (!scene->rayIntersect(second_ray, its2)){
 			Color3f backgroundColor = scene->getBackground(second_ray);
-			return backgroundColor * bsdf * std::abs(Frame::cosTheta(bsdfQR.wo));
+			return backgroundColor * bsdf;
 		}
 		
 		// Checking if the SECOND ray intersects with an emitter (OUTPUR: Emitter radiance)
@@ -63,8 +60,9 @@ public:
 			emitterRecord_2.wi = second_ray.d;
 			emitterRecord_2.n = its2.shFrame.n;
 			Color3f Le = its2.mesh->getEmitter()->eval(emitterRecord_2); 
-			return bsdf * Le;
+			Lo = bsdf * Le;
 		}
+	
 
 		return Lo;
 	}
