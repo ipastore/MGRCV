@@ -88,6 +88,20 @@ def kannala_backward_model(u, K_c, D_k):
     
     return v
 
+def calculate_triangulation_planes(v):
+     
+    # Compute the plane symmetric containing the ray and Z axis
+    plane_sym = np.array([-[v[1], v[0], 0, 0]])
+    
+    # Compute the plane perpendicular containing the ray and being perpendicular to the sym plane
+    plane_perp = np.array([-v[2].dot(v[0]),
+                           -v[2].dot(v[1]),
+                           -v[0].dot(v[0]) + -v[1].dot(v[1]),
+                           0])
+
+    return plane_sym, plane_perp
+    
+
 def triangulation_kannala(x1, x3, K_1, D1_k_array, T_wc1, T_wc2):
     
     n_points = x1.shape[1]
@@ -100,14 +114,31 @@ def triangulation_kannala(x1, x3, K_1, D1_k_array, T_wc1, T_wc2):
         v1[:, point] = kannala_backward_model(u1, K_1, D1_k_array)
         v2[:, point] = kannala_backward_model(u2, K_1, D1_k_array)
     
-    # Compute the 3D points
-    x_A_3D = np.zeros((4, n_points))
-    for i in range(n_points): 
-        ray_1 = v_1[:, i]
-        ray_2 = v_2[:, i]
-        
+    # Compute the planes used for triangulation
+    plane_sym_1, plane_perp_1 = calculate_triangulation_planes(v1)
+    plane_sym_2, plane_perp_2 = calculate_triangulation_planes(v2)
     
-    return None
+    # Change the reference frame of the planes to the world coordinates
+    plane_sym_1 = T_wc1[0:3, 0:3].T @ plane_sym_1
+    plane_perp_1 = T_wc1[0:3, 0:3].T @ plane_perp_1
+    plane_sym_2 = T_wc2[0:3, 0:3].T @ plane_sym_2
+    plane_perp_2 = T_wc2[0:3, 0:3].T @ plane_perp_2
+    
+    # AX = 0
+    A = np.vstack((plane_sym_1.T, plane_perp_1.T, plane_sym_2.T, plane_perp_2.T))
+    
+    # Check the rank of the matrix for meet the epipolar restriction
+    if np.linalg.matrix_rank(A) < 3:
+        raise ValueError("The matrix A does not meet the epipolar restriction.")
+    
+    # Compute the SVD decomposition, result is the last column of V
+    _, _, V = np.linalg.svd(A)
+    X_tri = V[:, 3]
+    
+    return X_tri
+
+
+
 
 if __name__ == "__main__":
 
@@ -161,6 +192,11 @@ if __name__ == "__main__":
     x4 = load_matrix("./data/x4.txt") # Position B, Camera 2
     
     x_A_3D = triangulation_kannala(x1, x3, K_1, D1_k_array, T_wc1, T_wc2)
+    print("\nTriangulated point 3D Coord:", x_A_3D, sep="\n")
+
+    
+    # EXERCICE 3: TriangBundle Adjustment #
+
     
     
     
