@@ -12,19 +12,22 @@ public:
 		/* No parameters this time */
 	}
 
-    Color3f Li_ma(const Scene* scene, Sampler* sampler, const Ray3f& ray, const Intersection& its) const {
+    Color3f material_sampler(const Scene* scene, Sampler* sampler, const Ray3f& ray, const Intersection& its) const {
 
+        // Used parameters
         Color3f Le_ma(0.0f);  // BRDF sampling contribution
         float w_mats = 0.f;
-        float p_mat_mat = 0.f, p_em_mat = 0.f;
+        float p_mat_mat = 0.f;
+        float p_em_mat = 0.f;
+
 
         // ** SAMPLING THE SECOND RAY ** //
 
-		BSDFQueryRecord bsdfQR(its.toLocal(-ray.d), sampler->next2D());
+		BSDFQueryRecord bsdfQR(its.toLocal(-ray.d), its.uv);
 		Color3f bsdf = its.mesh->getBSDF()->sample(bsdfQR, sampler->next2D());
 
-		// We must check if the BSDF value is valid, if not the output will be zero
-		if (bsdf.isValid() || !bsdf.isZero()){
+		// We check if the BSDF is valid and not zero
+		if (bsdf.isValid() && !bsdf.isZero()){
 			
             // ** CHECKING SECOND INTERSECTION ** //
 
@@ -34,21 +37,28 @@ public:
             // Checking if the SECOND ray intersects with the scene
             if (!scene->rayIntersect(second_ray, its2)){
                 Color3f backgroundColor = scene->getBackground(second_ray);
-                Le_ma = backgroundColor * bsdf * std::abs(Frame::cosTheta(bsdfQR.wo));
-            }
-            
-            // Checking if the SECOND ray intersects with an emitter (OUTPUR: Emitter radiance)
-            if (its2.mesh->isEmitter()) {	
-                EmitterQueryRecord emitterRecord_2(its2.p);
-                emitterRecord_2.ref = second_ray.o;
-                emitterRecord_2.wi = second_ray.d;
-                emitterRecord_2.n = its2.shFrame.n;
+                Le_ma = backgroundColor * bsdf;
 
-                p_em_mat = its2.mesh->getEmitter()->pdf(emitterRecord_2);
-                Color3f Le = its2.mesh->getEmitter()->eval(emitterRecord_2); 
+            }else{ 
 
-                Le_ma =  bsdf * Le;
+                // ** CHECKING IF THE SECOND RAY INTERSECTS WITH AN EMITTER ** //
+
+                if (its2.mesh != nullptr && its2.mesh->isEmitter()) {
+                    const Emitter* em = its2.mesh->getEmitter();
+                    EmitterQueryRecord emitterRecord_2(its2.p);
+                    emitterRecord_2.ref = second_ray.o;
+                    emitterRecord_2.wi = second_ray.d;
+                    emitterRecord_2.n = its2.shFrame.n;
+
+                    // We get the pdf of the emitter and the radiance
+                    p_em_mat = em->pdf(emitterRecord_2);
+                    Color3f Le = em->eval(emitterRecord_2);
+                    // We compute the contribution of the emitter
+                    Le_ma =  bsdf * Le;
+                }
             }
+
+            // ** COMPUTING THE WEIGHTS ** //
 
             p_mat_mat = its.mesh->getBSDF()->pdf(bsdfQR);
 
@@ -61,11 +71,12 @@ public:
 
     }
 
-    Color3f Li_em(const Scene* scene, Sampler* sampler, const Ray3f& ray, const Intersection& its) const {
+    Color3f emitter_sampler(const Scene* scene, Sampler* sampler, const Ray3f& ray, const Intersection& its) const {
 
         Color3f Le_em(0.0f);
         float w_em = 0.f;
-        float p_mat_em = 0.f, p_em_em = 0.f;
+        float p_mat_em = 0.f;
+        float p_em_em = 0.f;
 
         // ** RANDOMLY CHOOSING AN EMITER ** //
 
@@ -82,26 +93,31 @@ public:
         Intersection shadow_its;
         Ray3f shadowRay(its.p, emitterRecord.wi);
         shadowRay.maxt = (emitterRecord.p - its.p).norm();
-
         bool inShadow = scene->rayIntersect(shadowRay, shadow_its);
 
         if (!inShadow || shadow_its.t >= (emitterRecord.dist - Epsilon)){
+
+            // ** COMPUTING THE CONTRIBUTION OF THE EMITTER ** //
+        
             BSDFQueryRecord bsdfQR_ls(its.toLocal(-ray.d), its.toLocal(emitterRecord.wi), its.uv, ESolidAngle);
-			Color3f bsdf = its.mesh->getBSDF()->eval(bsdfQR_ls);
-            p_em_em = pdfEmitter * emitterRecord.pdf;
+            float denominator = pdfEmitter * emitterRecord.pdf;
+
+            if (denominator > Epsilon){	
+                emitterRecord.dist = its.t;
+                Color3f bsdf = its.mesh->getBSDF()->eval(bsdfQR_ls);
+                Le_em = (Lem * its.shFrame.n.dot(emitterRecord.wi) * bsdf) / denominator;
+			}
+
+            // ** COMPUTING THE WEIGHTS ** //
+
+            p_em_em = denominator;
             p_mat_em = its.mesh->getBSDF()->pdf(bsdfQR_ls);
 
-
-            if (p_em_em > Epsilon){	
-                emitterRecord.dist = its.t;
-                Le_em = (Lem * its.shFrame.n.dot(emitterRecord.wi) * bsdf) / p_em_em;
-			}
+            if (p_em_em + p_mat_em > Epsilon){
+                w_em = p_em_em / (p_em_em + p_mat_em);
+            }
 		}
 
-        if (p_em_em + p_mat_em > Epsilon){
-            w_em = p_em_em / (p_em_em + p_mat_em);
-        }
-        
         return Le_em * w_em;        
 
     }
@@ -127,9 +143,11 @@ public:
 
 		// ** COMPUTING MATERIAL AND EMITTER SAMPLIGS CONTRIBUTIONS ** //
 
-        Color3f Le_ma = Li_ma(scene, sampler, ray, its);
-        Color3f Le_em = Li_em(scene, sampler, ray, its);
+        Color3f Le_ma = material_sampler(scene, sampler, ray, its);
+        Color3f Le_em = emitter_sampler(scene, sampler, ray, its);
 
+        if (Le_ma.isZero()) return Le_em;
+        if (Le_em.isZero()) return Le_ma;
         return Le_ma + Le_em;
 	}
 
