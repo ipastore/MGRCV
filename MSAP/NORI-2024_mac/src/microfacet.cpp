@@ -85,12 +85,9 @@ public:
             || Frame::cosTheta(bRec.wo) <= 0)
             return 0.0f;
         
-        // Compute the half-vector
+        // Compute the parameters needed
         Vector3f wh = (bRec.wi + bRec.wo).normalized();
-
-        // Retrieve the roughness parameter alpha from the texture
         float alpha = m_alpha->eval(bRec.uv).getLuminance();
-        
         float p_wh = Warp::squareToBeckmannPdf(wh, alpha);
 
         // Incluye el Jacobiano
@@ -111,27 +108,13 @@ public:
 
         bRec.measure = ESolidAngle;
 
-        // We get the roughness parameter `alpha` by averaging the color channels of `m_alpha`
-        float alpha = m_alpha->eval(bRec.uv).getLuminance();
+        // Parameters needed for the calculation
+        float alpha = m_alpha->eval(bRec.uv).getLuminance();    // We get the roughness parameter `alpha` by averaging the color channels of `m_alpha`
+        Vector3f wh = Warp::squareToBeckmann(_sample, alpha);   // Then, we sample the half-vector `wh` using the Beckmann distribution
+        bRec.wo = - bRec.wi + 2 * bRec.wi.dot(wh) * wh;         // Reflect `wi` around `wh` to obtain the outgoing direction `wo`
 
-        // Then, we sample the half-vector `wh` using the Beckmann distribution
-        Vector3f wh = Warp::squareToBeckmann(_sample, alpha);
-
-        // Step 2: Reflect `wi` around `wh` to obtain the outgoing direction `wo`
-        //right direction?
-        bRec.wo = bRec.wi - 2 * bRec.wi.dot(wh) * wh;
-
-        // Paso 2: Calcular la dirección de incidencia ωi usando la ley de reflexión
-        // bRec.wi = 2.0f * bRec.wo.dot(wh) * wh - bRec.wo;
-
-        // Step 4: Evaluate the BRDF value at the sampled direction
-        Color3f fr = eval(bRec);
-
-        // Step 5: Calculate the PDF value for the sampled direction
-        float pdf_val = pdf(bRec);
-
-        // Step 6: Return the BRDF value weighted by the cosine factor and divided by the PDF
-        return fr * Frame::cosTheta(bRec.wo) / pdf_val;
+        // Return the BRDF value weighted by the cosine factor and divided by the PDF
+        return eval(bRec) * Frame::cosTheta(bRec.wo) / pdf(bRec);
 
     }
 
@@ -317,7 +300,6 @@ public:
         Color3f kd = m_kd->eval(bRec.uv);  // Albedo (diffuse color)
 
 
-
         // ** DIFUSE COMPONENT OF THE SUBSTRATE DUE TO SUBSURFACE TRANSPORT ** //
 
         // Fresnel term for diffuse component (Ashikhmin-Shirley model)        
@@ -326,7 +308,6 @@ public:
         float diffuseFactorI = 1.0f - std::pow(1.0f - 0.5f * cosThetaI, 5.0f);
         float diffuseFactorO = 1.0f - std::pow(1.0f - 0.5f * cosThetaO, 5.0f);
         Color3f f_diff = (28.0f * kd / (23.0f * M_PI)) * fresnelDiffuse * diffuseFactorI * diffuseFactorO;
-
 
 
         // ** THE CONTRIBUTION OF THE ROUGH DIELECTRIC BOUNDARY ** //
@@ -339,7 +320,6 @@ public:
         // Specular component of the microfacet BRDF
         float denominator = 4.0f * cosThetaI * cosThetaO;
         float f_mf = D * F * G / denominator;
-
 
 
         // ** COMBINATION OF BOTH FACTORS ** // 
