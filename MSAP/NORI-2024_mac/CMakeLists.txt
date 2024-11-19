@@ -104,6 +104,7 @@ add_executable(nori
   src/direct_mis.cpp
   src/reflectance.cpp
   src/path.cpp
+  src/path_nee.cpp
 )
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
