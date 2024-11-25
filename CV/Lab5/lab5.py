@@ -3,6 +3,9 @@ import os
 import matplotlib.pyplot as plt
 import cv2
 
+from utils.drawingCV import *
+
+
 def debug_print(*args, **kwargs):
     if DEBUG:
         print(*args, **kwargs)
@@ -175,48 +178,6 @@ def triangulation_kannala(v1, v2, T_w_c1, T_w_c2):
     return X_tri_FRW
 
 
-def draw_possible_poses(ax, Rt, X):
-    fig3D = plt.figure()
-    ax = plt.axes(projection='3d', adjustable='box')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    drawRefSystem(ax, np.eye(4, 4), '-', 'C1')
-    drawRefSystem(ax, Rt, '-', 'C2')
-    ax.scatter(X[0, :], X[1, :], X[2, :], marker='.', color='r')
-
-    return fig3D
-
-
-def drawRefSystem(ax, T_w_c, strStyle, nameStr):
-    """
-        Draw a reference system in a 3D plot: Red for X axis, Green for Y axis, and Blue for Z axis
-    -input:
-        ax: axis handle
-        T_w_c: (4x4 matrix) Reference system C seen from W.
-        strStyle: lines style.
-        nameStr: Name of the reference system.
-    """
-    draw3DLine(ax, T_w_c[0:3, 3:4], T_w_c[0:3, 3:4] + T_w_c[0:3, 0:1], strStyle, 'r', 1)
-    draw3DLine(ax, T_w_c[0:3, 3:4], T_w_c[0:3, 3:4] + T_w_c[0:3, 1:2], strStyle, 'g', 1)
-    draw3DLine(ax, T_w_c[0:3, 3:4], T_w_c[0:3, 3:4] + T_w_c[0:3, 2:3], strStyle, 'b', 1)
-    ax.text(np.squeeze( T_w_c[0, 3]+0.1), np.squeeze( T_w_c[1, 3]+0.1), np.squeeze( T_w_c[2, 3]+0.1), nameStr)
-
-
-def draw3DLine(ax, xIni, xEnd, strStyle, lColor, lWidth):
-    """
-    Draw a segment in a 3D plot
-    -input:
-        ax: axis handle
-        xIni: Initial 3D point.
-        xEnd: Final 3D point.
-        strStyle: Line style.
-        lColor: Line color.
-        lWidth: Line width.
-    """
-    ax.plot([np.squeeze(xIni[0]), np.squeeze(xEnd[0])], [np.squeeze(xIni[1]), np.squeeze(xEnd[1])], [np.squeeze(xIni[2]), np.squeeze(xEnd[2])],
-            strStyle, color=lColor, linewidth=lWidth)
-
 def exercise_2_1(K_1, D1_k_array):
         
         # EXERCICE 2.1.1 :Kannala-Brandt PROJECTION model #
@@ -256,6 +217,8 @@ def exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2):
         # Load points
         x1 = load_matrix("./data/x1.txt") # Position A, Camera 1
         x2 = load_matrix("./data/x2.txt") # Position A, Camera 2
+        x3 = load_matrix("./data/x3.txt") # Position B, Camera 1
+        x4 = load_matrix("./data/x4.txt") # Position B, Camera 2
         n_points = x1.shape[1]
 
         # Triangulate the points
@@ -272,18 +235,10 @@ def exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2):
             
         #Plot the 3D 
         fig3D = plt.figure(1)
-        ax = plt.axes(projection="3d", adjustable="box")
-        ax.set_xlabel("X")
-        ax.set_ylabel("Y")
-        ax.set_zlabel("Z")
+        ax = setup_3D_plot(x_label="X", y_label="Y", z_label="Z", equal_axis=True)
         drawRefSystem(ax, T_w_c1, "-", "L")
         drawRefSystem(ax, T_w_c2, "-", "R")
-        ax.scatter(X_A_w[0, :], X_A_w[1, :], X_A_w[2, :], marker=".")     
-        # Matplotlib does not correctly manage the axis('equal')
-        xFakeBoundingBox = np.linspace(-1, 1, 2)
-        yFakeBoundingBox = np.linspace(-1, 1, 2)
-        zFakeBoundingBox = np.linspace(-1, 1, 2)
-        plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, "w.")
+        plot_points_3D(ax, X_A_w, marker=".", color="b", size=10)
         print('\nClick in the image to continue...\n')
         plt.show(block=True)
             
@@ -297,8 +252,12 @@ def exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2):
             u_tri_c1[:, point] = kannala_forward_model(x_c1, K_1, D1_k_array).flatten()
             print(f"Point {point} - Coord projected: {u_tri_c1[:, point]}")
             
-        # # # Check the triangulation results
+        # Check the triangulation results
         img1 = cv2.imread("./data/fisheye1_frameA.png")
+        img2 = cv2.imread("./data/fisheye1_frameB.png")
+        img3 = cv2.imread("./data/fisheye2_frameA.png")
+        img4 = cv2.imread("./data/fisheye2_frameB.png")
+
         plt.figure()
         plt.imshow(img1)
         plt.scatter(x1[0], x1[1], c='r', marker='x')
