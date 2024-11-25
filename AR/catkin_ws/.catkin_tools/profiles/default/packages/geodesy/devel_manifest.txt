@@ -1,0 +1,7 @@
+geographic_info/geodesy
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/geodesy/cmake.lock /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/./cmake.lock
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/geodesy/share/geodesy/cmake/geodesyConfig-version.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/geodesy/cmake/geodesyConfig-version.cmake
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/geodesy/share/geodesy/cmake/geodesyConfig.cmake /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/share/geodesy/cmake/geodesyConfig.cmake
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/geodesy/lib/libgeoconv.so /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/lib/libgeoconv.so
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/geodesy/lib/python3/dist-packages/geodesy/__init__.py /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/lib/python3/dist-packages/geodesy/__init__.py
+/home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/.private/geodesy/lib/pkgconfig/geodesy.pc /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/lib/pkgconfig/geodesy.pc

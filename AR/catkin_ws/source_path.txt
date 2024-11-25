@@ -1,6 +1,10 @@
 source /opt/ros/noetic/setup.bash 
 source /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/setup.bash 
 
+source /opt/ros/noetic/setup.bash && source /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/setup.bash 
+
+
+
 rosrun rviz rviz
 
 roslaunch hector_quadrotor_gazebo quadrotor_empty_world.launch
@@ -19,3 +23,12 @@ roslaunch p06_arob_lab4 arob-p4-navigation-rviz.launch
 
 Exe 5
 roslaunch p06_arob_lab4 arob-p4-navigation-plugin.launch
+
+
+LAB 5
+
+rosrun roscpp_tutorials add_two_ints_server
+rosservice list
+rosservice type /add_two_ints
+rossrv show roscpp_tutorials/TwoInts
+rosservice call /add_two_ints "{a: 7, b: 8}"
