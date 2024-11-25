@@ -52,7 +52,7 @@ def kannala_forward_model(x, K_c, D_k):
     # Step 4: Compute the projection
     u = compute_Kannala_Brandt_projection(K_c, d_theta, phi)
     
-    return u
+    return u.flatten()
 
 def kannala_backward_model(u, K_c, D_k):
     """
@@ -123,7 +123,8 @@ def calculate_triangulation_planes(v):
 
     return plane_sym, plane_perp
     
-
+# TODO: Implementar varios calculos     
+# assert v1.shape[1] == v2.shape[1], "v1 and v2 must have the same number of points"
 def triangulation_kannala(v1, v2, T_w_c1, T_w_c2):
     """
     Realiza la triangulación de un punto a partir de dos rayos en las cámaras 1 y 2.
@@ -136,6 +137,8 @@ def triangulation_kannala(v1, v2, T_w_c1, T_w_c2):
     - X_cam1: Coordenadas trianguladas en el marco de la cámara 1 (4x1).
     """
     
+
+
     plane_sym_1, plane_perp_1 = calculate_triangulation_planes(v1)
     plane_sym_2, plane_perp_2 = calculate_triangulation_planes(v2)
     debug_print("\nPlane sym 1 - FR1: ", plane_sym_1)
@@ -144,17 +147,17 @@ def triangulation_kannala(v1, v2, T_w_c1, T_w_c2):
     debug_print("Plane perp 2 - FR2: ", plane_perp_2, "\n")
     
     # Transformar los planos de la cámara 1 al marco de la cámara 2
-    T_c1_c2 = T_w_c2 @ np.linalg.inv(T_w_c1) 
+    T_c1_c2 = np.linalg.inv(T_w_c1) @ T_w_c2
     debug_print("T_c1_c2: ", T_c1_c2, sep="\n")
-    plane_sym_1_fr2 = T_c1_c2 @ plane_sym_1
-    plane_perp_1_fr2 = T_c1_c2 @ plane_perp_1
+    plane_sym_1_fr2 = T_c1_c2.T @ plane_sym_1
+    plane_perp_1_fr2 = T_c1_c2.T @ plane_perp_1
     
     debug_print("\nPlane sym 1 - FR2: ", plane_sym_1_fr2)
     debug_print("Plane perp 1 - FR2: ", plane_perp_1_fr2, "\n")
     
     A = np.vstack([
-        plane_sym_1,
-        plane_perp_1,
+        plane_sym_1_fr2,
+        plane_perp_1_fr2,
         plane_sym_2,
         plane_perp_2
     ])
@@ -164,49 +167,12 @@ def triangulation_kannala(v1, v2, T_w_c1, T_w_c2):
     _, _, Vt = np.linalg.svd(A)
     debug_print("Vt: ", Vt, sep="\n")
     X_tri_FR2 = Vt[-1]  # Último vector singular
-    X_tr_FR2 = X_tri_FR2 / X_tri_FR2[-1]
+    X_tri_FR2 /= X_tri_FR2[3]
     debug_print("\nX_tri_FR2: ", X_tri_FR2)
-    X_tri_FRW = T_w_c2 @ X_tr_FR2
+    X_tri_FRW = T_w_c2 @ X_tri_FR2
     debug_print("X_tri_FRW: ", X_tri_FRW, "\n")
     
     return X_tri_FRW
-    
-    # # Paso 1: Transformar v2 al marco de la cámara 1
-    # T_12 = np.linalg.inv(T_w_c1) @ T_w_c2  # Transformación cámara 2 -> cámara 1
-    # print(T_12)
-    # # Transformar el rayo v2 al marco de la cámara 1
-    # # v2_cam1 = R_12 @ v2
-
-    # # Paso 2: Construir los planos de triangulación
-    # plane_sym_1, plane_perp_1 = calculate_triangulation_planes(v1)
-    # plane_sym_2, plane_perp_2 = calculate_triangulation_planes(v2)
-
-    # # Transformar los planos de la cámara 2 al marco de la cámara 1
-    # # plane_sym_2[:3] += np.cross(t_12, plane_sym_2[:3], axis=0)  # Ajuste de traslación
-    # # plane_perp_2[:3] += np.cross(t_12, plane_perp_2[:3], axis=0)
-    # plane_sym_1 = T_12 @ plane_sym_1  # Ajuste de traslación
-    # plane_perp_1 = T_12 @ plane_perp_1
-    # plane_sym_2 = plane_sym_2  # Ajuste de traslación
-    # plane_perp_2 = plane_perp_2
-
-    # # Paso 3: Construir la matriz A
-    # A = np.vstack([
-    #     plane_sym_1.T,
-    #     plane_perp_1.T,
-    #     plane_sym_2.T,
-    #     plane_perp_2.T
-    # ])
-
-    # # Paso 4: Resolver AX = 0 usando SVD
-    # _, _, Vt = np.linalg.svd(A)
-    # X_tri = Vt[-1]  # Último vector singular
-
-    # # Normalizar a coordenadas homogéneas
-    # X_tri = X_tri / X_tri[-1]
-    
-    # X_tri = T_w_c2 @ X_tri
-
-    # return 0
 
 
 def draw_possible_poses(ax, Rt, X):
@@ -254,6 +220,8 @@ def draw3DLine(ax, xIni, xEnd, strStyle, lColor, lWidth):
 def exercise_2_1(K_1, D1_k_array):
         
         # EXERCICE 2.1.1 :Kannala-Brandt PROJECTION model #
+        
+        print("\n*******EXERCICE 2.1.1 :Kannala-Brandt PROJECTION model*******\n")
     
         x_1 = np.array([[3], [2], [10], [1]])
         x_2 = np.array([[-5], [6], [7], [1]])
@@ -266,106 +234,82 @@ def exercise_2_1(K_1, D1_k_array):
         print("u_2: ", u_2)
         print("u_3: ", u_3)
 
-
         # EXERCICE 2.1.1 :Kannala-Brandt UNPROJECTION model #
         
+        print("\n*******EXERCICE 2.1.1 :Kannala-Brandt UNPROJECTION model*******\n")
+
         v_1 = kannala_backward_model(u_1, K_1, D1_k_array)
         v_2 = kannala_backward_model(u_2, K_1, D1_k_array)
         v_3 = kannala_backward_model(u_3, K_1, D1_k_array)
 
         print("\nv_1: ", v_1)
-        print("\nx_1:", x_1[0:3]/np.linalg.norm(x_1[0:3]), sep="\n")
+        print("x_1:", (x_1[0:3]/np.linalg.norm(x_1[0:3])).flatten())
         print("\nv_2: ", v_2)
-        print("\nx_2:", x_2[0:3]/np.linalg.norm(x_2[0:3]), sep="\n")
+        print("x_2:", (x_2[0:3]/np.linalg.norm(x_2[0:3])).flatten())
         print("\nv_3: ", v_3)
-        print("\nx_3:", x_3[0:3]/np.linalg.norm(x_3[0:3]), sep="\n")
+        print("x_3:", (x_3[0:3]/np.linalg.norm(x_3[0:3])).flatten())
 
 def exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2):
+        
+        print("\n*************EXERCICE 2.2: Triangulation*************\n")
         
         # Load points
         x1 = load_matrix("./data/x1.txt") # Position A, Camera 1
         x2 = load_matrix("./data/x2.txt") # Position A, Camera 2
         n_points = x1.shape[1]
-        X_A_w = np.zeros((4, n_points))
-        
-        # Get vectors from the points
-        v1 = kannala_backward_model(x1[:, 1], K_1, D1_k_array)
-        v2 = kannala_backward_model(x2[:, 1], K_2, D2_k_array)
-        debug_print("\nX1: ", x1[:, 1])
-        debug_print("X2: ", x2[:, 1])
-        debug_print("V1: ", v1)
-        debug_print("V2: ", v2)
-        
-        # Triangulate the points
-        variable = triangulation_kannala(v1, v2, T_w_c1, T_w_c2)
-        
-        # Reproject the triangulated point to the camera 1
-        
-        # Plot the results in a 3D plot     
-        
-        # # Triangulate the points
-        # for i in range(n_points):
-        #     print(x1[:, i])
-        #     print(x2[:, i])
-        #     print('--------------')
-        #     v1 = kannala_backward_model(x1[:, i], K_1, D1_k_array)
-        #     v2 = kannala_backward_model(x2[:, i], K_2, D2_k_array)
-        #     print(v1)
-        #     print('--------------')
-        #     print(v2)
-        #     print('--------------')
-        #     print(f"Point vector{i}: v: {v1}")
-        #     X_A_w[:, i] = triangulation_kannala(v1, v2, T_w_c1=T_w_c1, T_w_c2=T_w_c2)
-        #     print(f"Point {i}: 3D Coord: {X_A_w}")
-        
-        # # Draw the possible poses
-        # X_A_c1 = T_w_c1 @ X_A_w
-        # plt.figure()
-        # ax = plt.axes(projection='3d', adjustable='box')
-        # ax.set_xlabel('X')
-        # ax.set_ylabel('Y')
-        # ax.set_zlabel('Z')
-        # drawRefSystem(ax, np.eye(4, 4), '-', 'W')
-        # drawRefSystem(ax, T_w_c1, '-', 'C1')
-        # drawRefSystem(ax, T_w_c2, '-', 'C2')
 
-        # ax.scatter(X_A_c1[0, :], X_A_c1[1, :], X_A_c1[2, :], marker='.')
-        # # Matplotlib does not correctly manage the axis('equal')
-        # xFakeBoundingBox = np.linspace(0, 4, 2)
-        # yFakeBoundingBox = np.linspace(0, 4, 2)
-        # zFakeBoundingBox = np.linspace(0, 4, 2)
-        # plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
-        # # # Optional: set plot limits to manage scale and view
-        # ax.set_xlim([1,-1])
-        # ax.set_ylim([1,-1])
-        # ax.set_zlim([1,-1])
-        # print('Close the figure to continue. Left button for orbit, right button for zoom.')
-        # plt.show(block=True) 
-        
-        # # Project the triangulated point to the camera 1
-        # X_tri_c1 = T_w_c1 @ X_A_w
-        # u_tri_c1 = np.zeros((3, n_points))
-        # for point in range(n_points):
-        #     u_tri_c1[:, point] = kannala_forward_model(X_tri_c1[:, point], K_1, D1_k_array).flatten()
-        #     print(f"Point {point}: 3D Coord: {u_tri_c1[:, point]}")
-        # u_tri_c1[0, :] /= u_tri_c1[2, :]
-        # u_tri_c1[1, :] /= u_tri_c1[2, :]
-        
-        
+        # Triangulate the points
+        X_A_w = np.zeros((4, n_points))
+        for i in range(n_points):
+            v1 = kannala_backward_model(x1[:, i], K_1, D1_k_array)
+            v2 = kannala_backward_model(x2[:, i], K_2, D2_k_array)
+            debug_print("\nX1: ", x1[:, i])
+            debug_print("X2: ", x2[:, i])
+            debug_print("V1: ", v1)
+            debug_print("V2: ", v2)
+            X_A_w[:, i] = triangulation_kannala(v1, v2, T_w_c1=T_w_c1, T_w_c2=T_w_c2)
+            print(f"Point {i}: 3D Coord: {X_A_w[:, i].flatten()}")
+            
+        #Plot the 3D 
+        fig3D = plt.figure(1)
+        ax = plt.axes(projection="3d", adjustable="box")
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        drawRefSystem(ax, T_w_c1, "-", "L")
+        drawRefSystem(ax, T_w_c2, "-", "R")
+        ax.scatter(X_A_w[0, :], X_A_w[1, :], X_A_w[2, :], marker=".")     
+        # Matplotlib does not correctly manage the axis('equal')
+        xFakeBoundingBox = np.linspace(-1, 1, 2)
+        yFakeBoundingBox = np.linspace(-1, 1, 2)
+        zFakeBoundingBox = np.linspace(-1, 1, 2)
+        plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, "w.")
+        print('\nClick in the image to continue...\n')
+        plt.show(block=True)
+            
+        # Project the triangulated point to the camera 1
+        u_tri_c1 = np.zeros((3, n_points))
+        T_c1_w = np.linalg.inv(T_w_c1)
+        T_c2_w = np.linalg.inv(T_w_c2)
+    
+        for point in range(n_points):
+            x_c1 = T_c1_w @ X_A_w[:, point]
+            u_tri_c1[:, point] = kannala_forward_model(x_c1, K_1, D1_k_array).flatten()
+            print(f"Point {point} - Coord projected: {u_tri_c1[:, point]}")
+            
         # # # Check the triangulation results
-        # img1 = cv2.imread("./data/fisheye1_frameA.png", cv2.IMREAD_GRAYSCALE)
-        # plt.figure()
-        # plt.imshow(img1)
-        # plt.scatter(x1[0], x1[1], c='r', marker='x')
-        # plt.scatter(u_tri_c1[0,:], u_tri_c1[1,:], c='b', marker='o')
-        # plt.show(block=True)  # Block execution until the figure is closed
+        img1 = cv2.imread("./data/fisheye1_frameA.png")
+        plt.figure()
+        plt.imshow(img1)
+        plt.scatter(x1[0], x1[1], c='r', marker='x')
+        plt.scatter(u_tri_c1[0, :], u_tri_c1[1, :], c='b', marker='o', s=6)
+        plt.show(block=True)  # Block execution until the figure is closed
+
 
 def main():
-    
-    ### Exercices flags ###
-    exercice_2_1 = True
-    exercice_2_2 = True
         
+    np.set_printoptions(precision=4,linewidth=1024,suppress=True)
+
     # Load matrices
     K_1 = load_matrix("./data/K_1.txt")
     K_2 = load_matrix("./data/K_2.txt")    
@@ -376,24 +320,23 @@ def main():
     
     ### EXERCICE 2.1: Kannala-Brandt Model ###
     
-    if exercice_2_1:
+    if EXERCICE_2_1:
         exercise_2_1(K_1, D1_k_array)
 
     # EXERCICE 2.2: Triangulation #
     
-    if exercice_2_2:
+    if EXERCICE_2_2:
         exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2)
-        
-        
-DEBUG = True
+             
+
+### Exercices flags ###
+EXERCICE_2_1 = True
+EXERCICE_2_2 = True
+DEBUG = False
 
 if __name__ == "__main__":
     
     main()
-    
-    
-    
-    
     
     # # main()
     # x1 = np.array([[4], [0], [10], [1]])
