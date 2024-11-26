@@ -507,7 +507,7 @@ def exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2, T_wAwB):
     drawRefSystem(ax, T_w_c1, "-", "L")
     drawRefSystem(ax, T_w_c2, "-", "R")
     plot_points_3D(ax, X_A_w, marker=".", color="b", size=10)
-    plot_points_3D(ax, X_B_w, marker=".", color="r", size=10)
+    # plot_points_3D(ax, X_B_w, marker=".", color="r", size=10)
     print('IMAGE: 3D points in the 3D representation.')
     print('Close the image to continue...\n')
     plt.show(block=True)
@@ -522,8 +522,8 @@ def exercise_2_2(K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2, T_wAwB):
     for point in range(n_points):
         x_A_c1 = T_c1_w @ X_A_w[:, point]
         x_A_c2 = T_c2_w @ X_A_w[:, point]
-        x_B_c1 = T_c1_w @ T_wAwB @ X_A_w[:, point]
-        x_B_c2 = T_c2_w @ T_wAwB @ X_A_w[:, point]
+        x_B_c1 = T_c1_w @ np.linalg.inv(T_wAwB) @ X_A_w[:, point]
+        x_B_c2 = T_c2_w @ np.linalg.inv(T_wAwB) @ X_A_w[:, point]
         u_A_c1[:, point] = kannala_forward_model(x_A_c1, K_1, D1_k_array).flatten()
         u_A_c2[:, point] = kannala_forward_model(x_A_c2, K_2, D2_k_array).flatten()
         u_B_c1[:, point] = kannala_forward_model(x_B_c1, K_1, D1_k_array).flatten()
@@ -621,7 +621,7 @@ def exercise_3(x_A_w, K_1, K_2, D1_k_array, D2_k_array, T_w_c1, T_w_c2, T_wAwB_s
     drawRefSystem(ax, T_wAwB_optim@T_w_c2, "-", "RB") 
     drawRefSystem(ax, T_wAwB_optim@np.eye(4), "-", "WB")
     plot_points_3D(ax, x_A_w_optim, marker=".", color="b", size=10)
-    plot_points_3D(ax, x_B_w_optim, marker=".", color="r", size=10)
+    # plot_points_3D(ax, x_B_w_optim, marker=".", color="r", size=10)
     print('IMAGE: 3D points in the 3D representation.')
     print('Close the image to continue...\n')
     plt.show(block=True)
@@ -662,7 +662,7 @@ def main():
 EXERCICE_2_1 = True
 EXERCICE_2_2 = True
 EXERCICE_3 = True
-DEBUG = True
+DEBUG = False
 
 if __name__ == "__main__":
     
