@@ -44,6 +44,10 @@ def resBundleProjection(Op, x_data, T_wc1, T_wc2, K_1, K_2, D1_k_array, D2_k_arr
         u_2 = kannala_forward_model(x_3d_2, K_2, D2_k_array)
         u_1_array[:, i] = u_1
         u_2_array[:, i] = u_2  
+    print("u_1_array: ", u_1_array[:, 0:5], sep="\n") 
+    print("u_2_array: ", u_2_array[:, 0:5], sep="\n")
+    print("u_2_array size: ", u_2_array.size, sep="\n")
+
     
     res = []
     for j in range(nPoints):        
@@ -307,6 +311,8 @@ if __name__ == "__main__":
     x_data = np.hstack([x1, x2, x3, x4])    
     
     OpOptim = scOptim.least_squares(resBundleProjection, Op, args=(x_data, T_wc1, T_wc2, K_1, K_2, D1_k_array, D2_k_array, 2))
+    
+    
     T_wAwB_optim = ObtainPose(OpOptim.x[0:3], OpOptim.x[3], OpOptim.x[4])
     T_wAwB_optim[0:3,3] = OpOptim.x[3:6]
     x_3d_optim = OpOptim.x[6:].reshape((3, int(OpOptim.x[6:].shape[0]/3)))

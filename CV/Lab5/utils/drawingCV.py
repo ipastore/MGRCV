@@ -69,3 +69,19 @@ def setup_3D_plot(x_label="X", y_label="Y", z_label="Z", equal_axis=True):
         ax.plot(bounding_box, bounding_box, bounding_box, "w.")
 
     return ax
+
+def plot2DComparation(u_1,x1,image,imageName,figNum):
+    """
+    This function plots the 2D images.
+    Inputs:
+        u_1: 2d coordinates on the image
+        x1: 2d coordinates on the image
+        image: image
+        imageName: image name
+        figNum: figure number
+    """
+    fig1 = plt.figure(figNum)
+    plt.imshow(image)
+    plt.scatter(x1[0, :], x1[1, :], marker="x", c="r")
+    plt.scatter(u_1[0, :], u_1[1, :], marker="o", c="b", s=6)
+    plt.title(imageName)
