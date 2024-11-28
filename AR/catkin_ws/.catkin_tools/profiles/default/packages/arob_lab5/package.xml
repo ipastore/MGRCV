@@ -85,6 +85,10 @@
   <depend>nav_core</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
+    <!-- include here dependecies and export information -->
+  <export>
+    <nav_core plugin="${prefix}/rrt_global_planner_plugin.xml" />
+  </export>
 
 
 </package>

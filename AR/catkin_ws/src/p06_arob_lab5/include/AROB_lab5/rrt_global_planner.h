@@ -36,12 +36,13 @@ private:
     std::string global_frame_id_;
 	bool initialized_;
 
-    double max_samples_;
+    size_t max_samples_;
 
     double max_dist_;
     double resolution_;
 
     // functions to compute the plan
+    bool straightLine(const std::vector<int> start, const std::vector<int> goal, std::vector<std::vector<int>>& sol);
     bool obstacleFree(const unsigned int x0, const unsigned int y0, const unsigned int x1, const unsigned int y1);
     bool computeRRT(const std::vector<int> start, const std::vector<int> goal, 
                             std::vector<std::vector<int>>& sol);

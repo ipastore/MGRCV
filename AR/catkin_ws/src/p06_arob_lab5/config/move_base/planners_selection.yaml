@@ -14,6 +14,6 @@ base_local_planner: dwa_local_planner/DWAPlannerROS
 # ALTERNATIVES: dwa_local_planner/DWAPlannerROS, base_local_planner/TrajectoryPlannerROS
 
 # Global planner
-base_global_planner: global_planner/GlobalPlanner
+base_global_planner: rrt_planner/RRTPlanner
 #rrt_planner/RRTPlanner
 # ALTERNATIVES: global_planner/GlobalPlanner, carrot_planner/CarrotPlanner, navfn/NavfnROS, 

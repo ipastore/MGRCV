@@ -32,3 +32,5 @@ rosservice list
 rosservice type /add_two_ints
 rossrv show roscpp_tutorials/TwoInts
 rosservice call /add_two_ints "{a: 7, b: 8}"
+
+roslaunch arob_lab5 arob-p5-navigation.launch 

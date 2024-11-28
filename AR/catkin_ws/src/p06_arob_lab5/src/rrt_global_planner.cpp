@@ -1,6 +1,5 @@
 #include <pluginlib/class_list_macros.h>
 #include "AROB_lab5/rrt_global_planner.h"
-#include <memory>
 
 //register this planner as a BaseGlobalPlanner plugin
 PLUGINLIB_EXPORT_CLASS(rrt_planner::RRTPlanner, nav_core::BaseGlobalPlanner)
@@ -32,14 +31,14 @@ void RRTPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_
         double width, height;
         nh_local.param("width", width, 3.0);
         nh_local.param("height", height, 3.0);
-        max_dist_ = 1; // TODO: Add parameter
-
-        nh_global.param("resolution", resolution_, 0.05);
+        nh.param("max_dist", max_dist_, 0.0);
+        nh.param("resolution", resolution_, 0.00);
         
 
         // std::cout << "Parameters: " << max_samples_ << ", " << dist_th_ << ", " << visualize_markers_ << ", " << max_dist_ << std::endl;
-        // std::cout << "Local costmap size: " << width << ", " << height << std::endl;
-        // std::cout << "Global costmap resolution: " << resolution_ << std::endl;
+        std::cout << "Max distance: " << max_dist_ << std::endl;
+        std::cout << "Local costmap size: " << width << ", " << height << std::endl;
+        std::cout << "Global costmap resolution: " << resolution_ << std::endl;
 
         costmap_ros_ = costmap_ros;
         costmap_ = costmap_ros->getCostmap();
@@ -100,6 +99,33 @@ bool RRTPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometr
     return computed;
 }
 
+bool RRTPlanner::straightLine(const std::vector<int> start, const std::vector<int> goal, std::vector<std::vector<int>>& sol){
+
+    double dist_to_goal = distance(start[0], start[1], goal[0], goal[1]);
+    bool goal_archived = false;
+    std::vector<int> current = start;
+
+    while (!goal_archived) {
+
+        if (dist_to_goal >= (max_dist_ / resolution_)){
+            double theta = atan2(goal[1] - current[1], goal[0] - current[0]);
+            int new_x = static_cast<int>(current[0] + max_dist_ / resolution_ * cos(theta));
+            int new_y = static_cast<int>(current[1] + max_dist_ / resolution_ * sin(theta));
+            current = {new_x, new_y};
+            dist_to_goal = distance(current[0], current[1], goal[0], goal[1]);
+
+        }else{
+            current = goal;
+            goal_archived = true;
+        }
+
+        sol.push_back(current);
+    }
+    
+    return goal_archived;
+}
+
+
 bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int> goal, 
                             std::vector<std::vector<int>>& sol){
     
@@ -108,25 +134,18 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
     srand(time(NULL));  //Initialize random number generator
 
     // Initialize the tree with the starting point in map coordinates
-    std::unique_ptr<TreeNode> itr_node = std::make_unique<TreeNode>(start); 
+    TreeNode *itr_node = new TreeNode(start); 
 
     // CHECK IF THE GOAL IS REACHABLE FROM THE START
     if (obstacleFree(start[0], start[1], goal[0], goal[1])){
-        std::vector<int> current = start;
-        while (distance(current[0], current[1], goal[0], goal[1]) > (max_dist_ / resolution_)) {
-            double theta = atan2(goal[1] - current[1], goal[0] - current[0]);
-            int new_x = current[0] + (int)(max_dist_ / resolution_ * cos(theta));
-            int new_y = current[1] + (int)(max_dist_ / resolution_ * sin(theta));
-            current = {new_x, new_y};
-            sol.push_back(current);
-            // TODO: Min entre max dist o la resta de la distancia restante
-        }
-        return true;
+
+        return straightLine(start, goal, sol);
+        //TODO: add this points to the nodes to be computed for the path
     }
 
     // IF NOT, WE HAVE TO ITERATE RRT
     //TODO: Add parameters
-    for (size_t i = 0; i < 1000; i++)
+    for (size_t i = 0; i < max_samples_; i++)
     {
 
         // Now we must sample a new vertex. We have to select a random cell in the map
@@ -139,25 +158,33 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
             continue;
         }
 
-        std::vector<int> point = {(int)x_rand, (int)y_rand};
-        std::unique_ptr<TreeNode> new_node = std::make_unique<TreeNode>(point); 
-        TreeNode *near = new_node->neast(itr_node); 
+        std::vector<int> new_point = {(int)x_rand, (int)y_rand};
+        TreeNode *new_node =  new TreeNode(new_point);
+        TreeNode *near = new_node->neast(itr_node);
 
         // Equivalent to steer function
-        if(distance(near->getX(), near->getY(), x_rand, y_rand) > (max_dist_/resolution_)){
-            ROS_WARN("The random point is higher than the max distance allowed");
+        if(distance(near->getNode()[0], near->getNode()[1], x_rand, y_rand) > (max_dist_/resolution_)){
+            ROS_INFO("The random point is higher than the max distance allowed");
+            // TODO: Try to make the point reacheable
+            delete new_node;
             continue;
         }
 
-        // If ObstacleFree
-        if (obstacleFree(near[0], near[1], new_node[0], new_node[1])){
-            sol.push_back(new_node);
+        // If is not ObstacleFree
+        if (!obstacleFree(near->getNode()[0], near->getNode()[1], x_rand, y_rand)){
+            ROS_INFO("The random point is higher than the max distance allowed");
+            delete new_node;
+            continue;
         }
+        
+        // Add the new node to the tree
+        near->appendChild(new_node);
+        sol.push_back(new_point);
 
         // CHECK IF THE GOAL IS REACHABLE FROM THE START
-        if (obstacleFree(start[0], start[1], goal[0], goal[1])){
-            sol.push_back(goal);
-            return true;
+        if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])){
+        // TODO: Do steps allowed
+            return straightLine(new_point, goal, sol);
         }
 
         // TODO: check new has the goal visible.
@@ -166,6 +193,14 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
     }
 
     itr_node->~TreeNode();
+
+    if (finished)
+    {
+        ROS_INFO("The goal has been reached");
+    } else {
+        ROS_INFO("The goal has not been reached after 1000 iterations");
+    }
+    
 
     return finished;
 }
