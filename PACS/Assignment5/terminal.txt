@@ -1,0 +1,5 @@
+g++ prueba.cpp -o executable -I /home/padidavid/Documents/unizar/master/repositorios/MGRCV/PACS/Assignment5/CImg_3.4.4_pre11192415 -lm -lpthread -lX11
+
+
+
+g++ prueba2.cpp -o executable -I /home/padidavid/Documents/unizar/master/repositorios/MGRCV/PACS/Assignment5/CImg_3.4.4_pre11192415 -lm -lpthread -lX11 -ljpeg
