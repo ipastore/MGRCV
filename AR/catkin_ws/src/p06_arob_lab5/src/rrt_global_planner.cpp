@@ -25,12 +25,12 @@ void RRTPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_
         ros::NodeHandle nh_local("~/local_costmap/");
         ros::NodeHandle nh_global("~/global_costmap/");
 
-        nh.param("maxsamples", max_samples_, 0.0);
 
         //to make sure one of the nodes in the plan lies in the local costmap
         double width, height;
         nh_local.param("width", width, 3.0);
         nh_local.param("height", height, 3.0);
+        nh.param("maxsamples", max_samples_, 1000);
         nh.param("max_dist", max_dist_, 0.0);
         nh.param("resolution", resolution_, 0.00);
         
@@ -184,6 +184,7 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
         // CHECK IF THE GOAL IS REACHABLE FROM THE START
         if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])){
         // TODO: Do steps allowed
+            itr_node->~TreeNode();
             return straightLine(new_point, goal, sol);
         }
 

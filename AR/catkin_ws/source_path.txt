@@ -33,4 +33,5 @@ rosservice type /add_two_ints
 rossrv show roscpp_tutorials/TwoInts
 rosservice call /add_two_ints "{a: 7, b: 8}"
 
+source /opt/ros/noetic/setup.bash && source /home/padidavid/Documents/unizar/master/repositorios/MGRCV/AR/catkin_ws/devel/setup.bash 
 roslaunch arob_lab5 arob-p5-navigation.launch 

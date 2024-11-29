@@ -36,7 +36,7 @@ private:
     std::string global_frame_id_;
 	bool initialized_;
 
-    size_t max_samples_;
+    int max_samples_;
 
     double max_dist_;
     double resolution_;
