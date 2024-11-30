@@ -36,12 +36,16 @@ private:
     std::string global_frame_id_;
 	bool initialized_;
 
+    // params of global planner in .yaml
     int max_samples_;
-
     double max_dist_;
     double resolution_;
 
+    // markers
+    ros::Publisher marker_pub_;
+
     // functions to compute the plan
+    void publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id);
     bool straightLine(const std::vector<int> start, const std::vector<int> goal, std::vector<std::vector<int>>& sol);
     bool obstacleFree(const unsigned int x0, const unsigned int y0, const unsigned int x1, const unsigned int y1);
     bool computeRRT(const std::vector<int> start, const std::vector<int> goal, 

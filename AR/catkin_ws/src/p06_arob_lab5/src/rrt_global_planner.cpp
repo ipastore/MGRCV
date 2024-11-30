@@ -24,13 +24,14 @@ void RRTPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_
         ros::NodeHandle nh("~/" + name);
         ros::NodeHandle nh_local("~/local_costmap/");
         ros::NodeHandle nh_global("~/global_costmap/");
+        marker_pub_ = nh.advertise<visualization_msgs::Marker>("visualization_marker", 10);
 
 
         //to make sure one of the nodes in the plan lies in the local costmap
         double width, height;
         nh_local.param("width", width, 3.0);
         nh_local.param("height", height, 3.0);
-        nh.param("maxsamples", max_samples_, 1000);
+        nh.param("maxsamples", max_samples_, 30000);
         nh.param("max_dist", max_dist_, 0.0);
         nh.param("resolution", resolution_, 0.00);
         
@@ -92,6 +93,10 @@ bool RRTPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometr
         getPlan(solRRT, plan);
         // add goal
         plan.push_back(goal);
+        publishLineMarker(solRRT, global_frame_id_);
+
+
+        // 
     }else{
         ROS_WARN("No plan computed");
     }
@@ -102,10 +107,10 @@ bool RRTPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometr
 bool RRTPlanner::straightLine(const std::vector<int> start, const std::vector<int> goal, std::vector<std::vector<int>>& sol){
 
     double dist_to_goal = distance(start[0], start[1], goal[0], goal[1]);
-    bool goal_archived = false;
+    bool goal_achived = false;
     std::vector<int> current = start;
 
-    while (!goal_archived) {
+    while (!goal_achived) {
 
         if (dist_to_goal >= (max_dist_ / resolution_)){
             double theta = atan2(goal[1] - current[1], goal[0] - current[0]);
@@ -114,15 +119,61 @@ bool RRTPlanner::straightLine(const std::vector<int> start, const std::vector<in
             current = {new_x, new_y};
             dist_to_goal = distance(current[0], current[1], goal[0], goal[1]);
 
+            sol.push_back(current);
+            publishLineMarker(sol, global_frame_id_);
+        // TO FIX: 
+        // Points should not be empty for specified marker type. 
+        // At least two points are required for a LINE_STRIP marker.
+        // Done with the if in publishLineMarker method?
+
         }else{
-            current = goal;
-            goal_archived = true;
+            goal_achived = true;
+            return goal_achived;
         }
 
-        sol.push_back(current);
+        // FIXED: Adding the last goal is done in makePlan method
+        // sol.push_back(current);
+    }
+    // FIXED: Adding the last goal is done in makePlan method
+    // return goal_achived;
+}
+
+void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id) {
+    if (path.size() < 2) {
+        ROS_WARN("Path is empty or contains fewer than two points. Unable to create LINE_STRIP marker.");
+        return;
     }
     
-    return goal_archived;
+     visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "rrt_path";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // Set the scale and color of the marker
+    marker.scale.x = 0.05;  
+    marker.color.r = 1.0;   
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    marker.color.a = 1.0;
+
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;  
+
+    // Add points to the marker
+    for (const auto& point : path) {
+        geometry_msgs::Point p;
+        costmap_->mapToWorld(point[0], point[1], p.x, p.y);
+        p.z = 0.0;  
+        marker.points.push_back(p);
+    }
+
+    // Publish the marker
+    marker_pub_.publish(marker);
 }
 
 
@@ -138,70 +189,96 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
 
     // CHECK IF THE GOAL IS REACHABLE FROM THE START
     if (obstacleFree(start[0], start[1], goal[0], goal[1])){
-
+        ROS_INFO("The goal is reachable from the start");
         return straightLine(start, goal, sol);
-        //TODO: add this points to the nodes to be computed for the path
-    }
 
+        //TODO: add this points to the nodes to be computed for the path
+        // DONE inside the straightLine function?
+    }
     // IF NOT, WE HAVE TO ITERATE RRT
     //TODO: Add parameters
-    for (size_t i = 0; i < max_samples_; i++)
-    {
+    // Done in rrt_global_planner_params.yaml?
+
+    for (size_t i = 0; i < max_samples_; i++){
 
         // Now we must sample a new vertex. We have to select a random cell in the map
         int x_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsX());
         int y_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsY());
 
-        // Check if the cell is free, if not make the point reacheable
-        if(!costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE){
-            ROS_WARN("The random point is not in free space");
-            continue;
-        }
+        // // Check if the cell is free, if not make the point reacheable
+        // if(!costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE){
+        //     ROS_INFO("Point [%d, %d] rejected: not in free space.", x_rand, y_rand);
+        //     continue;
+        // }
 
+        // Find randomly nearest node in the tree
         std::vector<int> new_point = {(int)x_rand, (int)y_rand};
         TreeNode *new_node =  new TreeNode(new_point);
         TreeNode *near = new_node->neast(itr_node);
+        delete new_node;
 
-        // Equivalent to steer function
-        if(distance(near->getNode()[0], near->getNode()[1], x_rand, y_rand) > (max_dist_/resolution_)){
-            ROS_INFO("The random point is higher than the max distance allowed");
-            // TODO: Try to make the point reacheable
-            delete new_node;
-            continue;
-        }
+        bool valid_point = false;
+        for (int attempt = 0; attempt < 5; attempt++){
+            // 10% bias towards the goal
+            if(rand() % 10 == 0){
+                x_rand = goal[0];
+                y_rand = goal[1];
+                ROS_INFO("Bias towards the goal");
+            } else {
+                double angle = (rand() % 360) * M_PI / 180.0;
+                double radius = ((double)rand() / RAND_MAX) * max_dist_ / resolution_;
+                x_rand = near->getNode()[0] + (int)(radius * cos(angle));
+                y_rand = near->getNode()[1] + (int)(radius * sin(angle));
+            }
 
-        // If is not ObstacleFree
-        if (!obstacleFree(near->getNode()[0], near->getNode()[1], x_rand, y_rand)){
-            ROS_INFO("The random point is higher than the max distance allowed");
-            delete new_node;
-            continue;
+            if (costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE) continue;
+            if (!obstacleFree(near->getNode()[0], near->getNode()[1], x_rand, y_rand)) continue;
+
+            valid_point = true;
+            new_point = {(int)x_rand, (int)y_rand};
+            break;
         }
         
-        // Add the new node to the tree
+        if (!valid_point) {
+            ROS_INFO("No valid point found after retries.");
+            continue;
+        }
+
+        // Add the valid point to the tree
+        new_node = new TreeNode(new_point);
         near->appendChild(new_node);
         sol.push_back(new_point);
 
-        // CHECK IF THE GOAL IS REACHABLE FROM THE START
-        if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])){
-        // TODO: Do steps allowed
-            itr_node->~TreeNode();
-            return straightLine(new_point, goal, sol);
+        // Visualize the tree growth
+        std::vector<std::vector<int>> current_path = itr_node->returnSolution();
+        publishLineMarker(current_path, global_frame_id_);
+        ROS_INFO("Point [%d, %d] added to the tree.", new_point[0], new_point[1]);
+
+        // Check if the goal is reachable
+        if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])) {
+            ROS_INFO("Goal reached.");
+            finished = true;
+            break;
         }
 
-        // TODO: check new has the goal visible.
-
-        // TODO: Para cada punto added, tenemos que visualizarlo en el VIZ. Para entenderlo.
     }
 
-    itr_node->~TreeNode();
+    // itr_node->~TreeNode();
+    // FIXED? correct way to delete the tree?
+    delete itr_node;
 
     if (finished)
     {
         ROS_INFO("The goal has been reached");
     } else {
-        ROS_INFO("The goal has not been reached after 1000 iterations");
+        ROS_INFO("The goal has not been reached after %d iterations", max_samples_);
     }
     
+    // TODO: 2024-11-30
+    // Half DONE: drawing the straight line (but getting a new goal if the goal is reachable)
+    // NOT DONE: Getting reachables path but getting new plans again as previously, so it getting crazy
+    // Don t know: getting and error -11 (segmentation error) when puting the goal in the upper right corner
+    // Maybe was a lot of iterations and segmentation fault for the growing tree? change iterations form 300000 to 30000
 
     return finished;
 }
