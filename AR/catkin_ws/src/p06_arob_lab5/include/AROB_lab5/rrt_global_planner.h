@@ -46,7 +46,7 @@ private:
 
     // functions to compute the plan
     void publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id);
-    bool straightLine(const std::vector<int> start, const std::vector<int> goal, std::vector<std::vector<int>>& sol);
+    bool straightLine(TreeNode* start, const std::vector<int>& goal, TreeNode*& goal_node);
     bool obstacleFree(const unsigned int x0, const unsigned int y0, const unsigned int x1, const unsigned int y1);
     bool computeRRT(const std::vector<int> start, const std::vector<int> goal, 
                             std::vector<std::vector<int>>& sol);

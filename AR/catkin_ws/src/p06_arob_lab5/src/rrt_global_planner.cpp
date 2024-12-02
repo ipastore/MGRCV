@@ -91,12 +91,9 @@ bool RRTPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometr
     bool computed = computeRRT(point_start, point_goal, solRRT);
     if (computed){        
         getPlan(solRRT, plan);
-        // add goal
+        // Re add the goal to the plan for orientation 
         plan.push_back(goal);
         publishLineMarker(solRRT, global_frame_id_);
-
-
-        // 
     }else{
         ROS_WARN("No plan computed");
     }
@@ -104,34 +101,43 @@ bool RRTPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometr
     return computed;
 }
 
-bool RRTPlanner::straightLine(const std::vector<int> start, const std::vector<int> goal, std::vector<std::vector<int>>& sol){
+bool RRTPlanner::straightLine(TreeNode* start, const std::vector<int>& goal, TreeNode*& goal_node) {
+    double dist_to_goal = distance(start->getNode()[0], start->getNode()[1], goal[0], goal[1]);
+    std::vector<int> current = start->getNode();
 
-    double dist_to_goal = distance(start[0], start[1], goal[0], goal[1]);
-    bool goal_achived = false;
-    std::vector<int> current = start;
+    TreeNode* parent = start; // Start node is the parent of the first intermediate point
 
-    while (!goal_achived) {
+    while (dist_to_goal > (max_dist_ / resolution_)) {
+        // Calculate the next intermediate point along the straight line
+        double theta = atan2(goal[1] - current[1], goal[0] - current[0]);
+        int new_x = static_cast<int>(current[0] + max_dist_ / resolution_ * cos(theta));
+        int new_y = static_cast<int>(current[1] + max_dist_ / resolution_ * sin(theta));
+        current = {new_x, new_y};
 
-        if (dist_to_goal >= (max_dist_ / resolution_)){
-            double theta = atan2(goal[1] - current[1], goal[0] - current[0]);
-            int new_x = static_cast<int>(current[0] + max_dist_ / resolution_ * cos(theta));
-            int new_y = static_cast<int>(current[1] + max_dist_ / resolution_ * sin(theta));
-            current = {new_x, new_y};
-            dist_to_goal = distance(current[0], current[1], goal[0], goal[1]);
+        // Create a new node for the intermediate point
+        TreeNode* new_node = new TreeNode(current);
 
-            sol.push_back(current);
-            publishLineMarker(sol, global_frame_id_);
-        // TO FIX: 
-        // Points should not be empty for specified marker type. 
-        // At least two points are required for a LINE_STRIP marker.
-        // Done with the if in publishLineMarker method?
-        // Just with a warning
+        // // Check if the new point is obstacle-free
+        // if (!obstacleFree(parent->getNode()[0], parent->getNode()[1], new_x, new_y)) {
+        //     ROS_WARN("Obstacle encountered in straight line path. Aborting.");
+        //     delete new_node;
+        //     return false; // Abort if an obstacle is found
+        // }
 
-        }else{
-            goal_achived = true;
-            return goal_achived;
-        }
+        // Add the new node to the tree
+        parent->appendChild(new_node);
+        parent = new_node; // Update parent to the new node
+        dist_to_goal = distance(current[0], current[1], goal[0], goal[1]);
+
+        ROS_INFO("Intermediate point [%d, %d] added along straight line path.", new_x, new_y);
     }
+
+    // Add the goal node as the final node
+    goal_node = new TreeNode(goal);
+    parent->appendChild(goal_node);
+    ROS_INFO("Goal node [%d, %d] added to the tree.", goal[0], goal[1]);
+
+    return true;
 }
 
 void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id) {
@@ -181,140 +187,116 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
     srand(time(NULL));  //Initialize random number generator
 
     // Initialize the tree with the starting point in map coordinates
-    TreeNode *itr_node = new TreeNode(start); 
+    TreeNode *itr_node = new TreeNode(start);
+
+    // Pointer to the goal node when found
+    TreeNode* goal_node = nullptr;
+
+    // Check if the goal is in a free space with the costmap
+    if (costmap_->getCost(goal[0], goal[1]) != costmap_2d::FREE_SPACE){
+        ROS_WARN("The goal is in an obstacle. Please chose another goal.");
+        return false;
+    }
 
     // If goal visible from start, return an straight line
     if (obstacleFree(start[0], start[1], goal[0], goal[1])){
         ROS_INFO("The goal is reachable from the start, returning straight line.");
-        return straightLine(start, goal, sol);
-    }
+            if (straightLine(itr_node, goal, goal_node)) {
+        ROS_INFO("Straight line to goal successfully added.");
+        finished = true;
+        } else {
+            ROS_WARN("Failed to add straight line to goal due to obstacles.");
+        }    
+    } else {
 
-    // Start the RRT algorithm
-    for (size_t i = 0; i < max_samples_; i++){
+        // Start the RRT algorithm
+        for (size_t i = 0; i < max_samples_; i++){
 
-        // Generate a random point  within the map limits
-        int x_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsX());
-        int y_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsY());
+            // Generate a random point  within the map limits
+            int x_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsX());
+            int y_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsY());
 
-        // With previous find the nearest node in the tree
-        std::vector<int> new_point = {(int)x_rand, (int)y_rand};
-        TreeNode *new_node =  new TreeNode(new_point);
-        TreeNode *near = new_node->neast(itr_node);
-        delete new_node;
+            // With previous find the nearest node in the tree
+            std::vector<int> new_point = {(int)x_rand, (int)y_rand};
+            TreeNode *new_node =  new TreeNode(new_point);
+            TreeNode *near = new_node->neast(itr_node);
+            delete new_node;
 
-        
-        // Try to find a valid point given some checks
-        // TODO add attempt as a parameter
-        bool valid_point = false;
-        for (int attempt = 0; attempt < 10; attempt++){
-            // 10% bias towards the goal
-            if(rand() % 10 == 0){
-                x_rand = goal[0];
-                y_rand = goal[1];
-                ROS_INFO("Bias towards the goal");
-            } else {
-                // Generate a random point within a circle of radius max_dist_ centered at neareast node
-                double angle = (rand() % 360) * M_PI / 180.0;
-                double radius = ((double)rand() / RAND_MAX) * max_dist_ / resolution_;
-                x_rand = near->getNode()[0] + (int)(radius * cos(angle));
-                y_rand = near->getNode()[1] + (int)(radius * sin(angle));
+            
+            // Try to find a valid point given some checks
+            // TODO add attempt as a parameter
+            bool valid_point = false;
+            // std::vector<int> new_point; THis point is to include x_rand and y_rand
+
+            for (int attempt = 0; attempt < 10; attempt++){
+                // 10% bias towards the goal
+                if(rand() % 10 == 0){
+                    x_rand = goal[0];
+                    y_rand = goal[1];
+                    ROS_INFO("Bias towards the goal");
+                } else {
+                    // Generate a random point within a circle of radius max_dist_ centered at neareast node
+                    double angle = (rand() % 360) * M_PI / 180.0;
+                    double radius = ((double)rand() / RAND_MAX) * max_dist_ / resolution_;
+                    x_rand = near->getNode()[0] + (int)(radius * cos(angle));
+                    y_rand = near->getNode()[1] + (int)(radius * sin(angle));
+                }
+
+                // Check 0:  if x_rand and y_rand are within the map limits
+                if (x_rand < 0 || x_rand >= costmap_->getSizeInCellsX() || y_rand < 0 || y_rand >= costmap_->getSizeInCellsY()) continue;
+
+                // Check 1: is the new point free?
+                if (costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE) continue;
+                
+                // Check2 2: is the new point obstacle free?
+                if (!obstacleFree(near->getNode()[0], near->getNode()[1], x_rand, y_rand)) continue;
+
+                
+                // If all checks are passed, the new point is valid
+                valid_point = true;
+                new_point = {(int)x_rand, (int)y_rand};
+                break;
+            }
+            
+            // Continue for the outter for if no valid point was found
+            if (!valid_point) {
+                ROS_INFO("No valid point found after retries.");
+                continue;
             }
 
-            // Check 1: is the new point free?
-            if (costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE) continue;
-            
-            // Check2 2: is the new point obstacle free?
-            if (!obstacleFree(near->getNode()[0], near->getNode()[1], x_rand, y_rand)) continue;
+            // Add the valid point to the tree
+            new_node = new TreeNode(new_point);
+            near->appendChild(new_node);
 
-            // Check 3: is the new point closer to the goal than the parent node?
+            // ROS_INFO("Point [%d, %d] added to the tree.", new_point[0], new_point[1]);
 
-            // // Calculate the total distance from start to goal through the new point
-            // double parent_to_new = distance(near->getNode()[0], near->getNode()[1], x_rand, y_rand);
-            // double new_to_goal = distance(x_rand, y_rand, goal[0], goal[1]);
-            // double parent_to_start = distance (near->getNode()[0], near->getNode()[1], start[0], start[1]);
-            
-            // double total_distance_new = parent_to_start + parent_to_new + new_to_goal;
-
-            // // Calculate the total distance from start to goal through the parent
-            // double parent_to_goal = distance(near->getNode()[0], near->getNode()[1], goal[0], goal[1]);
-            // double total_distance_parent = parent_to_start + parent_to_goal;       
-
-            // ROS_INFO("Parent to new: %f", parent_to_new);
-            // ROS_INFO("New to goal: %f", new_to_goal);
-            // ROS_INFO("Parent to start: %f", parent_to_start);
-            // ROS_INFO("Total distance new: %f", total_distance_new);
-            // ROS_INFO("Parent to goal: %f", parent_to_goal);
-            // ROS_INFO("Total distance parent: %f", total_distance_parent);
-            
-            // Check if the new point increases the total distance
-            
-            // Add a threshold because the euclidian distance is to the goal is always the shortest path
-            // TODO: add this as a parameter
-            // double distance_threshold = 50;
-
-            // Just check for the 2 firsts point of the tree
-            // if (total_distance_new >= total_distance_parent + distance_threshold) continue;
-
-
-
-            // If all checks are passed, the new point is valid
-            valid_point = true;
-            new_point = {(int)x_rand, (int)y_rand};
-            break;
-        }
-        
-        // Continue for the outter for if no valid point was found
-        if (!valid_point) {
-            ROS_INFO("No valid point found after retries.");
-            // delete near; IDK why is giving -11 segmentation error or -6 bad_alloc
-            continue;
-        }
-
-        // Add the valid point to the tree
-        // FIX I am getting lines over obstacles!!!!!
-        // new_node = new TreeNode(new_point);
-        // near->appendChild(new_node);
-        // sol.push_back(new_point);
-
-        // delete new_node; IDK why is giving -11 segmentation error or -6 bad_alloc
-        // delete near; IDK why is giving -11 segmentation error or -6 bad_alloc
-
-        // // Visualize the tree growth
-        // std::vector<std::vector<int>> current_path = itr_node->returnSolution();
-        // publishLineMarker(current_path, global_frame_id_);
-        ROS_INFO("Point [%d, %d] added to the tree.", new_point[0], new_point[1]);
-
-        // Check if the goal is reachable
-        if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])) {
-            ROS_INFO("Goal visible from last node.");
-            ROS_INFO("RRT has elaborated a feasible path after %zu iterations", i);
-            straightLine(new_point, goal, sol);
-
-            finished = true;
-            
-            // Shoudl be here these two deletes? 
-            delete near;
-            delete new_node;
-            
-            break;
+            // Check if the goal is reachable
+            if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])) {
+                // ROS_INFO("Goal visible from last node.");
+                ROS_INFO("RRT has elaborated a feasible path after %zu iterations", i);
+                    if (straightLine(new_node, goal, goal_node)) {
+                ROS_INFO("Straight line to goal successfully added.");
+                finished = true;
+                } else {
+                    ROS_WARN("Failed to add straight line to goal due to obstacles.");
+                }
+                break;
+            }
         }
     }
     
-    delete itr_node;
-
-    if (finished)
-    {
-        // ROS_INFO("RRT has elaborated a feasible path after %zu iterations", i);
+    if (finished){
+        // Trace back the solution
+        TreeNode* current = goal_node;
+        while (current != nullptr){
+            sol.push_back(current->getNode());
+            current = current->getParent();
+        }
     } else {
         ROS_INFO("RRT could not elaborate a feaseible path after %d iterations", max_samples_);
     }
     
-    // TODO: 2024-11-30
-    // Don t know: getting and error -11 (segmentation error) when puting the goal in the upper right corner
-    // TODO 2024-12-01
-    // Enhance performance of chosing a new point. If the selected goal is too far away, the global planners is throwing too much random new valid
-    // Fix the path getting over obstacles.
-    // COMPUTE THE PATH IN REVERSE ORDER
+    delete itr_node;
     
     return finished;
 }
