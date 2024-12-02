@@ -125,17 +125,13 @@ bool RRTPlanner::straightLine(const std::vector<int> start, const std::vector<in
         // Points should not be empty for specified marker type. 
         // At least two points are required for a LINE_STRIP marker.
         // Done with the if in publishLineMarker method?
+        // Just with a warning
 
         }else{
             goal_achived = true;
             return goal_achived;
         }
-
-        // FIXED: Adding the last goal is done in makePlan method
-        // sol.push_back(current);
     }
-    // FIXED: Adding the last goal is done in makePlan method
-    // return goal_achived;
 }
 
 void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id) {
@@ -157,7 +153,7 @@ void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, co
     marker.color.r = 1.0;   
     marker.color.g = 0.0;
     marker.color.b = 0.0;
-    marker.color.a = 1.0;
+    marker.color.a = 0.5;
 
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
@@ -187,99 +183,139 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
     // Initialize the tree with the starting point in map coordinates
     TreeNode *itr_node = new TreeNode(start); 
 
-    // CHECK IF THE GOAL IS REACHABLE FROM THE START
+    // If goal visible from start, return an straight line
     if (obstacleFree(start[0], start[1], goal[0], goal[1])){
-        ROS_INFO("The goal is reachable from the start");
+        ROS_INFO("The goal is reachable from the start, returning straight line.");
         return straightLine(start, goal, sol);
-
-        //TODO: add this points to the nodes to be computed for the path
-        // DONE inside the straightLine function?
     }
-    // IF NOT, WE HAVE TO ITERATE RRT
-    //TODO: Add parameters
-    // Done in rrt_global_planner_params.yaml?
 
+    // Start the RRT algorithm
     for (size_t i = 0; i < max_samples_; i++){
 
-        // Now we must sample a new vertex. We have to select a random cell in the map
+        // Generate a random point  within the map limits
         int x_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsX());
         int y_rand = (int)((double) rand() / (RAND_MAX) * costmap_->getSizeInCellsY());
 
-        // // Check if the cell is free, if not make the point reacheable
-        // if(!costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE){
-        //     ROS_INFO("Point [%d, %d] rejected: not in free space.", x_rand, y_rand);
-        //     continue;
-        // }
-
-        // Find randomly nearest node in the tree
+        // With previous find the nearest node in the tree
         std::vector<int> new_point = {(int)x_rand, (int)y_rand};
         TreeNode *new_node =  new TreeNode(new_point);
         TreeNode *near = new_node->neast(itr_node);
         delete new_node;
 
+        
+        // Try to find a valid point given some checks
+        // TODO add attempt as a parameter
         bool valid_point = false;
-        for (int attempt = 0; attempt < 5; attempt++){
+        for (int attempt = 0; attempt < 10; attempt++){
             // 10% bias towards the goal
             if(rand() % 10 == 0){
                 x_rand = goal[0];
                 y_rand = goal[1];
                 ROS_INFO("Bias towards the goal");
             } else {
+                // Generate a random point within a circle of radius max_dist_ centered at neareast node
                 double angle = (rand() % 360) * M_PI / 180.0;
                 double radius = ((double)rand() / RAND_MAX) * max_dist_ / resolution_;
                 x_rand = near->getNode()[0] + (int)(radius * cos(angle));
                 y_rand = near->getNode()[1] + (int)(radius * sin(angle));
             }
 
+            // Check 1: is the new point free?
             if (costmap_->getCost(x_rand, y_rand) != costmap_2d::FREE_SPACE) continue;
+            
+            // Check2 2: is the new point obstacle free?
             if (!obstacleFree(near->getNode()[0], near->getNode()[1], x_rand, y_rand)) continue;
 
+            // Check 3: is the new point closer to the goal than the parent node?
+
+            // // Calculate the total distance from start to goal through the new point
+            // double parent_to_new = distance(near->getNode()[0], near->getNode()[1], x_rand, y_rand);
+            // double new_to_goal = distance(x_rand, y_rand, goal[0], goal[1]);
+            // double parent_to_start = distance (near->getNode()[0], near->getNode()[1], start[0], start[1]);
+            
+            // double total_distance_new = parent_to_start + parent_to_new + new_to_goal;
+
+            // // Calculate the total distance from start to goal through the parent
+            // double parent_to_goal = distance(near->getNode()[0], near->getNode()[1], goal[0], goal[1]);
+            // double total_distance_parent = parent_to_start + parent_to_goal;       
+
+            // ROS_INFO("Parent to new: %f", parent_to_new);
+            // ROS_INFO("New to goal: %f", new_to_goal);
+            // ROS_INFO("Parent to start: %f", parent_to_start);
+            // ROS_INFO("Total distance new: %f", total_distance_new);
+            // ROS_INFO("Parent to goal: %f", parent_to_goal);
+            // ROS_INFO("Total distance parent: %f", total_distance_parent);
+            
+            // Check if the new point increases the total distance
+            
+            // Add a threshold because the euclidian distance is to the goal is always the shortest path
+            // TODO: add this as a parameter
+            // double distance_threshold = 50;
+
+            // Just check for the 2 firsts point of the tree
+            // if (total_distance_new >= total_distance_parent + distance_threshold) continue;
+
+
+
+            // If all checks are passed, the new point is valid
             valid_point = true;
             new_point = {(int)x_rand, (int)y_rand};
             break;
         }
         
+        // Continue for the outter for if no valid point was found
         if (!valid_point) {
             ROS_INFO("No valid point found after retries.");
+            // delete near; IDK why is giving -11 segmentation error or -6 bad_alloc
             continue;
         }
 
         // Add the valid point to the tree
-        new_node = new TreeNode(new_point);
-        near->appendChild(new_node);
-        sol.push_back(new_point);
+        // FIX I am getting lines over obstacles!!!!!
+        // new_node = new TreeNode(new_point);
+        // near->appendChild(new_node);
+        // sol.push_back(new_point);
 
-        // Visualize the tree growth
-        std::vector<std::vector<int>> current_path = itr_node->returnSolution();
-        publishLineMarker(current_path, global_frame_id_);
+        // delete new_node; IDK why is giving -11 segmentation error or -6 bad_alloc
+        // delete near; IDK why is giving -11 segmentation error or -6 bad_alloc
+
+        // // Visualize the tree growth
+        // std::vector<std::vector<int>> current_path = itr_node->returnSolution();
+        // publishLineMarker(current_path, global_frame_id_);
         ROS_INFO("Point [%d, %d] added to the tree.", new_point[0], new_point[1]);
 
         // Check if the goal is reachable
         if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])) {
-            ROS_INFO("Goal reached.");
+            ROS_INFO("Goal visible from last node.");
+            ROS_INFO("RRT has elaborated a feasible path after %zu iterations", i);
+            straightLine(new_point, goal, sol);
+
             finished = true;
+            
+            // Shoudl be here these two deletes? 
+            delete near;
+            delete new_node;
+            
             break;
         }
-
     }
-
-    // itr_node->~TreeNode();
-    // FIXED? correct way to delete the tree?
+    
     delete itr_node;
 
     if (finished)
     {
-        ROS_INFO("The goal has been reached");
+        // ROS_INFO("RRT has elaborated a feasible path after %zu iterations", i);
     } else {
-        ROS_INFO("The goal has not been reached after %d iterations", max_samples_);
+        ROS_INFO("RRT could not elaborate a feaseible path after %d iterations", max_samples_);
     }
     
     // TODO: 2024-11-30
-    // Half DONE: drawing the straight line (but getting a new goal if the goal is reachable)
-    // NOT DONE: Getting reachables path but getting new plans again as previously, so it getting crazy
     // Don t know: getting and error -11 (segmentation error) when puting the goal in the upper right corner
-    // Maybe was a lot of iterations and segmentation fault for the growing tree? change iterations form 300000 to 30000
-
+    // TODO 2024-12-01
+    // Enhance performance of chosing a new point. If the selected goal is too far away, the global planners is throwing too much random new valid
+    // Fix the path getting over obstacles.
+    // COMPUTE THE PATH IN REVERSE ORDER
+    
     return finished;
 }
 

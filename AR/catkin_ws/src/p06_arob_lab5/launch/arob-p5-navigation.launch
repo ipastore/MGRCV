@@ -9,9 +9,8 @@
 <!-- MAP -->
 <node name="map_server" pkg="map_server" type="map_server" args="$(find arob_lab5)/world/simple.yaml"/>
 
-<!-- MOVE_BASE -->
-<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen"> -->
-
+<!-- MOVE_BASE --> <!-- DEBUG: launch-prefix="xterm \-e gdb \-\-args" --> 
+<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 	<!-- Costmaps configuration -->
 	<rosparam file="$(find arob_lab5)/config/move_base/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />
 	<rosparam file="$(find arob_lab5)/config/move_base/costmaps/costmap_common_params.yaml" command="load" ns="local_costmap" />
