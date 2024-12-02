@@ -117,12 +117,12 @@ bool RRTPlanner::straightLine(TreeNode* start, const std::vector<int>& goal, Tre
         // Create a new node for the intermediate point
         TreeNode* new_node = new TreeNode(current);
 
-        // // Check if the new point is obstacle-free
-        // if (!obstacleFree(parent->getNode()[0], parent->getNode()[1], new_x, new_y)) {
-        //     ROS_WARN("Obstacle encountered in straight line path. Aborting.");
-        //     delete new_node;
-        //     return false; // Abort if an obstacle is found
-        // }
+        // Check if the new point is obstacle-free
+        if (!obstacleFree(parent->getNode()[0], parent->getNode()[1], new_x, new_y)) {
+            ROS_WARN("Obstacle encountered in straight line path. Aborting.");
+            delete new_node;
+            return false; // Abort if an obstacle is found
+        }
 
         // Add the new node to the tree
         parent->appendChild(new_node);
