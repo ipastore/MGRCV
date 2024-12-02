@@ -20,7 +20,7 @@
 	<!-- Planners selection and configuration -->
 	<rosparam file="$(find arob_lab5)/config/move_base/planners_selection.yaml" command="load" />
 	<rosparam file="$(find arob_lab5)/config/move_base/planners/dwa_local_planner_params.yaml" command="load" />
-	<!-- <rosparam file="$(find arob_lab5)/config/move_base/planners/llc_local_planner_params.yaml" command="load" /> -->
+	<rosparam file="$(find p06_arob_lab4)/config/move_base/planners/llc_local_planner_params.yaml" command="load" />
 	<rosparam file="$(find arob_lab5)/config/move_base/planners/rrt_global_planner_params.yaml" command="load" />
 
 </node>

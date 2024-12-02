@@ -14,5 +14,5 @@ base_local_planner: p06_llc_local_planner/LLCLocalPlanner
 # ALTERNATIVES: dwa_local_planner/DWAPlannerROS, base_local_planner/TrajectoryPlannerROS
 
 # Global planner
-base_global_planner: global_planner/GlobalPlanner
+base_global_planner: navfn/NavfnROS
 # ALTERNATIVES: global_planner/GlobalPlanner, carrot_planner/CarrotPlanner, navfn/NavfnROS
