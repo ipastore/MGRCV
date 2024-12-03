@@ -6,102 +6,117 @@
 
 NORI_NAMESPACE_BEGIN
 
-class PathTracingNEE : public Integrator {
+class PathTracingNee : public Integrator {
 public:
-	PathTracingNEE(const PropertyList& props) {
+	PathTracingNee(const PropertyList& props) {
 		/* No parameters this time */
 	}
- 
-    Color3f emiter_sampler(const Scene* scene, Sampler* sampler, const Ray3f& ray, const Intersection& its) const {
-        Color3f Lo(0.);
 
-        // Randomly choose an emitter
-        float pdfEmitter;	// this is the probability density of choosing an emitter
-		const Emitter* em = scene->sampleEmitter(sampler->next1D(), pdfEmitter);
-
-        // Sample a point on the emitter and get its radiance
+    Color3f computeEmitterRadiance(const Ray3f& ray, const Intersection& its) const {
 		EmitterQueryRecord emitterRecord(its.p);
-        Color3f Lem = em->sample(emitterRecord, sampler->next2D(), 0.f);
-
-        // Create a shadow ray to see if the point is in shadow
-        Ray3f shadowRay(its.p, emitterRecord.wi);
-        shadowRay.maxt = (emitterRecord.p - its.p).norm();
-
-        // Check if the ray intersects with an emitter or if the first intersection in shadows
-        Intersection shadow_its;
-        bool inShadow = scene->rayIntersect(shadowRay, shadow_its);
-
-        if (!inShadow || shadow_its.t >= (emitterRecord.dist - Epsilon)){
-            BSDFQueryRecord bsdfQR_ls(its.toLocal(-ray.d), its.toLocal(emitterRecord.wi), its.uv, ESolidAngle);
-			Color3f bsdf = its.mesh->getBSDF()->eval(bsdfQR_ls);
-            float denominator = pdfEmitter * emitterRecord.pdf;
-            if (denominator > Epsilon){	// to avoid division by 0 (resulting in NaNs and anoying warnings)
-                emitterRecord.dist = its.t;
-                Lo = (Lem * its.shFrame.n.dot(emitterRecord.wi) * bsdf) / denominator;
-			}
-		}
-		return Lo;
+		emitterRecord.ref = ray.o;
+		emitterRecord.wi = ray.d;
+		emitterRecord.n = its.shFrame.n;
+        emitterRecord.uv = its.uv;
+		return its.mesh->getEmitter()->eval(emitterRecord); 
 	}
-   
 
-	Color3f Li(const Scene* scene, Sampler* sampler, const Ray3f& ray) const {
-		Color3f Lo(0.);
-        Color3f Le_em(0.);
+    Color3f Li(const Scene* scene, Sampler* sampler, const Ray3f& ray) const {
 
-		// ** RAY INTERSECTION ** //
+        Color3f Lo(0.0f);
+        Color3f Le_em(0.0f);
+        Color3f bsdf_ac(1.0f);
+        float russianProb;
+        Ray3f bouncyRay(ray);
+        bool rayKeepBouncing = true;
 
-		Intersection its;
+        while (rayKeepBouncing)
+        {
+            // ** RAY INTERSECTION ** //
+            Intersection its;
 
-		// Checking if the ray intersects with the scene (OUTPUT: Background)
-		if (!scene->rayIntersect(ray, its))
-			return scene->getBackground(ray);
+            // Checking if the ray intersects with the scene (OUTPUT: Background)
+            if (!scene->rayIntersect(bouncyRay, its)){
+                Lo += bsdf_ac * scene->getBackground(bouncyRay);
+                break; // Get out of the loop
+            } 
+            // Checking if the ray intersects with an emitter (OUTPUR: Emitter radiance)
+            if (its.mesh->isEmitter()) {
+                Lo = bsdf_ac * computeEmitterRadiance(bouncyRay, its);
+                break; // Get out of the loop
+            }
 
-		// Checking if the ray intersects with an emitter (OUTPUR: Emitter radiance)
-		if (its.mesh->isEmitter()) {
-			EmitterQueryRecord emitterRecord(its.p);
-			emitterRecord.ref = ray.o;
-			emitterRecord.wi = ray.d;
-			emitterRecord.n = its.shFrame.n;
-			return its.mesh->getEmitter()->eval(emitterRecord); 
-		} else {
-
+            // ** BSDF SAMPLING ** //
             // We obtain the new direction wo
-            BSDFQueryRecord bsdfQR(its.toLocal(-ray.d), sampler->next2D());
-            // We obtain the wo and the bsdf value
-            Color3f bsdf = its.mesh->getBSDF()->sample(bsdfQR, sampler->next2D());
-            
-            // We must check if the BSDF value is valid, if not we'll return black
-            if (bsdf.isZero() || bsdf.hasNaN()) {
-                return Color3f(0.0f);
-            }
+            Point2f sample = sampler->next2D();
+            BSDFQueryRecord bsdfRecord(its.toLocal(-bouncyRay.d), sample);
+            Color3f bsdf_sample = its.mesh->getBSDF()->sample(bsdfRecord, sample);
+            bool sampleLightsFlag = (bsdfRecord.measure != EDiscrete);
+            float w_mats = sampleLightsFlag ? 0.5f : 1.0f;
+            float w_lights = sampleLightsFlag ? 0.5f : 0.0f;
 
-            // Russian Roulette termination
-            float q = std::min(bsdf.maxCoeff(), 0.99f);
-            if (sampler->next1D() > q)
-                return Color3f(0.0f);
-
-            // Generate the new ray
-            Ray3f second_ray(its.p, its.toWorld(bsdfQR.wo));
-            second_ray.mint = Epsilon;
-            second_ray.maxt = std::numeric_limits<float>::infinity();
-
-            if (bsdfQR.measure == EDiscrete)
-            {
-                Lo = bsdf * Li(scene, sampler, second_ray);
+            if (bsdf_sample.isZero() || bsdf_sample.hasNaN()) {
+                return Color3f(0.0f); // TODO
             }else{
-                Le_em = emiter_sampler(scene, sampler, second_ray, its);
-                Lo = bsdf * (Le_em + Li(scene, sampler, second_ray));
+                bsdf_ac *= bsdf_sample;
             }
-            
+
+            // ** NEXT EVENT CALL DEPENDING ON MATERIAL** //
+            if (sampleLightsFlag)
+            {
+                // Randomly choose an emitter
+                float pdfEmitter;	// this is the probability density of choosing an emitter
+                const Emitter* em = scene->sampleEmitter(sampler->next1D(), pdfEmitter);
+
+                // Sample a point on the emitter and get its radiance
+                EmitterQueryRecord emitterRecord(its.p);
+                Color3f Lem = em->sample(emitterRecord, sampler->next2D(), 0.f);
+
+                // Create a shadow ray to see if the point is in shadow
+                Ray3f shadowRay(its.p, emitterRecord.wi);
+                shadowRay.maxt = (emitterRecord.p - its.p).norm();
+
+                // Check if the ray intersects with an emitter or if the first intersection in shadows
+                Intersection shadow_its;
+                bool inShadow = scene->rayIntersect(shadowRay, shadow_its);
+
+                if (!inShadow){
+                    float denominator = pdfEmitter * emitterRecord.pdf;
+                    if (denominator > Epsilon){
+                        BSDFQueryRecord bsdfQR_ls(its.toLocal(-bouncyRay.d), its.toLocal(emitterRecord.wi), its.uv, ESolidAngle);
+                        Color3f bsdf = its.mesh->getBSDF()->eval(bsdfQR_ls);
+                        Lo += w_lights * bsdf_ac * (Lem * its.shFrame.n.dot(emitterRecord.wi) * bsdf) / denominator;
+                    }
+                }
+
+            }else{
+                /* code */
+            }
+
+
+            // ** RUSSIAN ROULETTE ** //
+            // TODO
+			russianProb = std::min(bsdf_ac.maxCoeff(), 0.99f);
+			if ((sampler->next1D() > russianProb)){
+				return Color3f(0.0f); // TODO
+			}else{
+                bsdf_ac /= russianProb;
+            }
+
+            /* UPDATE THE RAY */
+            bouncyRay = Ray3f(its.p, its.toWorld(bsdfRecord.wo));            
+
         }
+        
+        return Lo;
 
-		return Lo;
-	}
+    }
 
-	std::string toString() const {
-		return "PathTracingNEE []";
-	}
+    std::string toString() const {
+        return "Path Tracing NEE []";
+    }
 };
 
-NORI_REGISTER_CLASS(PathTracingNEE, "path_nee");
+
+NORI_REGISTER_CLASS(PathTracingNee, "path_nee");
 NORI_NAMESPACE_END
