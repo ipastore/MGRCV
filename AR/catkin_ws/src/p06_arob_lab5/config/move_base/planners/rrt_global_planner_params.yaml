@@ -1,4 +1,3 @@
 RRTPlanner:
   maxsamples: 1000
-  resolution: 0.032
   max_dist: 5.0

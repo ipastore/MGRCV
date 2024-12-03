@@ -33,17 +33,19 @@ void RRTPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_
         nh_local.param("height", height, 3.0);
         nh.param("maxsamples", max_samples_, 30000);
         nh.param("max_dist", max_dist_, 0.0);
-        nh.param("resolution", resolution_, 0.00);
         
 
         // std::cout << "Parameters: " << max_samples_ << ", " << dist_th_ << ", " << visualize_markers_ << ", " << max_dist_ << std::endl;
         std::cout << "Max distance: " << max_dist_ << std::endl;
         std::cout << "Local costmap size: " << width << ", " << height << std::endl;
-        std::cout << "Global costmap resolution: " << resolution_ << std::endl;
 
         costmap_ros_ = costmap_ros;
         costmap_ = costmap_ros->getCostmap();
         global_frame_id_ = costmap_ros_->getGlobalFrameID();
+        resolution_ = costmap_->getResolution();
+
+        std::cout << "Global costmap resolution: " << resolution_ << std::endl;
+
 
         initialized_ = true;
     }
@@ -267,6 +269,8 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
             // Add the valid point to the tree
             new_node = new TreeNode(new_point);
             near->appendChild(new_node);
+
+            // Plot tree
 
             // ROS_INFO("Point [%d, %d] added to the tree.", new_point[0], new_point[1]);
 
