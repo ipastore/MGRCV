@@ -12,6 +12,8 @@ oscillation_distance: 0.5
 # Local planner
 base_local_planner: dwa_local_planner/DWAPlannerROS
 # ALTERNATIVES: dwa_local_planner/DWAPlannerROS, base_local_planner/TrajectoryPlannerROS, p06_llc_local_planner/LLCLocalPlanner
+# WIth the llc_local_planner, we have a bug where there are no cmd_vel messages being published when the robot is near the goal.
+# We tried to modify the max_dist for the rrt_planner but did not see any changes in the robot's behavior.
 
 # Global planner
 base_global_planner: rrt_planner/RRTPlanner

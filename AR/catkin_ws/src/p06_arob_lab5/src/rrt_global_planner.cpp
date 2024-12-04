@@ -7,6 +7,11 @@ PLUGINLIB_EXPORT_CLASS(rrt_planner::RRTPlanner, nav_core::BaseGlobalPlanner)
 //Default Constructor
 namespace rrt_planner {
 
+// Static variables to maintain counters
+static unsigned int tree_marker_counter = 0;
+static unsigned int solution_marker_counter = 0;
+    
+
 double distance(const unsigned int x0, const unsigned int y0, const unsigned int x1, const unsigned int y1){
     return std::sqrt((int)(x1-x0)*(int)(x1-x0) + (int)(y1-y0)*(int)(y1-y0));
 }
@@ -95,7 +100,6 @@ bool RRTPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geometr
         getPlan(solRRT, plan);
         // Re add the goal to the plan for orientation 
         plan.push_back(goal);
-        publishLineMarker(solRRT, global_frame_id_);
     }else{
         ROS_WARN("No plan computed");
     }
@@ -130,38 +134,38 @@ bool RRTPlanner::straightLine(TreeNode* start, const std::vector<int>& goal, Tre
         parent->appendChild(new_node);
         parent = new_node; // Update parent to the new node
         dist_to_goal = distance(current[0], current[1], goal[0], goal[1]);
-
-        ROS_INFO("Intermediate point [%d, %d] added along straight line path.", new_x, new_y);
-    }
+        std::vector<std::vector<int>> tree_path = {parent->getParent()->getNode(), parent->getNode()};
+        publishLineMarker(tree_path, global_frame_id_, 0.0, 1.0, 0.0, 0.5, "rrt_tree", tree_marker_counter);
+}
 
     // Add the goal node as the final node
     goal_node = new TreeNode(goal);
     parent->appendChild(goal_node);
-    ROS_INFO("Goal node [%d, %d] added to the tree.", goal[0], goal[1]);
 
     return true;
 }
 
-void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id) {
+void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id,
+ float r, const float g, const float b, const float a,const std::string& ns, unsigned int& marker_counter) {
     if (path.size() < 2) {
         ROS_WARN("Path is empty or contains fewer than two points. Unable to create LINE_STRIP marker.");
         return;
     }
     
-     visualization_msgs::Marker marker;
+    visualization_msgs::Marker marker;
     marker.header.frame_id = frame_id;
     marker.header.stamp = ros::Time::now();
-    marker.ns = "rrt_path";
-    marker.id = 0;
+    marker.ns = ns;
+    marker.id = marker_counter++;
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.action = visualization_msgs::Marker::ADD;
 
     // Set the scale and color of the marker
     marker.scale.x = 0.05;  
-    marker.color.r = 1.0;   
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    marker.color.a = 0.5;
+    marker.color.r = r;   
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = a;
 
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
@@ -180,6 +184,18 @@ void RRTPlanner::publishLineMarker(const std::vector<std::vector<int>>& path, co
     marker_pub_.publish(marker);
 }
 
+void RRTPlanner::deleteMarkers(const std::string& ns, unsigned int& marker_counter) {
+
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = global_frame_id_;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::DELETEALL; // Action to delete the marker
+    marker_pub_.publish(marker);
+    marker_counter = 0;
+}
+
 
 bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int> goal, 
                             std::vector<std::vector<int>>& sol){
@@ -193,6 +209,11 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
 
     // Pointer to the goal node when found
     TreeNode* goal_node = nullptr;
+
+    // Delete the previous tree visualization
+    deleteMarkers("rrt_tree", tree_marker_counter);
+    deleteMarkers("rrt_solution", solution_marker_counter);
+
 
     // Check if the goal is in a free space with the costmap
     if (costmap_->getCost(goal[0], goal[1]) != costmap_2d::FREE_SPACE){
@@ -270,15 +291,15 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
             new_node = new TreeNode(new_point);
             near->appendChild(new_node);
 
-            // Plot tree
-
-            // ROS_INFO("Point [%d, %d] added to the tree.", new_point[0], new_point[1]);
+            // Visualize the tree growth
+            std::vector<std::vector<int>> tree_path = {near->getNode(), new_node->getNode()};
+            publishLineMarker(tree_path, global_frame_id_, 0.0, 1.0, 0.0, 0.5, "rrt_tree", tree_marker_counter);
 
             // Check if the goal is reachable
             if (obstacleFree(new_point[0], new_point[1], goal[0], goal[1])) {
-                // ROS_INFO("Goal visible from last node.");
                 ROS_INFO("RRT has elaborated a feasible path after %zu iterations", i);
                     if (straightLine(new_node, goal, goal_node)) {
+                        
                 ROS_INFO("Straight line to goal successfully added.");
                 finished = true;
                 } else {
@@ -290,12 +311,19 @@ bool RRTPlanner::computeRRT(const std::vector<int> start, const std::vector<int>
     }
     
     if (finished){
+
         // Trace back the solution
         TreeNode* current = goal_node;
         while (current != nullptr){
             sol.push_back(current->getNode());
             current = current->getParent();
         }
+
+        // sol = goal_node->returnSolution();
+        // Visualize the solution path
+        publishLineMarker(sol, global_frame_id_, 1.0, 0.0, 0.0, 1.0, "rrt_solution", solution_marker_counter);
+
+
     } else {
         ROS_INFO("RRT could not elaborate a feaseible path after %d iterations", max_samples_);
     }

@@ -45,8 +45,11 @@ private:
     ros::Publisher marker_pub_;
 
     // functions to compute the plan
-    void publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id);
+
+    void publishLineMarker(const std::vector<std::vector<int>>& path, const std::string& frame_id, float r, const float g, 
+    const float b, const float a,const std::string& ns, unsigned int& marker_counter);
     bool straightLine(TreeNode* start, const std::vector<int>& goal, TreeNode*& goal_node);
+    void deleteMarkers(const std::string& ns, unsigned int& marker_counter);
     bool obstacleFree(const unsigned int x0, const unsigned int y0, const unsigned int x1, const unsigned int y1);
     bool computeRRT(const std::vector<int> start, const std::vector<int> goal, 
                             std::vector<std::vector<int>>& sol);
