@@ -17,4 +17,4 @@ find_package(Threads REQUIRED)
 
 add_subdirectory(code_examples)
 add_subdirectory(Assignment3)
-# add_subdirectory(Laboratory-4)
+add_subdirectory(Assignment5)
