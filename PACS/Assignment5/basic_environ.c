@@ -160,10 +160,10 @@ int main(int argc, char** argv)
 
   // 3. Create a context, with a device
   device_id = devices_ids[0][0]; 
-
   cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platforms_ids[0], 0};
   context = clCreateContext(properties, 1, &device_id, NULL, NULL, &err);
   cl_error(err, "Failed to create a compute context\n");
+
 
   // 4. Create a command queue
   cl_command_queue_properties proprt[] = { CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0 };
@@ -172,10 +172,120 @@ int main(int argc, char** argv)
   command_queue = clCreateCommandQueue(context, device_id, CL_QUEUE_PROFILING_ENABLE, &err);
   cl_error(err, "Failed to create a command queue\n");
 
-  printf("Context and Command Queue created\n");
 
   /* It is still missing the runtime part of the OpenCL program: createBuffers, createProgram, createKernel, setKernelArg, ... */
+  //2. Calculate size of the file
+  FILE *fileHandler = fopen("../kernel.cl", "r");
+  fseek(fileHandler, 0, SEEK_END);
+  size_t fileSize = ftell(fileHandler);
+  rewind(fileHandler);
+
+  // read kernel source into buffer
+  char * sourceCode = (char*) malloc(fileSize + 1);
+  sourceCode[fileSize] = '\0';
+  fread(sourceCode, sizeof(char), fileSize, fileHandler);
+  fclose(fileHandler);
+
+  // create program from buffer
+  cl_program program = clCreateProgramWithSource(context, 1, (const char **)&sourceCode, &fileSize, &err);
+  cl_error(err, "Failed to create program with source\n");
+  free(sourceCode);
+
+
+  //3. Build the executable and check errors
+  err = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+  if (err != CL_SUCCESS){
+    size_t len;
+    char buffer[2048];
+
+    printf("Error: Some error at building process.\n");
+    clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+    printf("%s\n", buffer);
+    exit(-1);
+  }
+
+  //4. Create a compute kernel with the program we want to run
+  cl_kernel kernel = clCreateKernel(program, "pow_of_two", &err);
+  cl_error(err, "Failed to create kernel from the program\n");
+
+
+  // 5. host_memory
+  size_t count = 10000;  // Number of elements in the array
+  float *in_host_object = (float *)malloc(count * sizeof(float));
+  float *out_host_object = (float *)malloc(count * sizeof(float));
+
+  // Initialize input data
+  for (size_t i = 0; i < count; i++) {
+      in_host_object[i] = (float)i;
+  }
+
+
+  //6. Create OpenCL buffer visible to the OpenCl runtime
+  cl_mem in_device_object  = clCreateBuffer(context, CL_MEM_READ_ONLY, count * sizeof(float), NULL, &err);
+  cl_error(err, "Failed to create memory buffer at device\n");
+  cl_mem out_device_object = clCreateBuffer(context, CL_MEM_WRITE_ONLY, count * sizeof(float), NULL, &err);
+  cl_error(err, "Failed to create memory buffer at device\n");
+
+  // 7. Write date into the memory object 
+  err = clEnqueueWriteBuffer(command_queue, in_device_object, CL_TRUE, 0, sizeof(float) * count, in_host_object, 0, NULL, NULL);
+  cl_error(err, "Failed to enqueue a write command\n");
   
+
+  //8. Set the arguments to the kernel
+  err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &in_device_object);
+  cl_error(err, "Failed to set argument 0\n");
+  err = clSetKernelArg(kernel, 1, sizeof(cl_mem), &out_device_object);
+  cl_error(err, "Failed to set argument 1\n");
+  err = clSetKernelArg(kernel, 2, sizeof(size_t), &count);
+  cl_error(err, "Failed to set argument 2\n");
+
+
+  //9. Launch Kernel
+  // local_size = 256; // Apple M1
+  // global_size = count;
+  // err = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+  // cl_error(err, "Failed to launch kernel to the device\n");
+
+  // Query max work group size
+  size_t max_work_group_size;
+  err = clGetDeviceInfo(device_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(max_work_group_size), &max_work_group_size, NULL);
+  cl_error(err, "Failed to query max work group size");
+  printf("Max Work Group Size: %zu\n", max_work_group_size);
+
+  // Set local and global sizes
+  local_size = (max_work_group_size < count) ? max_work_group_size : count;
+  global_size = ((count + local_size - 1) / local_size) * local_size;
+
+  printf("Launching kernel with global_size=%zu, local_size=%zu\n", global_size, local_size);
+  printf("Count: %zu\n", count);
+
+  // Launch the kernel
+  err = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL);
+  cl_error(err, "Failed to launch kernel");
+
+
+  //10. Read data form device memory back to host memory
+  err = clEnqueueReadBuffer(command_queue, out_device_object, CL_TRUE, 0, sizeof(float) * count, out_host_object, 0, NULL, NULL);
+  cl_error(err, "Failed to enqueue a read command\n");
+
+  // //11. Print results
+  // for (size_t i = 0; i < count; i++) {
+  //     printf("Input: %f -> Output: %f\n", in_host_object[i], out_host_object[i]);
+  // }
+
+  printf("Input: %f -> Output: %f\n", in_host_object[0], out_host_object[0]);
+  printf("Input: %f -> Output: %f\n", in_host_object[1], out_host_object[1]);
+  printf("Input: %f -> Output: %f\n", in_host_object[2], out_host_object[2]);
+  printf("Input: %f -> Output: %f\n", in_host_object[count-1], out_host_object[count-1]);
+
+  //12. Release all the OpenCL memory objects allocated along this program.
+  clReleaseMemObject(in_device_object);
+  clReleaseMemObject(out_device_object);
+  clReleaseProgram(program);
+  clReleaseKernel(kernel);
+  clReleaseCommandQueue(command_queue);
+  clReleaseContext(context);
+
   return 0;
 }
 
