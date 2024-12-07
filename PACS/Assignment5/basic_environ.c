@@ -78,10 +78,6 @@ int main(int argc, char** argv)
 
     // ***Task***: print on the screen the name, host_timer_resolution, vendor, versionm, ...
 
-    // Platform Name
-    err = clGetPlatformInfo(platforms_ids[i], CL_PLATFORM_NAME, sizeof(str_buffer), str_buffer, NULL);
-    cl_error(err, "clGetPlatformInfo: Getting platform name");
-    printf("\t[%d]-Platform Name: %s\n", i, str_buffer);
 
     // Host timer resolution
     // CL_PLATFORM_HOST_TIMER_RESOLUTION is not defined for MACOS and OpenCL 1.2
