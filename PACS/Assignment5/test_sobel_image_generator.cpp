@@ -25,14 +25,15 @@ void create_test_image(const char* filename, int width, int height) {
 }
 
 int main() {
-    // Create and save 3x3 RGB test image
-    create_test_image("test_image_3x3.jpg", 3, 3);
-
-    // Create and save 9x9 RGB test image
-    create_test_image("test_image_9x9.jpg", 9, 9);
-
-    // Create and save 20x20 RGB test image
-    create_test_image("test_image_20x20.jpg", 20, 20);
+    create_test_image("../images/input/3x3.jpg", 3, 3);
+    create_test_image("../images/input/9x9.jpg", 9, 9);
+    create_test_image("../images/input/20x20.jpg", 20, 20);
+    create_test_image("../images/input/256x256.jpg", 256, 256);
+    create_test_image("../images/input/256x512.jpg", 256, 512);
+    create_test_image("../images/input/512x512.jpg", 512, 512);
+    create_test_image("../images/input/720x1280.jpg", 720, 1280);
+    create_test_image("../images/input/1024x1024.jpg", 1024, 1024);
+    create_test_image("../images/input/2048x4096.jpg", 2048, 4096);
 
     return 0;
 }

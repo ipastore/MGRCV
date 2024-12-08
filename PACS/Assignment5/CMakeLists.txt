@@ -11,6 +11,7 @@ add_executable(sobel sobel.cpp)
 add_executable(gaussian gaussian.cpp)
 add_executable(test_sobel_image_generator test_sobel_image_generator.cpp)
 add_executable(sobel_gt sobel_gt.cpp)
+add_executable(sobel_global_local sobel_global_local.cpp)
 
 # Add the include directories
 include_directories(${CMAKE_SOURCE_DIR}/CImg)
@@ -31,6 +32,7 @@ target_link_libraries(gaussian PRIVATE OpenCL::OpenCL X11 OpenGL::GL /opt/homebr
 target_link_libraries(CImg_prueba PRIVATE X11 OpenGL::GL /opt/homebrew/lib/libjpeg.dylib)
 target_link_libraries(test_sobel_image_generator PRIVATE X11 OpenGL::GL /opt/homebrew/lib/libjpeg.dylib)
 target_link_libraries(sobel_gt PRIVATE OpenCL::OpenCL X11 OpenGL::GL /opt/homebrew/lib/libjpeg.dylib)
+target_link_libraries(sobel_global_local PRIVATE OpenCL::OpenCL X11 OpenGL::GL /opt/homebrew/lib/libjpeg.dylib)
 
 # Set compilation options
 set(CMAKE_CXX_STANDARD 17)
@@ -44,3 +46,4 @@ target_compile_options(sobel PRIVATE -Wall -Wextra)
 target_compile_options(gaussian PRIVATE -Wall -Wextra)
 target_compile_options(test_sobel_image_generator PRIVATE -Wall -Wextra)
 target_compile_options(sobel_gt PRIVATE -Wall -Wextra)
+target_compile_options(sobel_global_local PRIVATE -Wall -Wextra)
