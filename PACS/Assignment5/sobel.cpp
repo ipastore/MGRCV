@@ -56,14 +56,7 @@ void log_sobel_data(const char *filename, float *debug_data, int width, int heig
 
 int main() {
     
-  // List of test image file names
-  std::vector<std::string> images_names;
-  images_names.push_back("256x256.jpg");
-  images_names.push_back("256x512.jpg");
-  images_names.push_back("512x512.jpg");
-  images_names.push_back("720x1280.jpg");
-  images_names.push_back("1024x1024.jpg");
-  images_names.push_back("2048x4096.jpg");
+
 
   // // Open CSV file for logging
   // std::ofstream log_file("../log/results/dataset.csv", std::ios::out);
@@ -75,7 +68,13 @@ int main() {
   // // Write header to CSV
   // log_file << "height,width,g_size,l_size,total_exec,kernel_exec,bandwidth,throughput,memory_footprint\n";
 
-  std::string image_name = "256x256.jpg";
+    // std::string image_name = "256x256.jpg";
+    // std::string image_name = "256x512.jpg";
+    // std::string image_name = "512x512.jpg";
+    // std::string image_name = "720x1280.jpg";
+    // std::string image_name = "1024x1024.jpg";
+    std::string image_name = "2048x4096.jpg";
+
   // std::string image_name = "montblanc.jpg";
 
   // OpenCL variables
@@ -137,6 +136,7 @@ int main() {
   std::ifstream kernel_file("../sobel_local.cl");
   std::string kernel_code((std::istreambuf_iterator<char>(kernel_file)), std::istreambuf_iterator<char>());
   const char* kernel_source = kernel_code.c_str();
+  
   cl_program program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
   cl_error(err, "Failed to create program");
 
@@ -182,10 +182,13 @@ int main() {
   // clSetKernelArg(kernel, 3, sizeof(cl_mem), &debug_buffer); 
   // cl_error(err, "Failed to create debug buffer");
 
-  // Execute the kernel
-  size_t global_size[2] = {width, height};
-  // LOCAL: Add local size for profiling
-  size_t local_size[2] = {2,2};
+    // Execute the kernel
+    size_t global_size[2] = {width, height};
+    // LOCAL: Add local size for profiling
+    // size_t local_size[2] = {2,2};
+    // size_t local_size[2] = {4,4};
+    // size_t local_size[2] = {8,8};
+    size_t local_size[2] = {16,16};
 
   // Set the arguments to the kernel
   clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_cl_image);
@@ -200,6 +203,9 @@ int main() {
   // Allocate shared memory for local block (width + 2 halo pixels) x (height + 2 halo pixels)
   size_t local_mem_size = (local_size[0] + 2) * (local_size[1] + 2) * sizeof(float);
   clSetKernelArg(kernel, 3, local_mem_size, NULL); // Pass NULL for dynamically allocated shared memory
+  
+  
+  // Execute the kernel
   clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_size, local_size, 0, NULL, NULL);
 
 

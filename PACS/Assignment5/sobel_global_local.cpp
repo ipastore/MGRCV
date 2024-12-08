@@ -54,18 +54,18 @@ void log_sobel_data(const char *filename, float *debug_data, int width, int heig
 
 
 
-void run_sobel_filter(const std::string& image_file, size_t global_height, size_t global_width, size_t local_size, std::ofstream& log_file) {
+void run_sobel_filter(const std::string& image_file, size_t local_size, std::ofstream& log_file) {
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     // Load the image
     CImg<unsigned char> image(image_file.c_str());
-    int width = image.width();
-    int height = image.height();
+    const int width = image.width();
+    const int height = image.height();
 
     // Convert image to grayscale
-    CImg<float> grayscale = image.RGBtoYCbCr().channel(0);
-    std::vector<float> input_data(grayscale.begin(), grayscale.end());
+    CImg<unsigned char> grayscale = image.RGBtoYCbCr().channel(0);
 
-    // Output image data
-    std::vector<float> output_data(width * height);
 
     // OpenCL initialization
     cl_int err;
@@ -107,8 +107,7 @@ void run_sobel_filter(const std::string& image_file, size_t global_height, size_
         exit(EXIT_FAILURE);
     }
 
-    
-
+    // Create Kernel
     cl_kernel kernel = clCreateKernel(program, "sobel_filter", &err);
     cl_error(err, "Failed to create kernel");
 
@@ -135,8 +134,8 @@ void run_sobel_filter(const std::string& image_file, size_t global_height, size_
     clSetKernelArg(kernel, 2, sizeof(cl_sampler), &sampler);
     
     // Define global and local sizes
-    size_t global_work_size[] = {global_width,global_height};
-    size_t local_work_size[] = {local_size, local_size};
+    size_t global_work_size[2] = {width,height};
+    size_t local_work_size[2] = {local_size, local_size};
 
     // Allocate shared memory for local block (width + 2 halo pixels) x (height + 2 halo pixels)
     size_t local_mem_size = (local_work_size[0] + 2) * (local_work_size[1] + 2) * sizeof(float);
@@ -144,7 +143,6 @@ void run_sobel_filter(const std::string& image_file, size_t global_height, size_
 
     // Profiling
     cl_event kernel_event;
-    auto start_time = std::chrono::high_resolution_clock::now();
 
     err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, global_work_size, local_work_size, 0, NULL, &kernel_event);
     cl_error(err, "Failed to enqueue kernel");
@@ -157,9 +155,6 @@ void run_sobel_filter(const std::string& image_file, size_t global_height, size_
     clGetEventProfilingInfo(kernel_event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
     double kernel_exec_time = (time_end - time_start) / 1e6; // ms
 
-    auto end_time = std::chrono::high_resolution_clock::now();
-    double total_exec_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
-
     // Read output
     CImg<unsigned char> output_image(width, height, 1, 1);
     size_t origin[3] = {0, 0, 0};
@@ -169,15 +164,8 @@ void run_sobel_filter(const std::string& image_file, size_t global_height, size_
     // Save output
     output_image.normalize(0,250).save(outputImgPath.c_str());
 
-    // Log results
-    double bandwidth = (width * height * sizeof(float)) / (kernel_exec_time * 1e-3); // MB/s
-    double throughput = (width * height) / (kernel_exec_time * 1e-3); // Pixels/s
-    double memory_footprint = width * height * sizeof(float) * 2 / 1e6; // MB
-
-    log_file << height << "," << width  << "," << local_size << ","
-             << total_exec_time << "," << kernel_exec_time << ","
-             << bandwidth << "," << throughput << "," << memory_footprint << "\n";
-
+    
+    
     // Cleanup
     clReleaseMemObject(input_cl_image);
     clReleaseMemObject(output_cl_image);
@@ -186,21 +174,35 @@ void run_sobel_filter(const std::string& image_file, size_t global_height, size_
     clReleaseProgram(program);
     clReleaseCommandQueue(command_queue);
     clReleaseContext(context);
+
+    // Log debug data
+    auto end_time = std::chrono::high_resolution_clock::now();
+    double total_exec_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+
+    // Log results
+    double bandwidth = (width * height * sizeof(float)) / (kernel_exec_time * 1e-3); // MB/s
+    double throughput = (width * height) / (kernel_exec_time * 1e-3); // Pixels/s
+    double memory_footprint = width * height * sizeof(float) * 2 / 1e6; // MB
+
+    log_file << width << "," << height  << "," << local_size << ","
+             << total_exec_time << "," << kernel_exec_time << ","
+             << bandwidth << "," << throughput << "," << memory_footprint << "\n";
+
 }
 
 int main() {
     // List of test image file names
     std::vector<std::string> images_names;
-    images_names.push_back("256x256.jpg");
-    images_names.push_back("256x512.jpg");
-    images_names.push_back("512x512.jpg");
-    images_names.push_back("720x1280.jpg");
-    images_names.push_back("1024x1024.jpg");
+    // images_names.push_back("256x256.jpg");
+    // images_names.push_back("256x512.jpg");
+    // images_names.push_back("512x512.jpg");
+    // images_names.push_back("720x1280.jpg");
+    // images_names.push_back("1024x1024.jpg");
     images_names.push_back("2048x4096.jpg");
   
     // Open CSV file for logging
-    std::ofstream log_file("../log/results/dataset.csv", std::ios::out);
-    log_file << "height,width,l_size,total_exec,kernel_exec,bandwidth,throughput,memory_footprint\n";
+    std::ofstream log_file("../log/results/gpu_sobel_2048x4096_dataset.csv", std::ios::out);
+    log_file << "width,height,l_size,total_exec,kernel_exec,bandwidth,throughput,memory_footprint\n";
 
     // Test configurations
     std::vector<size_t> local_sizes;
@@ -208,7 +210,8 @@ int main() {
     local_sizes.push_back(4);
     local_sizes.push_back(8);
     local_sizes.push_back(16);
-
+    
+    size_t numRuns = 5;
 
     for (const auto& image : images_names) {
         
@@ -221,10 +224,10 @@ int main() {
 
         
         for (size_t l_size : local_sizes) {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < numRuns; i++) {
                 if ((height * width) % l_size == 0) {
                     printf("Running Sobel filter for image: %s, local size: %lu\n", image.c_str(), l_size);
-                    run_sobel_filter(image_path, height, width, l_size, log_file);
+                    run_sobel_filter(image_path, l_size, log_file);
                 } else {
                     printf("Local size %lu is not a divisor of global size %lu\n", l_size, height * width);
                 }
@@ -234,5 +237,6 @@ int main() {
     }
 
     log_file.close();
+    printf("Results logged to file");
     return 0;
 }

@@ -81,12 +81,7 @@ int main(int argc, char** argv)
 
     // Host timer resolution
     // CL_PLATFORM_HOST_TIMER_RESOLUTION is not defined for MACOS and OpenCL 1.2
-    #ifndef CL_PLATFORM_HOST_TIMER_RESOLUTION
-    #define CL_PLATFORM_HOST_TIMER_RESOLUTION 0x0905
-    #endif
-    size_t host_timer_resolution;
-    err = clGetPlatformInfo(platforms_ids[i], CL_PLATFORM_HOST_TIMER_RESOLUTION, sizeof(host_timer_resolution), &host_timer_resolution, NULL);
-    printf("\t[%d]-Platform Host Timer Resolution: %zu nanoseconds\n", i, host_timer_resolution);
+    
     
 
     // Vendor
