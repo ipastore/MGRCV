@@ -35,8 +35,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set compilation flags
 target_compile_options(basic_environ PRIVATE -Wall -Wextra)
-target_compile_options(sobel PRIVATE -Wall -Wextra)
-target_compile_options(gaussian PRIVATE -Wall -Wextra)
 target_compile_options(test_sobel_image_generator PRIVATE -Wall -Wextra)
 target_compile_options(sobel_gt PRIVATE -Wall -Wextra)
 target_compile_options(sobel_global_local PRIVATE -Wall -Wextra)
