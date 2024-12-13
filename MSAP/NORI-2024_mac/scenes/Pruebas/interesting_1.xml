@@ -1,0 +1,208 @@
+<?xml version="1.0" ?>
+<scene>
+	<integrator type="path_nee"/>
+	<sampler type="independent">
+		<integer name="sampleCount" value="1024"/>
+	</sampler>
+	<camera type="perspective">
+		<float name="fov" value="39.597755335771296"/>
+		<float name="nearClip" value="0.10000000149011612"/>
+		<float name="farClip" value="1000.0"/>
+		<integer name="width" value="800"/>
+		<integer name="height" value="600"/>
+		<transform name="toWorld">
+			<scale value="1.000000 1.000000 -1.000000"/>
+			<matrix value="-0.9999833106994629,-0.00036043798900209367,0.005770459771156311,0.003374071791768074,0.00578170595690608,-0.062319859862327576,0.9980394840240479,3.5287415981292725,-1.1708374358931906e-07,0.998056173324585,0.062320902943611145,0.9792988300323486,0.0,0.0,0.0,1.0"/>
+		</transform>
+	</camera>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Handle_low_Handle_low_0.obj"/>
+		<bsdf type="roughconductor" name="Handle_low">
+			<color name="R0" value="0.034704,0.076046,0.792976"/>
+			<float name="alpha" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Hilt_low_Hilt_low_0.obj"/>
+		<bsdf type="roughconductor" name="Hilt_low">
+			<color name="R0" value="0.034704,0.076046,0.792976"/>
+			<float name="alpha" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Wings_low_Wings_low_0.obj"/>
+		<bsdf type="roughconductor" name="Wings_low">
+			<color name="R0" value="0.034704,0.076046,0.792976"/>
+			<float name="alpha" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Blade_low_Blade_low_0.obj"/>
+		<bsdf type="roughconductor" name="Blade_low">
+			<color name="R0" value="0.920000,0.910000,0.910000"/>
+			<float name="alpha" value="0.200000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Diamond_low_Diamond_low_0.obj"/>
+		<bsdf type="roughconductor" name="Diamond_low">
+			<color name="R0" value="1.000000,0.840236,0.000000"/>
+			<float name="alpha" value="0.200000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Plane.001_HyruleShield_Rim_mat_0.obj"/>
+		<bsdf type="roughconductor" name="HyruleShield_Rim_mat">
+			<color name="R0" value="0.920000,0.910000,0.910000"/>
+			<float name="alpha" value="0.200000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Cube_HyruleShiel_Strap_mat_0.obj"/>
+		<bsdf type="roughsubstrate" name="HyruleShiel_Strap_mat">
+			<color name="kd" value="0.800000,0.800000,0.800000"/>
+			<float name="alpha" value="0.277292"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Cube_HyruleShield_Wood_mat_0.obj"/>
+		<bsdf type="roughsubstrate" name="HyruleShield_Wood_mat">
+			<color name="kd" value="0.800000,0.800000,0.800000"/>
+			<float name="alpha" value="0.302292"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Cylinder_HyruleShield_Grip_mat_0.obj"/>
+		<bsdf type="roughsubstrate" name="HyruleShield_Grip_mat">
+			<color name="kd" value="0.800000,0.800000,0.800000"/>
+			<float name="alpha" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Plane.005_HyruleShield_Triforce_mat_0.obj"/>
+		<bsdf type="roughconductor" name="HyruleShield_Triforce_mat">
+			<color name="R0" value="1.000000,0.840236,0.000000"/>
+			<float name="alpha" value="0.200000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Plane.005_HyruleShield_Ornament_mat_0.obj"/>
+		<bsdf type="roughconductor" name="HyruleShield_Ornament_mat">
+			<color name="R0" value="0.920000,0.910000,0.910000"/>
+			<float name="alpha" value="0.200000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Plane.003_HyruleShield_Base_mat_0.obj"/>
+		<bsdf type="roughconductor" name="HyruleShield_Base_mat">
+			<color name="R0" value="0.034704,0.076046,0.792976"/>
+			<float name="alpha" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Plane.000_HyruleShield_Buttons_mat_0.obj"/>
+		<bsdf type="roughsubstrate" name="HyruleShield_Buttons_mat">
+			<color name="kd" value="0.800000,0.800000,0.800000"/>
+			<float name="alpha" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Rupia.001.obj"/>
+		<bsdf type="dielectric" name="Rupee_aiSS">
+			<color name="color" value="0.047079,0.718243,0.061714"/>
+			<float name="IOR" value="1.500000"/>
+			<float name="roughness" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/defaultMaterial.002.obj"/>
+		<bsdf type="diffuse" name="PM3D_Sphere3D">
+			<color name="albedo" value="0.110046,0.051208,0.028091"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/leftWall.obj"/>
+		<bsdf type="diffuse" name="leftWall.001">
+			<color name="albedo" value="0.250349,0.221479,0.800094"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/light.obj"/>
+		<bsdf type="diffuse" name="light.002">
+			<color name="albedo" value="0.800000,0.800000,0.800000"/>
+		</bsdf>
+		<emitter type="area">
+			<color name="radiance" value="35.453258,31.224551,40.000000"/>
+		</emitter>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/rightWall.obj"/>
+		<bsdf type="diffuse" name="rightWall.002">
+			<color name="albedo" value="0.800119,0.224524,0.184178"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/leftSphere.obj"/>
+		<bsdf type="diffuse" name="leftSphere.002">
+			<color name="albedo" value="0.800007,0.476066,0.212970"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/rightSphere.obj"/>
+		<bsdf type="diffuse" name="rightSphere.002">
+			<color name="albedo" value="0.167136,0.800023,0.082527"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/backWall.obj"/>
+		<bsdf type="diffuse" name="backWall.002">
+			<color name="albedo" value="0.800079,0.793176,0.692132"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/ceiling.obj"/>
+		<bsdf type="diffuse" name="ceiling.002">
+			<color name="albedo" value="0.800079,0.793176,0.692132"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/floor.obj"/>
+		<bsdf type="diffuse" name="floor.002">
+			<color name="albedo" value="0.800079,0.793176,0.692132"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Espejo.obj"/>
+		<bsdf type="mirror"/>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Marco_espejo.obj"/>
+		<bsdf type="diffuse" name="Magic_Mirror">
+			<color name="albedo" value="0.147690,0.098117,0.046133"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Rupia.002.obj"/>
+		<bsdf type="dielectric" name="Rupee_aiSS.002">
+			<color name="color" value="0.718265,0.136003,0.404852"/>
+			<float name="IOR" value="1.500000"/>
+			<float name="roughness" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Rupia.005.obj"/>
+		<bsdf type="dielectric" name="Rupee_aiSS.003">
+			<color name="color" value="0.047079,0.718243,0.061714"/>
+			<float name="IOR" value="1.500000"/>
+			<float name="roughness" value="0.500000"/>
+		</bsdf>
+	</mesh>
+	<mesh type="obj">
+		<string name="filename" value="meshes/Rupia.006.obj"/>
+		<bsdf type="dielectric" name="Rupee_aiSS.004">
+			<color name="color" value="0.076121,0.280595,0.718275"/>
+			<float name="IOR" value="1.500000"/>
+			<float name="roughness" value="0.500000"/>
+		</bsdf>
+	</mesh>
+</scene>

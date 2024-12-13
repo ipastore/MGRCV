@@ -8,115 +8,141 @@ NORI_NAMESPACE_BEGIN
 
 class PathTracingNee : public Integrator {
 public:
-	PathTracingNee(const PropertyList& props) {
-		/* No parameters this time */
-	}
+    PathTracingNee(const PropertyList &props) {}
 
-    Color3f computeEmitterRadiance(const Ray3f& ray, const Intersection& its) const {
-		EmitterQueryRecord emitterRecord(its.p);
-		emitterRecord.ref = ray.o;
-		emitterRecord.wi = ray.d;
-		emitterRecord.n = its.shFrame.n;
+    Color3f computeEmitterRadiance(const Ray3f &ray, const Intersection &its) const {
+        EmitterQueryRecord emitterRecord(its.p);
+        emitterRecord.ref = ray.o;
+        emitterRecord.wi = ray.d;
+        emitterRecord.n = its.shFrame.n;
         emitterRecord.uv = its.uv;
-		return its.mesh->getEmitter()->eval(emitterRecord); 
-	}
+        return its.mesh->getEmitter()->eval(emitterRecord);
+    }
 
-    Color3f Li(const Scene* scene, Sampler* sampler, const Ray3f& ray) const {
+    Color3f Li(const Scene *scene, Sampler *sampler, const Ray3f &ray) const {
+        return tracePath(scene, sampler, ray, Color3f(1.0f), 0, true);
+    }
 
-        Color3f Lo(0.0f);
-        Color3f Le_em(0.0f);
-        Color3f bsdf_ac(1.0f);
-        float russianProb;
-        Ray3f bouncyRay(ray);
-        bool rayKeepBouncing = true;
+    Color3f sampleLightNEE(const Scene *scene, Sampler *sampler, const Ray3f &bouncyRay, const Intersection &bounceIntersection) const {
 
-        while (rayKeepBouncing)
-        {
-            // ** RAY INTERSECTION ** //
-            Intersection its;
+        // ** EMISSION SAMPLING ** //
+        float pdfEmitter;
+        const Emitter *em = scene->sampleEmitter(sampler->next1D(), pdfEmitter);
+        Color3f Les;
 
-            // Checking if the ray intersects with the scene (OUTPUT: Background)
-            if (!scene->rayIntersect(bouncyRay, its)){
-                Lo += bsdf_ac * scene->getBackground(bouncyRay);
-                break; // Get out of the loop
-            } 
-            // Checking if the ray intersects with an emitter (OUTPUR: Emitter radiance)
-            if (its.mesh->isEmitter()) {
-                Lo = bsdf_ac * computeEmitterRadiance(bouncyRay, its);
-                break; // Get out of the loop
-            }
+        // ** CHECKING IF THERE IS ANY EMITTER ** //
+        if (em) {
+            EmitterQueryRecord emitterRecord(bounceIntersection.p);
+            Color3f Lem = em->sample(emitterRecord, sampler->next2D(), 0.f);
 
-            // ** BSDF SAMPLING ** //
-            // We obtain the new direction wo
-            Point2f sample = sampler->next2D();
-            BSDFQueryRecord bsdfRecord(its.toLocal(-bouncyRay.d), sample);
-            Color3f bsdf_sample = its.mesh->getBSDF()->sample(bsdfRecord, sample);
-            bool sampleLightsFlag = (bsdfRecord.measure != EDiscrete);
-            float w_mats = sampleLightsFlag ? 0.5f : 1.0f;
-            float w_lights = sampleLightsFlag ? 0.5f : 0.0f;
+            // Generation of a shadow ray to check visibility of the emitter by the intersection point
+            Ray3f shadowRay(bounceIntersection.p, emitterRecord.wi);
+            shadowRay.maxt = (emitterRecord.p - bounceIntersection.p).norm();
 
-            if (bsdf_sample.isZero() || bsdf_sample.hasNaN()) {
-                return Color3f(0.0f); // TODO
-            }else{
-                bsdf_ac *= bsdf_sample;
-            }
-
-            // ** NEXT EVENT CALL DEPENDING ON MATERIAL** //
-            if (sampleLightsFlag)
-            {
-                // Randomly choose an emitter
-                float pdfEmitter;	// this is the probability density of choosing an emitter
-                const Emitter* em = scene->sampleEmitter(sampler->next1D(), pdfEmitter);
-
-                // Sample a point on the emitter and get its radiance
-                EmitterQueryRecord emitterRecord(its.p);
-                Color3f Lem = em->sample(emitterRecord, sampler->next2D(), 0.f);
-
-                // Create a shadow ray to see if the point is in shadow
-                Ray3f shadowRay(its.p, emitterRecord.wi);
-                shadowRay.maxt = (emitterRecord.p - its.p).norm();
-
-                // Check if the ray intersects with an emitter or if the first intersection in shadows
-                Intersection shadow_its;
-                bool inShadow = scene->rayIntersect(shadowRay, shadow_its);
-
-                if (!inShadow){
-                    float denominator = pdfEmitter * emitterRecord.pdf;
-                    if (denominator > Epsilon){
-                        BSDFQueryRecord bsdfQR_ls(its.toLocal(-bouncyRay.d), its.toLocal(emitterRecord.wi), its.uv, ESolidAngle);
-                        Color3f bsdf = its.mesh->getBSDF()->eval(bsdfQR_ls);
-                        Lo += w_lights * bsdf_ac * (Lem * its.shFrame.n.dot(emitterRecord.wi) * bsdf) / denominator;
+            // ** CHECKING IF THE INTERSECTION POINT IS IN SHADOW ** //
+            if (!scene->rayIntersect(shadowRay)) {
+                float denominator = pdfEmitter * emitterRecord.pdf;
+                if (denominator > Epsilon) {
+                    BSDFQueryRecord bsdfQR_ls(bounceIntersection.toLocal(-bouncyRay.d), bounceIntersection.toLocal(emitterRecord.wi), bounceIntersection.uv, ESolidAngle);
+                    Color3f bsdf = bounceIntersection.mesh->getBSDF()->eval(bsdfQR_ls);
+                    if (bsdf.hasNaN()) {
+                        return Color3f(0.0f);
                     }
+                    
+                    Les = (Lem * bounceIntersection.shFrame.n.dot(emitterRecord.wi) * bsdf) / denominator;
+                    // std::cout << "Les: " << Les << std::endl;
+                    return Les;
                 }
 
-            }else{
-                /* code */
+            }else{ // If the intersection point is in shadow, return black
+                return Color3f(0.0f);
+                std::cout << "The intersection point is in shadow for the emitter sampled" << std::endl;
             }
 
-
-            // ** RUSSIAN ROULETTE ** //
-            // TODO
-			russianProb = std::min(bsdf_ac.maxCoeff(), 0.99f);
-			if ((sampler->next1D() > russianProb)){
-				return Color3f(0.0f); // TODO
-			}else{
-                bsdf_ac /= russianProb;
-            }
-
-            /* UPDATE THE RAY */
-            bouncyRay = Ray3f(its.p, its.toWorld(bsdfRecord.wo));            
-
+        }else{ // If there is no emitter, return black
+            std::cout << "No emitter found" << std::endl;
+            return Color3f(0.0f);
         }
+        return Color3f(0.0f);
+    }
+
+    Color3f tracePath(const Scene *scene, Sampler *sampler, const Ray3f &bouncyRay, Color3f throughput, int n_bounces, const bool prevMatIsSmooth) const {
         
+        Color3f Lo(0.0f);
+
+        // // ************ MAX NUMBER OF BOUNCES ALLOWED ************ //
+        // if(n_bounces > 1000) {
+        //     return Color3f(0.0f);
+        // }
+
+        // ************ BOUNCE RAY INTERSECTION ************ //
+        Intersection bounceIntersection;
+
+        // FIRST CASE: Ray doesnt intersect with anything
+        if (!scene->rayIntersect(bouncyRay, bounceIntersection)) {
+            return throughput * scene->getBackground(bouncyRay);
+            // TODO: Necesitamos poner el throughput? -- YES
+        }
+
+        // SECOND CASE: Intersection is an emitter
+        if (bounceIntersection.mesh->isEmitter()) {
+            if (prevMatIsSmooth){
+            return throughput * computeEmitterRadiance(bouncyRay, bounceIntersection);
+                // TODO: Necesitamos poner el throughput? -- YES
+            }else{
+                return Color3f(0.0f);
+            }            
+        }
+
+        // THIRD CASE: Intersection is an NON emitter material
+
+        // ************ BSDF SAMPLING ************ //
+        Point2f sample = sampler->next2D();
+        BSDFQueryRecord bsdfQR(bounceIntersection.toLocal(-bouncyRay.d), sample);
+        Color3f bsdfSample = bounceIntersection.mesh->getBSDF()->sample(bsdfQR, sample);
+        bool currentMaterialPerfSmooth = (bsdfQR.measure == EDiscrete);
+        
+        if (bsdfSample.isZero() || bsdfSample.hasNaN()) {
+            return Lo;
+        }
+
+
+        // CASE 1: Material is perfect smooth --> No need to sample lights
+        // CASE 2: Material is not perfect smooth --> Need to sample lights. Lo term added
+        if (!currentMaterialPerfSmooth){
+            Lo += throughput * sampleLightNEE(scene, sampler, bouncyRay, bounceIntersection);
+            // TODO: Necesitamos poner el throughput? --> YES
+        }
+
+        throughput *= bsdfSample;
+
+
+        // ** RUSSIAN ROULETTE ** //
+        if (n_bounces > 2)
+        {
+            float russianProb = std::min(throughput.maxCoeff(), 0.99f);
+            if (sampler->next1D() > russianProb) {
+                return Color3f(0.0f);
+            }
+            throughput /= russianProb;  // Update throughput using the russian roulette probability
+            // TODO: Actualizamos el throughput con el valor de la probabilidad de la ruleta rusa?
+        }
+
+        // ******** RECURSIVE CALL ******** //
+        // Independent of the material contribution, tracePath is still called
+        Ray3f nextRay(bounceIntersection.p, bounceIntersection.toWorld(bsdfQR.wo));
+        Lo += tracePath(scene, sampler, nextRay, throughput, n_bounces + 1, currentMaterialPerfSmooth);
+
+
+        // ******** BACKPROPAGATION WHEN RECURSION HAS FINISHED********* //
         return Lo;
 
     }
 
     std::string toString() const {
-        return "Path Tracing NEE []";
+        return "Path Tracing NEE  []";
     }
 };
-
 
 NORI_REGISTER_CLASS(PathTracingNee, "path_nee");
 NORI_NAMESPACE_END

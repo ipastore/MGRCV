@@ -64,31 +64,43 @@ public:
 	}
 
 	virtual Color3f sample(EmitterQueryRecord & lRec, const Point2f & sample, float optional_u) const {
-		if (!m_mesh)
-			throw NoriException("There is no shape attached to this Area light!");
+		// if (!m_mesh)
+		// 	throw NoriException("There is no shape attached to this Area light!");
 		
-		// throw NoriException("AreaEmitter::sample() is not yet implemented!");
-
-		// Sampleams punto en la malla
-		Point3f p;
-		Normal3f n;
-		Point2f uv;
-		m_mesh->samplePosition(sample, p, n, uv);
-		m_mesh->samplePosition(sample, lRec.p, lRec.n, lRec.uv);
+		// // throw NoriException("AreaEmitter::sample() is not yet implemented!");
 
 
-		//EmitterQueryRecord para el punto en la malla
-		lRec.p = p;
-		lRec.n = n;
-		lRec.uv = uv;
-		lRec.dist = (lRec.p - lRec.ref).norm();
-		lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
+		// m_mesh->samplePosition(sample, lRec.p, lRec.n, lRec.uv);
+
+
+		// //EmitterQueryRecord para el punto en la malla
+		// lRec.p = p;
+		// lRec.n = n;
+		// lRec.uv = uv;
+		// lRec.dist = (lRec.p - lRec.ref).norm();
+		// lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
 
 	
-		// Get solid angle pdf
-		lRec.pdf = pdf(lRec);
+		// // Get solid angle pdf
+		// lRec.pdf = pdf(lRec);
 
-		return eval(lRec);
+		// return eval(lRec);
+		if (!m_mesh)
+			throw NoriException("There is no shape attached to this Area light!");
+
+		//throw NoriException("AreaEmitter::sample() is not yet implemented!");
+		if (lRec.n.dot(-lRec.wi) < 0.0f)	// check if backfacing
+			return Color3f(0.0f);
+		// sample a point on the mesh
+		m_mesh->samplePosition(sample, lRec.p, lRec.n, lRec.uv);
+		// update the values on the record
+		lRec.dist = (lRec.p - lRec.ref).norm();
+		lRec.wi = (lRec.p - lRec.ref) / lRec.dist;
+		lRec.pdf = pdf(lRec);
+		if (lRec.pdf < 1e-3) {	// if pdf is too small, assume it is black
+			return Color3f(0.0f);
+		}
+		return m_radiance->eval(lRec.uv);
 
 	}
 

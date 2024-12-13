@@ -1,0 +1,12 @@
+# Blender 4.3.0 MTL File: 'Prueba.blend'
+# www.blender.org
+
+newmtl HyruleShield_Wood_mat
+Ns 486.796875
+Ka 0.052292 0.052292 0.052292
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 3
