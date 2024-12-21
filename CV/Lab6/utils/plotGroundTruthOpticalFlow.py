@@ -98,11 +98,11 @@ if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=1024, suppress=True)
     unknownFlowThresh = 1e9
 
-    flow_12 = read_flo_file("flow10.flo", verbose=True)
+    flow_12 = read_flo_file("../data/flow10.flo", verbose=True)
     binUnknownFlow = flow_12 > unknownFlowThresh
 
-    img1 = read_image("frame10.png")
-    img2 = read_image("frame11.png")
+    img1 = read_image("../data/frame10.png")
+    img2 = read_image("../data/frame11.png")
 
 
     # Adding random noise to the gt optical flow for plotting example
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
 
     # List of sparse points
-    points_selected = np.loadtxt('points_selected.txt')
+    points_selected = np.loadtxt('../data/points_selected.txt')
 
     ## Sparse optical flow
     flow_gt = flow_12[points_selected[:, 1].astype(int), points_selected[:, 0].astype(int)].astype(float)
