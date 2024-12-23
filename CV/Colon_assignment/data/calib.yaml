@@ -1,0 +1,25 @@
+%YAML:1.0
+
+#File.version: "1.0"
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. 
+#--------------------------------------------------------------------------------------------
+Camera.type: "KannalaBrandt8"
+
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 727.1851
+Camera.fy: 728.5954
+Camera.cx: 668.1817
+Camera.cy: 507.4003
+
+# Distortion
+Camera.k1: -0.1311029
+Camera.k2: -0.005149247
+Camera.k3: 0.001512357
+Camera.k4: -6.998448e-05
+
+Camera.width: 1350
+Camera.height: 1012
+
+#----
