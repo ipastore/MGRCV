@@ -50,6 +50,7 @@ import random
 import numpy as np
 import matplotlib.cm as cm
 import torch
+import cv2
 
 
 from models.matching import Matching
@@ -276,7 +277,7 @@ if __name__ == '__main__':
             kpts0, kpts1 = pred['keypoints0'], pred['keypoints1']
             matches, conf = pred['matches0'], pred['matching_scores0']
             timer.update('matcher')
-
+            
             # Assuming kpts0, kpts1, matches, conf, pred['descriptors0'], pred['descriptors1'] are already defined
             dsc0 = pred['descriptors0']  # Descriptors from image 1
             dsc1 = pred['descriptors1']  # Descriptors from image 2
@@ -291,8 +292,8 @@ if __name__ == '__main__':
                 'descriptors1': dsc1   # Descriptors from image 2
             }
 
-            # Save the dictionary to a .npz file
-            np.savez(matches_path, **out_matches)
+            # # Save the dictionary to a .npz file
+            # np.savez(matches_path, **out_matches)
 
         # Keep the matching keypoints.
         valid = matches > -1
@@ -300,6 +301,66 @@ if __name__ == '__main__':
         mkpts1 = kpts1[matches[valid]]
         mconf = conf[valid]
 
+        # Parameters for RANSAC.
+
+        # #Flexible
+        # ransacReprojThreshold = 0.5
+        # confidence = 0.95
+
+        # # Harsh
+        # ransacReprojThreshold = 0.3
+        # confidence = 0.999
+
+
+        # More Flexible
+        ransacReprojThreshold = 2
+        confidence = 0.9
+
+
+        # Calculate F matrix from the matches and keypoints.
+        if len(mkpts0) >= 8:  
+            F, inlier_mask = cv2.findFundamentalMat(
+                mkpts0, mkpts1, method=cv2.FM_RANSAC, ransacReprojThreshold=ransacReprojThreshold,
+                confidence=confidence
+            )
+
+            # Define inliers mask
+            inliers = inlier_mask.ravel().astype(bool)
+            mkpts0_inliers = mkpts0[inliers]
+            mkpts1_inliers = mkpts1[inliers]
+            mconf_inliers = mconf[inliers]
+            
+            # Define outliers mask
+            outliers = ~inliers  
+
+            # Extract outliers
+            mkpts0_outliers = mkpts0[outliers]
+            mkpts1_outliers = mkpts1[outliers]
+            mconf_outliers = mconf[outliers]
+
+            # Add inliers and outliers to the dictionary
+            out_matches['inliers_keypoints0'] = mkpts0_inliers
+            out_matches['inliers_keypoints1'] = mkpts1_inliers
+            out_matches['inliers_confidence'] = mconf_inliers
+            out_matches['fundamental_matrix'] = F  # Add outliers to the dictionary
+            out_matches['outliers_keypoints0'] = mkpts0_outliers
+            out_matches['outliers_keypoints1'] = mkpts1_outliers
+            out_matches['outliers_confidence'] = mconf_outliers
+            out_matches['inlier_mask'] = inlier_mask  
+
+
+        else:
+            print("Not enough matches for RANSAC")
+            mkpts0_inliers = mkpts0
+            mkpts1_inliers = mkpts1
+            mconf_inliers = mconf
+            mkpts0_outliers = np.array([])
+            mkpts1_outliers = np.array([])
+            mconf_outliers = np.array([])
+            F = np.array([])
+
+        # Save the updated dictionary with inliers
+        np.savez(matches_path, **out_matches)
 
         if do_eval:
             # Estimate the pose and compute the pose error.
@@ -352,7 +413,10 @@ if __name__ == '__main__':
         if do_viz:
             # Visualize the matches.
             color = cm.jet(mconf)
-            text = [
+            color_inliers = cm.jet(mconf_inliers)
+            color_outliers = cm.jet(mconf_outliers)
+
+            text_matches = [
                 'SuperGlue',
                 'Keypoints: {}:{}'.format(len(kpts0), len(kpts1)),
                 'Matches: {}'.format(len(mkpts0)),
@@ -363,16 +427,55 @@ if __name__ == '__main__':
             # Display extra parameter info.
             k_thresh = matching.superpoint.config['keypoint_threshold']
             m_thresh = matching.superglue.config['match_threshold']
-            small_text = [
+            small_text_matches = [
                 'Keypoint Threshold: {:.4f}'.format(k_thresh),
                 'Match Threshold: {:.2f}'.format(m_thresh),
                 'Image Pair: {}:{}'.format(stem0, stem1),
             ]
+            
+            text_inliers = [
+                'SuperGlue',
+                'Keypoints: {}:{}'.format(len(kpts0), len(kpts1)),
+                'Inliers: {}'.format(len(mkpts0_inliers)),
+            ]
 
+            small_text_inliers = [
+                'Reprojection Threshold: {:.2f}'.format(ransacReprojThreshold),
+                'Confidence: {:.2f}'.format(confidence),
+                'Image Pair: {}:{}'.format(stem0, stem1)
+            ]
+
+            text_outliers = [
+                'SuperGlue',
+                'Keypoints: {}:{}'.format(len(kpts0), len(kpts1)),
+                'Outliers: {}'.format(len(mkpts0_outliers)),
+            ]
+
+            small_text_outliers = [
+                'Reprojection Threshold: {:.2f}'.format(ransacReprojThreshold),
+                'Confidence: {:.2f}'.format(confidence),
+                'Image Pair: {}:{}'.format(stem0, stem1)
+            ]
+
+            # Plot matches
             make_matching_plot(
                 image0, image1, kpts0, kpts1, mkpts0, mkpts1, color,
-                text, viz_path, opt.show_keypoints,
-                opt.fast_viz, opt.opencv_display, 'Matches', small_text)
+                text_matches, viz_path, opt.show_keypoints,
+                opt.fast_viz, opt.opencv_display, opencv_title='Matches', small_text=small_text_matches)
+            
+            # Plot inliers
+            viz_inliers_path = output_dir / '{}_{}_inliers.{}'.format(stem0, stem1, opt.viz_extension)
+            make_matching_plot(
+                image0, image1, kpts0, kpts1, mkpts0_inliers, mkpts1_inliers, color_inliers,
+                text_inliers, viz_inliers_path, opt.show_keypoints,
+                opt.fast_viz, opt.opencv_display, opencv_title='Inliers', small_text=small_text_inliers)
+            
+            # Plot outliers
+            viz_outliers_path = output_dir / '{}_{}_outliers.{}'.format(stem0, stem1, opt.viz_extension)
+            make_matching_plot(
+                image0, image1, kpts0, kpts1, mkpts0_outliers, mkpts1_outliers, color_outliers,
+                text_outliers, viz_outliers_path, opt.show_keypoints,
+                opt.fast_viz, opt.opencv_display, opencv_title='Outliers', small_text=small_text_outliers)
 
             timer.update('viz_match')
 

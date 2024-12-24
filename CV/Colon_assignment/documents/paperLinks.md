@@ -15,3 +15,8 @@ https://github.com/cvg/LightGlue
 
 # Super glue (to use COLMAP)
 https://github.com/magicleap/SuperGluePretrainedNetwork
+
+# Commands
+./match_pairs.py --input_pairs assets/colon_pairs_superglue.txt  --input_dir ../../data/Seq_027/ --output_dir colon_matches/ --viz --fastviz
+
+python ./manipulate_npz.py

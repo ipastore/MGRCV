@@ -452,7 +452,7 @@ def plot_matches(kpts0, kpts1, color, lw=1.5, ps=4):
 def make_matching_plot(image0, image1, kpts0, kpts1, mkpts0, mkpts1,
                        color, text, path, show_keypoints=False,
                        fast_viz=False, opencv_display=False,
-                       opencv_title='matches', small_text=[]):
+                       opencv_title='', small_text=[]):
 
     if fast_viz:
         make_matching_plot_fast(image0, image1, kpts0, kpts1, mkpts0, mkpts1,
