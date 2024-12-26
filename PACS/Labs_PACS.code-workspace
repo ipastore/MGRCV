@@ -15,6 +15,12 @@
 		{
 			"name": "Assignment3",
 			"path": "Assignment3"
+		},
+		{
+			"path": "Assignment5"
+		},
+		{
+			"path": "Assignment6"
 		}
 	],
 	"settings": {
@@ -110,6 +116,7 @@
 		],
 		"python.analysis.extraPaths": [
 			"/opt/ros/noetic/lib/python3/dist-packages"
-		]
+		],
+		"OpenCL.explorer.localizedProperties": false
 	}
 }
