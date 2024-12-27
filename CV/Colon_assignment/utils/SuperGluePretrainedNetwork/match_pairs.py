@@ -177,7 +177,10 @@ if __name__ == '__main__':
                 'File \"{}\" needs 38 valid entries per row'.format(opt.input_pairs))
 
     # Load the SuperPoint and SuperGlue models.
-    device = 'cuda' if torch.cuda.is_available() and not opt.force_cpu else 'cpu'
+    # device = 'cuda' if torch.cuda.is_available() and not opt.force_cpu else 'cpu'
+    
+    device = 'mps' if torch.backends.mps.is_available() else 'cpu'
+
     print('Running inference on device \"{}\"'.format(device))
     config = {
         'superpoint': {
@@ -278,18 +281,11 @@ if __name__ == '__main__':
             matches, conf = pred['matches0'], pred['matching_scores0']
             timer.update('matcher')
             
-            # Assuming kpts0, kpts1, matches, conf, pred['descriptors0'], pred['descriptors1'] are already defined
-            dsc0 = pred['descriptors0']  # Descriptors from image 1
-            dsc1 = pred['descriptors1']  # Descriptors from image 2
 
             # Dictionary to hold the keypoints, matches, match confidence, and descriptors
             out_matches = {
                 'keypoints0': kpts0,  # Keypoints from image 1
                 'keypoints1': kpts1,  # Keypoints from image 2
-                'matches': matches,   # Match indices between keypoints
-                'match_confidence': conf,  # Confidence scores of the matches
-                'descriptors0': dsc0,  # Descriptors from image 1
-                'descriptors1': dsc1   # Descriptors from image 2
             }
 
             # # Save the dictionary to a .npz file
@@ -303,9 +299,9 @@ if __name__ == '__main__':
 
         # Parameters for RANSAC.
 
-        # #Flexible
-        # ransacReprojThreshold = 0.5
-        # confidence = 0.95
+        # #Kind of Flexible
+        # ransacReprojThreshold = 1
+        # confidence = 0.999
 
         # # Harsh
         # ransacReprojThreshold = 0.3
@@ -313,8 +309,10 @@ if __name__ == '__main__':
 
 
         # More Flexible
-        ransacReprojThreshold = 2
-        confidence = 0.9
+        ransacReprojThreshold = 4
+        confidence = 0.9999
+
+        # TODO: UNDISTORT fisheye
 
 
         # Calculate F matrix from the matches and keypoints.
@@ -323,30 +321,22 @@ if __name__ == '__main__':
                 mkpts0, mkpts1, method=cv2.FM_RANSAC, ransacReprojThreshold=ransacReprojThreshold,
                 confidence=confidence
             )
+            timer.update('F_RANSAC')
+
 
             # Define inliers mask
             inliers = inlier_mask.ravel().astype(bool)
             mkpts0_inliers = mkpts0[inliers]
             mkpts1_inliers = mkpts1[inliers]
             mconf_inliers = mconf[inliers]
+            timer.update('inliers')
+
             
-            # Define outliers mask
-            outliers = ~inliers  
-
-            # Extract outliers
-            mkpts0_outliers = mkpts0[outliers]
-            mkpts1_outliers = mkpts1[outliers]
-            mconf_outliers = mconf[outliers]
-
-            # Add inliers and outliers to the dictionary
-            out_matches['inliers_keypoints0'] = mkpts0_inliers
-            out_matches['inliers_keypoints1'] = mkpts1_inliers
-            out_matches['inliers_confidence'] = mconf_inliers
-            out_matches['fundamental_matrix'] = F  # Add outliers to the dictionary
-            out_matches['outliers_keypoints0'] = mkpts0_outliers
-            out_matches['outliers_keypoints1'] = mkpts1_outliers
-            out_matches['outliers_confidence'] = mconf_outliers
-            out_matches['inlier_mask'] = inlier_mask  
+            #Find index of the mktps in the original kpts
+            mkpts0_inlier_idx = [np.where((kpts0 == mkpt).all(axis=1))[0][0] for mkpt in mkpts0_inliers]
+            timer.update('inliers0_idx')
+            mkpts1_inlier_idx = [np.where((kpts1 == mkpt).all(axis=1))[0][0] for mkpt in mkpts1_inliers]
+            timer.update('inliers0_idx')
 
 
         else:
@@ -354,10 +344,12 @@ if __name__ == '__main__':
             mkpts0_inliers = mkpts0
             mkpts1_inliers = mkpts1
             mconf_inliers = mconf
-            mkpts0_outliers = np.array([])
-            mkpts1_outliers = np.array([])
-            mconf_outliers = np.array([])
-            F = np.array([])
+            mkpts0_inlier_idx = np.array([])
+            mkpts1_inlier_idx = np.array([])
+
+        # Add inliers_idxs
+        out_matches['inliers0_idx'] = mkpts0_inlier_idx
+        out_matches['inliers1_idx'] = mkpts1_inlier_idx
 
         # Save the updated dictionary with inliers
         np.savez(matches_path, **out_matches)
@@ -414,7 +406,6 @@ if __name__ == '__main__':
             # Visualize the matches.
             color = cm.jet(mconf)
             color_inliers = cm.jet(mconf_inliers)
-            color_outliers = cm.jet(mconf_outliers)
 
             text_matches = [
                 'SuperGlue',
@@ -445,17 +436,6 @@ if __name__ == '__main__':
                 'Image Pair: {}:{}'.format(stem0, stem1)
             ]
 
-            text_outliers = [
-                'SuperGlue',
-                'Keypoints: {}:{}'.format(len(kpts0), len(kpts1)),
-                'Outliers: {}'.format(len(mkpts0_outliers)),
-            ]
-
-            small_text_outliers = [
-                'Reprojection Threshold: {:.2f}'.format(ransacReprojThreshold),
-                'Confidence: {:.2f}'.format(confidence),
-                'Image Pair: {}:{}'.format(stem0, stem1)
-            ]
 
             # Plot matches
             make_matching_plot(
@@ -470,12 +450,6 @@ if __name__ == '__main__':
                 text_inliers, viz_inliers_path, opt.show_keypoints,
                 opt.fast_viz, opt.opencv_display, opencv_title='Inliers', small_text=small_text_inliers)
             
-            # Plot outliers
-            viz_outliers_path = output_dir / '{}_{}_outliers.{}'.format(stem0, stem1, opt.viz_extension)
-            make_matching_plot(
-                image0, image1, kpts0, kpts1, mkpts0_outliers, mkpts1_outliers, color_outliers,
-                text_outliers, viz_outliers_path, opt.show_keypoints,
-                opt.fast_viz, opt.opencv_display, opencv_title='Outliers', small_text=small_text_outliers)
 
             timer.update('viz_match')
 
