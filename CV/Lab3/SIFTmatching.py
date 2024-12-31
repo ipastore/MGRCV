@@ -542,11 +542,11 @@ if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=1024, suppress=True)
     
     # Flags exercices
-    flg_exercise_1 = True
-    flg_exercise_2 = True
-    flg_exercise_4 = True
-    flg_exercise_4_1 = True
-    flg_exercise_5 = True
+    flg_exercise_1 = False
+    flg_exercise_2 = False
+    flg_exercise_4 = False
+    flg_exercise_4_1 = False
+    flg_exercise_5 = False
     flg_exercise_5_1 = True
 
     # Images path
@@ -849,7 +849,7 @@ if __name__ == '__main__':
         
         # Convert keypoints from arrays to OpenCV KeyPoint format
         def array_to_keypoints(array):
-            return [cv2.KeyPoint(x=float(pt[0]), y=float(pt[1]), _size=1) for pt in array]
+            return [cv2.KeyPoint(x=float(pt[0]), y=float(pt[1]), size=1) for pt in array]
 
         keypoints0_SG_cv = array_to_keypoints(keypoints0_SG)
         keypoints1_SG_cv = array_to_keypoints(keypoints1_SG)
