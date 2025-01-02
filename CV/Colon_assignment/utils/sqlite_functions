@@ -1,0 +1,39 @@
+import sqlite3
+import json
+import numpy as np
+from cv_functions import compute_essential_matrix, decompose_essential_matrix
+
+
+
+def extract_R_t_from_F(db_name, image_name1, image_name2, K):
+    """
+    Extract R and t from the F matrix stored in the database for a pair of images.
+    :param db_name: Path to the database.
+    :param image_name1: First image name.
+    :param image_name2: Second image name.
+    :param K: Camera intrinsic matrix.
+    :return: Possible rotation matrices (R1, R2) and translation vector (t).
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # Retrieve the F matrix for the image pair
+    pair_id = f"{image_name1}_{image_name2}"
+    cursor.execute("SELECT F FROM two_view_geometries WHERE pair_id = ?;", (pair_id,))
+    result = cursor.fetchone()
+
+    if result is None:
+        conn.close()
+        raise ValueError(f"Fundamental matrix not found for pair: {pair_id}")
+
+    F_json = result[0]
+    F = np.array(json.loads(F_json))
+
+    # Compute the Essential matrix
+    E = compute_essential_matrix(F, K)
+
+    # Decompose the Essential matrix to extract R and t
+    R1, R2, t = decompose_essential_matrix(E)
+
+    conn.close()
+    return R1, R2, t
