@@ -293,7 +293,6 @@ def solvePnP(objectPoints, imagePoints, cameraMatrix, distCoeffs=None,
 
     return retval, rvec_est, tvec_est
 
-
 def pnp(pts_3D, pts_2D, K):
     """
     Simple PnP implementation using least squares optimization.
@@ -336,18 +335,99 @@ def reprojection_error(params, pts_3D, pts_2D, K):
     projected_pts = (K @ (R @ pts_3D.T + t.reshape(-1, 1))).T
     projected_pts /= projected_pts[:, 2].reshape(-1, 1)  # Normalize
     residuals = (projected_pts[:, :2] - pts_2D).ravel()
-    
-    # Debugging: Check for NaN or infinite values
-    if not np.all(np.isfinite(residuals)):
-        print("Non-finite residuals detected")
-        print("R_vec:", R_vec)
-        print("t:", t)
-        print("projected_pts:", projected_pts)
-        print("residuals:", residuals)
+
+    print(np.sum(np.abs(residuals)))
     
     return residuals
 
+def project_points(pts_3d, R, t, K):
+    proj_pts = []
+    for X in pts_3d:
+        Xc = R @ X + t
+        u = K[0,0]*(Xc[0]/Xc[2]) + K[0,2]
+        v = K[1,1]*(Xc[1]/Xc[2]) + K[1,2]
+        proj_pts.append([u,v])
+    return np.array(proj_pts)
 
+def reprojection_error_for_pnp(params, pts_3D, pts_2D, K):
+    R_vec, t = params[:3], params[3:]
+    R = rodriguesToRmat(R_vec)
+    T = ensamble_T(R, t)
+    P = get_projection_matrix(K, T)
+    
+    pts_2D = pts_2D.T
+    pts_3D = pts_3D.T
+    pts_3D_h = np.vstack((pts_3D, np.ones(pts_3D.shape[1])))
+    projected_pts = project_to_camera(P, pts_3D_h)
+    residuals = (projected_pts[:2, :] - pts_2D[:2])
+
+    residuals= residuals.ravel()
+
+    print(np.sum(np.abs(residuals)))
+
+    return residuals
+
+def project_to_camera(P, X_h):
+    """Project homogeneous 3D points X_h to 2D using projection matrix P."""
+    # Ensure X_h is in the shape (4, nPoints)
+    if X_h.shape[0] != 4:
+        raise ValueError(f"Expected X_h with shape (4, nPoints), but got shape {X_h.shape}")
+    
+    # Ensure P is in the shape (3, 4)
+    if P.shape != (3, 4):
+        raise ValueError(f"Expected P with shape (3, 4), but got shape {P.shape}")
+    
+    x_h_projected = P @ X_h
+    x_h_projected /= x_h_projected[2, :]  # Normalize by the third coordinate
+    
+    return x_h_projected
+
+def get_projection_matrix(K, T):
+    """
+    Computes the projection matrix (3x4) from camera matrix (K) and transformation matrix (T).
+    - Inputs:
+        · K (np.array): Camera intrinsic matrix (3x3).
+        · T (np.array): Transformation matrix (4x4).
+    - Output:
+        · np.array: Projection matrix.
+    """
+    if T.shape != (4, 4):
+        raise ValueError(f"Expected T with shape (4, 4), but got shape {T.shape}")
+    
+    Rt = T[:3, :]  # Extract the top 3 rows (3x4) from the 4x4 transformation matrix
+    P = K @ Rt     # Multiply by the intrinsic matrix to get a 3x4 projection matrix
+    return P
+
+def ensamble_T(R_w_c, t_w_c) -> np.array:
+    """
+    Ensamble the a SE(3) matrix with the rotation matrix and translation vector.
+    """
+    
+    T_w_c = np.zeros((4, 4))
+    T_w_c[0:3, 0:3] = R_w_c
+    T_w_c[0:3, 3] = t_w_c.flatten()
+    T_w_c[3, 3] = 1
+    return T_w_c
+
+def pnp_full_own(pts_3D, pts_2D, K):
+    """
+    Simple PnP implementation using least squares optimization.
+    :param pts_3D: Nx3 array of 3D points.
+    :param pts_2D: Nx2 array of 2D image points.
+    :param K: 3x3 camera intrinsic matrix.
+    :return: Rotation matrix (3x3) and translation vector (3x1).
+    """
+
+
+    # Initial guess: no rotation, translation based on the centroid of 3D points
+    centroid_3D = np.mean(pts_3D, axis=0)
+    initial_guess = np.zeros(6)
+    initial_guess[3:] = centroid_3D - (centroid_3D/2)  # Use the negative centroid as an initial guess for translation
+
+    result = least_squares(reprojection_error_for_pnp, initial_guess, args=(pts_3D, pts_2D, K))
+    
+    R_vec, t = result.x[:3], result.x[3:]
+    return R_vec, t
 
 # ---------------------------
 # Example usage (toy example)
@@ -382,14 +462,7 @@ if __name__ == "__main__":
                     [ 0,  fy, cy],
                     [ 0,   0,  1]], dtype=np.float64)
 
-    def project_points(pts_3d, R, t, K):
-        proj_pts = []
-        for X in pts_3d:
-            Xc = R @ X + t
-            u = K[0,0]*(Xc[0]/Xc[2]) + K[0,2]
-            v = K[1,1]*(Xc[1]/Xc[2]) + K[1,2]
-            proj_pts.append([u,v])
-        return np.array(proj_pts)
+
 
     img_pts = project_points(obj_pts, R_gt, t_gt, K_c)
 
@@ -416,4 +489,12 @@ if __name__ == "__main__":
 
     print("Estimated R (naive) =", R_est)
     print("Estimated t (naive) =", t_est)
+
+    ###### FULL PNP ######
+    # Now let's compare with our full PnP implementation
+    R_est, t_est = pnp_full_own(obj_pts, img_pts, K_c)
+
+    print("Estimated R (full) =", R_est)
+    print("Estimated t (full) =", t_est)
+
 

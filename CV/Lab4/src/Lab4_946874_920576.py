@@ -849,8 +849,8 @@ if __name__ == '__main__':
         # intial_guess = np.hstack((theta_c2_c1_initial, t_c2_c1_initial, X_c1_w_initial[:3, :].flatten())) 
         
         t_norm = np.linalg.norm(t_c2_c1_initial, axis=-1)
-        t_theta = np.arccos(t[2]/t_norm)
-        t_phi = np.arctan2(t[1], t[0])
+        t_theta = np.arccos(t_c2_c1_initial[2]/t_norm)
+        t_phi = np.arctan2(t_c2_c1_initial[1], t_c2_c1_initial[0])
 
 
         intial_guess = np.hstack((theta_c2_c1_initial, t_theta, t_phi, X_c1_w_initial[:3, :].flatten())) 
@@ -920,7 +920,6 @@ if __name__ == '__main__':
         
         #Opt
         T_c1_c2_opt = np.linalg.inv(T_c2_c1_opt)
-
 
 
         #Scale

@@ -10,6 +10,8 @@ import csv
 import scipy as sc
 import scipy.io as sio
 import cv2
+import sqlite3
+from collections import defaultdict
 
 
 #################################################### CV FUNCTIONS ####################################################
@@ -63,7 +65,7 @@ def is_valid_pose(X, P1, P2):
 
     return np.all(depth1 > 1e-6) and np.all(depth2 > 0)
 
-#TODO: Need to check the projection of the second camera (or maybe is the plotting)
+#BUG?: Need to check the projection of the second camera (or maybe is the plotting). 
 def count_valid_points(X, P1, P2):
     """
      Count the number of valid points in front of both cameras.
@@ -73,15 +75,14 @@ def count_valid_points(X, P1, P2):
         - Output:
             · int: Number of valid points
     """
-    #DEBUG
-
     depth1 = P1[2, :] @ X
     depth2 = P2[2, :] @ X
     # valid_depths = (depth1 > 1e-6) & (depth2 > 1e-6)
     valid_depths1 = depth1 > 1e-6
+    valid_depths2 = depth2 > 1e-6
     ##################################### CHECK IF IT IS CORRECT ######################################
-    # HARDCODE to negativa, check future if it is correct
-    valid_depths2 = depth2 < 1e-6
+    # HARDCODE to negative, check in future if it is correct
+    # valid_depths2 = depth2 < 1e-6
     #################################################################################################### 
     count_valid_depths1 = np.sum(valid_depths1)
     count_valid_depths2 = np.sum(valid_depths2)
@@ -118,25 +119,36 @@ def select_correct_pose_harsh(x1_h, x2_h, K1, K2, R1, R2, t):
     X4 = triangulate_points(x1_h, x2_h, P1, P2_4)
 
     ##Plot the 3D cameras and the 3D points
-    #P2_1
+    #Ensemble T
+    T1 = ensamble_T(R1, t)
+    T2 = ensamble_T(R1, -t)
+    T3 = ensamble_T(R2, t)
+    T4 = ensamble_T(R2, -t)
+
+    # Transpose T
+    T1 = np.linalg.inv(T1)
+    T2 = np.linalg.inv(T2)
+    T3 = np.linalg.inv(T3)
+    T4 = np.linalg.inv(T4)
+    
 
     ax = plt.axes(projection='3d', adjustable='box')
-    fig3D = draw_possible_poses(ax, R1_t, X1)
+    fig3D = draw_possible_poses(ax, T1, X1)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R1_t')
     plt.show()
     #P2_2
-    fig3D = draw_possible_poses(ax, R1_minust, X2)
+    fig3D = draw_possible_poses(ax, T2, X2)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R1_minust')
     plt.show()
     #P2_3
-    fig3D = draw_possible_poses(ax, R2_t, X3)
+    fig3D = draw_possible_poses(ax, T3, X3)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R2_t')
     plt.show()
     #P2_4
-    fig3D = draw_possible_poses(ax, R2_minust, X4)
+    fig3D = draw_possible_poses(ax, T4, X4)
     adjust_plot_limits(ax, X1)
     plt.title('Possible Pose R2_minust')
     plt.show()
@@ -162,7 +174,7 @@ def select_correct_pose_harsh(x1_h, x2_h, K1, K2, R1, R2, t):
         print("No valid pose found, try with a different method")
         return None, None, None
 
-def select_correct_pose_flexible(x1_h, x2_h, K1, K2, R1, R2, t):
+def select_correct_pose_flexible(x1_h, x2_h, K1, K2, R1, R2, t, plot_FLAG = False):
     """
     Select the best pose from the four possible solutions.
     """
@@ -185,31 +197,33 @@ def select_correct_pose_flexible(x1_h, x2_h, K1, K2, R1, R2, t):
     X3 = triangulate_points(x1_h, x2_h, P1, P2_3)
     X4 = triangulate_points(x1_h, x2_h, P1, P2_4)
     
-    ##Plot the 3D cameras and the 3D points
-    #P2_1
-    ax = plt.axes(projection='3d', adjustable='box')
-    fig3D = draw_possible_poses(ax, R1_t, X1)
-    adjust_plot_limits(ax, X1)
-    plt.title('Possible Pose R1_t')
-    plt.show()
-    #P2_2
-    fig3D = draw_possible_poses(ax, R1_minust, X2)
-    adjust_plot_limits(ax, X1)
-    plt.title('Possible Pose R1_minust')
-    plt.show()
-    #P2_3
-    fig3D = draw_possible_poses(ax, R2_t, X3)
-    adjust_plot_limits(ax, X1)
-    plt.title('Possible Pose R2_t')
-    plt.show()
-    #P2_4
-    fig3D = draw_possible_poses(ax, R2_minust, X4)
-    adjust_plot_limits(ax, X1)
-    plt.title('Possible Pose R2_minust')
-    plt.show()
+    if plot_FLAG:
+        ##Plot the 3D cameras and the 3D points
+        #P2_1
+        ax = plt.axes(projection='3d', adjustable='box')
+        fig3D = draw_possible_poses(ax, R1_t, X1)
+        adjust_plot_limits(ax, X1)
+        plt.title('Possible Pose R1_t')
+        plt.show()
+        #P2_2
+        fig3D = draw_possible_poses(ax, R1_minust, X2)
+        adjust_plot_limits(ax, X1)
+        plt.title('Possible Pose R1_minust')
+        plt.show()
+        #P2_3
+        fig3D = draw_possible_poses(ax, R2_t, X3)
+        adjust_plot_limits(ax, X1)
+        plt.title('Possible Pose R2_t')
+        plt.show()
+        #P2_4
+        fig3D = draw_possible_poses(ax, R2_minust, X4)
+        adjust_plot_limits(ax, X1)
+        plt.title('Possible Pose R2_minust')
+        plt.show()
 
 
     # Count valid points for each pose
+    # BUG: Check why depths in camera2 are negative
     valid_counts = [
         count_valid_points(X1, P1, P2_1),
         count_valid_points(X2, P1, P2_2),
@@ -477,20 +491,161 @@ def select_pose_with_lowest_epipolar_error(x1_h, x2_h, K1, K2, R1, R2, t):
 
     return poses[best_idx][0], poses[best_idx][1], errors[best_idx], Fs[best_idx]
 
+def own_PnP(pts_3D, pts_2D, K, initial_guess):
+    """
+    Simple PnP implementation using least squares optimization.
+    :param pts_3D: Nx3 array of 3D points.
+    :param pts_2D: Nx2 array of 2D image points.
+    :param K: 3x3 camera intrinsic matrix.
+    :return: Rotation matrix (3x3) and translation vector (3x1).
+    """
+
+    # Old initial guess for testing and debugging
+    # # Initial guess: no rotation, translation based on the centroid of 3D points
+    # centroid_3D = np.mean(pts_3D, axis=0)
+    # initial_guess = np.zeros(6)
+    # initial_guess[3:] = centroid_3D - (centroid_3D/2)  # Use the negative centroid as an initial guess for translation
+
+    result = least_squares(reprojection_error_for_pnp, initial_guess, args=(pts_3D, pts_2D, K))
+    
+    R_vec, t = result.x[:3], result.x[3:]
+    return R_vec, t
+
+def reprojection_error_for_pnp(params, pts_3D, pts_2D, K):
+   
+    R_vec, t = params[:3], params[3:]
+    R = expm(crossMatrix(R_vec))
+    T = ensamble_T(R, t)
+    P = get_projection_matrix(K, T)
+    
+    pts_3D = pts_3D.T
+    pts_3D_h = np.vstack((pts_3D, np.ones(pts_3D.shape[1])))
+    projected_pts = project_to_camera(P, pts_3D_h)
+    residuals = projected_pts[:2, :] - pts_2D[:]
+
+    residuals= residuals.ravel()
+
+    print(np.sum(np.abs(residuals)))
+
+    return residuals
+
+
+def triangulate_new_points_for_pair(db_name, adjacency, images_info,
+                                    c1_id, c2_id,
+                                    R_c2_c1, t_c2_c1,
+                                    K, plot_residuals=False, img1=None, img2=None,
+                                    T_c1_c2=None):
+
+    # 1) Find untriangulated pairs
+    new_matches = find_untriangulated_matches(images_info, adjacency, c1_id, c2_id)
+    if not new_matches:
+        print(f"No new matches to triangulate between {c1_id} and {c2_id}")
+        return
+
+    # 2) Gather pixel coords
+    pts2d_c1 = []
+    pts2d_c2 = []
+    for (kp1, kp2) in new_matches:
+        (c1, r1) = images_info[c1_id]["keypoints"][kp1]  # (col, row)
+        (c2, r2) = images_info[c2_id]["keypoints"][kp2]
+        # reorder to (x,y) => (col,row)
+        pts2d_c1.append([c1, r1])
+        pts2d_c2.append([c2, r2])
+
+    pts2d_c1 = np.array(pts2d_c1, dtype=np.float64).T  # shape (2, N)
+    pts2d_c2 = np.array(pts2d_c2, dtype=np.float64).T  # shape (2, N)
+
+    # 3) Triangulate
+    # P1 is identity matrix
+    P1 = get_projection_matrix(K, np.eye(4))
+    P2 = get_projection_matrix(K, ensamble_T(R_c2_c1, t_c2_c1))
+
+    
+    X_c1 = triangulate_points(pts2d_c2, pts2d_c1, P1, P2)
+    print(f"Triangulated {X_c1.shape[1]} new 3D points from cameras {c1_id} & {c2_id}.")
+    
+    if T_c1_c2 is not None:
+        X_c1 = np.dot(T_c1_c2, X_c1)
+        
+    if plot_residuals:
+        fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+        visualize_residuals(img1, pts2d_c1, project_to_camera(P1, X_c1), "Residuals for camera 1", ax=axs[0])
+        visualize_residuals(img2, pts2d_c2, project_to_camera(P2, X_c1), "Residuals for camera 2", ax=axs[1])
+        plt.tight_layout()
+        plt.show()
+
+    # 4) Insert 3D points into DB & memory
+    insert_3d_points_in_memory_and_db(
+        db_name, images_info,
+        X_c1, new_matches,
+        c1_id, c2_id
+    )
+
+    print("Done inserting new 3D points.")
+
+    return X_c1
+
+def triangulate_new_points_for_pair_with_translation(db_name, adjacency, images_info,
+                                    c1_id, c2_id,
+                                    R_c3_c2, t_c3_c2, K, T_c1_c2,
+                                    plot_residuals= False, img1=None, img2=None,
+                                    ):
+
+    # 1) Find untriangulated pairs
+    new_matches = find_untriangulated_matches(images_info, adjacency, c1_id, c2_id)
+    if not new_matches:
+        print(f"No new matches to triangulate between {c1_id} and {c2_id}")
+        return
+
+    # 2) Gather pixel coords
+    pts2d_c1 = []
+    pts2d_c2 = []
+    for (kp1, kp2) in new_matches:
+        (c1, r1) = images_info[c1_id]["keypoints"][kp1]  # (col, row)
+        (c2, r2) = images_info[c2_id]["keypoints"][kp2]
+        # reorder to (x,y) => (col,row)
+        pts2d_c1.append([c1, r1])
+        pts2d_c2.append([c2, r2])
+
+    pts2d_c1 = np.array(pts2d_c1, dtype=np.float64).T  # shape (2, N)
+    pts2d_c2 = np.array(pts2d_c2, dtype=np.float64).T  # shape (2, N)
+
+    # 3) Triangulate
+    # P1 is identity matrix
+    P1 = np.hstack((np.eye(3), np.zeros((3, 1))))
+    P2 = get_projection_matrix(K, ensamble_T(R_c3_c2, t_c3_c2))
+
+    X_c2 = triangulate_points(pts2d_c1, pts2d_c2, P1, P2)
+    print(f"Triangulated {X_c2.shape[1]} new 3D points from cameras {c1_id} & {c2_id}.")
+
+    #4) Change of coordinates
+    X_c1 = np.dot(T_c1_c2, X_c2)
+
+    # 5) Insert 3D points into DB & memory
+    insert_3d_points_in_memory_and_db(
+        db_name, images_info,
+        X_c1, new_matches,
+        c1_id, c2_id
+    )
+
+    print("Done inserting new 3D points.")
+
+    return X_c1
+
 #endregion
 
     
 #################################################### PLOTTING FUNCTIONS ####################################################
 #region Plotting FUNCTIOS
-
-def draw_possible_poses(ax, Rt, X):
+# BUG: Check if the plotting is correct: should use the inverse T for rt
+def draw_possible_poses(ax, T_w_c, X):
     fig3D = plt.figure()
     ax = plt.axes(projection='3d', adjustable='box')
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     drawRefSystem(ax, np.eye(4, 4), '-', 'C1')
-    drawRefSystem(ax, Rt, '-', 'C2')
+    drawRefSystem(ax, T_w_c, '-', 'C2')
     ax.scatter(X[0, :], X[1, :], X[2, :], marker='.', color='r')
 
     return fig3D
@@ -604,7 +759,7 @@ def visualize_residuals(image, observed_points, projected_points, title, ax=None
     ax.set_title(title)
     ax.legend()
 
-def visualize_3D_w_2cameras(T_w_c1, T_w_c2, X_w):
+def visualize_3D_3cameras(T_c1_c2, T_c1_c3, X, adjust_plot_limits=True):
     """
     Plot the 3D cameras and the 3D points.
     """
@@ -614,11 +769,11 @@ def visualize_3D_w_2cameras(T_w_c1, T_w_c2, X_w):
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
 
-    drawRefSystem(ax, np.eye(4, 4), '-', 'W')
-    drawRefSystem(ax, T_w_c1, '-', 'C1')
-    drawRefSystem(ax, T_w_c2, '-', 'C2')
+    drawRefSystem(ax, np.eye(4, 4), '-', 'C1')
+    drawRefSystem(ax, T_c1_c2, '-', 'C2')
+    drawRefSystem(ax, T_c1_c3, '-', 'C3')
 
-    ax.scatter(X_w[0, :], X_w[1, :], X_w[2, :], marker='.')
+    ax.scatter(X[0, :], X[1, :], X[2, :], marker='.')
     # plotNumbered3DPoints(ax, X_w, 'r', 0.1)
 
     # Matplotlib does not correctly manage the axis('equal')
@@ -628,9 +783,10 @@ def visualize_3D_w_2cameras(T_w_c1, T_w_c2, X_w):
     plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
     
     # Optional: set plot limits to manage scale and view
-    ax.set_xlim([2,-2])
-    ax.set_ylim([2,-2])
-    ax.set_zlim([3,-1])
+    if adjust_plot_limits:
+        ax.set_xlim([2,-2])
+        ax.set_ylim([2,-2])
+        ax.set_zlim([3,-1])
 
 
     print('Close the figure to continue. Left button for orbit, right button for zoom.')
@@ -668,24 +824,21 @@ def visualize_3D_c1_2cameras(T_c2_c1, X_c1_w):
 
     plt.show()  
 
-def visualize_3D_comparison(ax, T_c1_c2, X_c1_w, T_c2_c1_initial, X_c1_w_initial, T_c2_c1_opt, X_c1_w_opt):
+def visualize_3D_comparison(ax, T_c1_c2_initial, X_c1_w_initial, T_c1_c2_opt, X_c1_w_opt):
     """
     Plot the 3D cameras and the 3D points for ground truth, initial guess, and optimized solution.
     - Ground truth: uses T_w_c1, T_w_c2, X_w
-    - Initial: uses T_c2_c1_initial, X_c1_w_initial
-    - Optimized: uses T_c2_c1_opt, X_c1_w_opt
+    - Initial: uses T_c1_c2_initial, X_c1_w_initial
+    - Optimized: uses T_c1_c2_opt, X_c1_w_opt
     """
-    # Ground Truth (World Frame)
-    drawRefSystem(ax, np.eye(4), '-', 'C1 (Ground Truth)')
-    drawRefSystem(ax, T_c1_c2, '-', 'C2 (Ground Truth)')
-    ax.scatter(X_c1_w[0, :], X_c1_w[1, :], X_c1_w[2, :], marker='o', color='g', label='3D Points (Ground Truth)')
 
     # Initial Guess (Camera 1 Frame)
-    drawRefSystem(ax, T_c2_c1_initial, '--', 'C2 (Initial)')
+    drawRefSystem(ax, np.eye(4), '-', 'C1')
+    drawRefSystem(ax, T_c1_c2_initial, '--', 'C2 (Initial)')
     ax.scatter(X_c1_w_initial[0, :], X_c1_w_initial[1, :], X_c1_w_initial[2, :], marker='^', color='b', label='3D Points (Initial)')
 
     # Optimized Solution (Camera 1 Frame)
-    drawRefSystem(ax, T_c2_c1_opt, '-.', 'C2 (Optimized)')
+    drawRefSystem(ax, T_c1_c2_opt, '-.', 'C2 (Optimized)')
     ax.scatter(X_c1_w_opt[0, :], X_c1_w_opt[1, :], X_c1_w_opt[2, :], marker='x', color='r', label='3D Points (Optimized)')
 
     # Labels and Legend
@@ -824,13 +977,17 @@ def visualize_epipolar_lines(F, img1, img2, show_epipoles=False):
     # Configuración del primer subplot
     ax1.set_xlabel('Coordinates X (píxeles)')
     ax1.set_ylabel('Coordinates Y (píxeles)')
-    ax1.imshow(img1) 
+    ax1.imshow(img1)
+    ax1.set_xlim([0, img1.shape[1]])
+    ax1.set_ylim([img1.shape[0], 0])
     ax1.set_title('Image 1 - Select Point')
     
     # Segundo subplot para la segunda imagen
     ax2.set_xlabel('Coordinates X (píxeles)')
     ax2.set_ylabel('Coordinates Y (píxeles)')
     ax2.imshow(img2)
+    ax2.set_xlim([0, img2.shape[1]])
+    ax2.set_ylim([img2.shape[0], 0])
     ax2.set_title('Image 2 - Epipolar Lines')
 
     # Connect the click event on image 1 to the handler
@@ -862,20 +1019,19 @@ def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints):
 # Extract rotation vector (theta) and translation vector (t) from Op
 # TODO: Habria que ajustar escala con vector unitario de t
  
-    theta = Op[:3]              # Rotation vector
+    theta = Op[:3]              # Rotation vector (Rvec)
     # t = Op[3:6]
     # Translation vector
     t_theta = Op[3]
     t_phi = Op [4]
-    t = np.array([np.sin(t_theta)*np.cos(t_phi), np.sin(t_theta)*np.sin(t_phi), np.cos(t_theta)])
-        
+    t = np.array([np.sin(t_theta)*np.cos(t_phi), np.sin(t_theta)*np.sin(t_phi), np.cos(t_theta)])   # Rodrigues vector
+
 
     X = Op[5:].reshape(3,-1)  # Reshape 3D points to (nPoints, 3)
     
     # Convert rotation vector to rotation matrix using matrix exponential
     R = expm(crossMatrix(theta))
 
-    
     # Define the projection matrix for camera 1 (identity rotation and zero translation)
     P1 = K_c @ np.hstack((np.eye(3), np.zeros((3, 1))))
 
@@ -973,10 +1129,186 @@ def resBundleProjection3Views12DoF(Op, x1Data, x2Data, x3Data, K_c, nPoints):
 
     return residuals
 
+def run_incremental_ba(db_name, camera_data, obs_list, points_3d_dict, K):
+    """
+    camera_data: a dict containing 'fixed' or 'free' for each camera, 
+                 plus rvec/tvec initial guess, plus 'index' for free cameras
+    obs_list: all observations (image_id, point3D_id, x_meas, y_meas)
+    points_3d_dict: point3D_id -> (X, Y, Z)
+    K: (3,3) intrinsics
+
+    returns optimized param vector
+    """
+    # 1) build initial param vector
+    params_init, unique_pids = build_parameter_vector(camera_data, points_3d_dict)
+
+    # 2) build a map of p3d_id -> index in points array
+    points_3d_index = {pid: i for i, pid in enumerate(unique_pids)}
+
+
+    # # 3) define residual func
+    def residual_func(p):
+
+        return  residual_function_generic(p, obs_list, points_3d_index, camera_data, K)
+    
+    def print_residuals_callback_and_save_current_result(params, iteration=[0]):
+        # This is called once per iteration, not for every function evaluation
+        iteration[0] += 1
+        # Evaluate the residual sum if you want
+        current_res = residual_func(params)
+        print(f"Iteration {iteration[0]}, residual sum: {np.sum(np.abs(current_res))}")
+        np.save(f"./cache/ba_result_{iteration[0]}.npy", params)
+    
+    # 4) run BA
+    result = least_squares(residual_func,
+                            params_init, 
+                            method='lm',
+                            callback=print_residuals_callback_and_save_current_result,
+                            verbose=2,
+                                                    )
+    
+    print("BA finished:", result.success, result.message)
+
+    # 5) parse result
+    params_opt = result.x
+    n_free = len([cid for cid, cinfo in camera_data.items() if not cinfo["fixed"]])
+    offset_3d = 6*n_free
+
+    # update camera_data
+    for cid, cinfo in camera_data.items():
+        if cinfo["fixed"]:
+            # no changes
+            continue
+        idx = cinfo["index"]
+        start = idx*6
+        rvec_opt = params_opt[start:start+3]
+        tvec_opt = params_opt[start+3:start+6]
+        camera_data[cid]["rvec"] = rvec_opt
+        camera_data[cid]["tvec"] = tvec_opt
+
+    # update points
+    for i, pid in enumerate(unique_pids):
+        start_p = offset_3d + 3*i
+        X_opt = params_opt[start_p:start_p+3]
+        points_3d_dict[pid] = X_opt  # store the updated coords
+    
+    #TODO: update cameras poses and 3D points in the database
+    #6) update in db
+
+    return params_opt
+
+def residual_function_generic(params, obs_list, points_3d_index, camera_data, K):
+    """
+    - params: array containing 6*N_free camera params + 3*N_points for 3D coords
+    - obs_list: list of (image_id, point3D_id, x_meas, y_meas)
+    - points_3d_index: { point3D_id -> index_in_sorted_list }
+    - camera_data: dictionary that tells us if a camera is fixed or free, plus index
+    - K: intrinsics
+    returns: residual vector of shape (2 * len(obs_list),)
+    """
+    # 1) how many cameras are free?
+    free_cam_ids = [cid for cid, info in camera_data.items() if not info["fixed"]]
+    n_free = len(free_cam_ids)
+    offset_3d = 6*n_free  # after all camera blocks
+
+    residuals = []
+
+    for (img_id, p3d_id, x_meas, y_meas) in obs_list:
+        # get camera R, t
+        R, t = get_camera_block(params, camera_data, img_id)
+
+        # retrieve the 3D coords from the param vector 
+        i3d = points_3d_index[p3d_id]
+        start_3d = offset_3d + 3*i3d
+        X_3D = params[start_3d : start_3d+3]
+
+        # build a 4D point
+        # X_h = np.array([X_3D[0], X_3D[1], X_3D[2], 1.0], dtype=np.float64)
+        X_h = np.array([X_3D[0], X_3D[1], X_3D[2], 1.0], dtype=np.float64).reshape(-1, 1)
+
+        # form P = K [R | t]
+        T = ensamble_T(R, t)
+        P = get_projection_matrix(K, T)
+        x_h_proj = project_to_camera(P, X_h)
+
+        x_res = np.abs(x_meas -  x_h_proj[1])
+        y_res = np.abs(y_meas - x_h_proj[0])
+        res_total = x_res + y_res
+        residuals.append(x_res)
+        residuals.append(y_res)
+        # print(f"Residuals for image {img_id} and point {p3d_id}: {res_total}")
+
+    # print("Residuals sum:")
+    # print(np.sum(np.abs(residuals)))
+    residuals = np.array(residuals).flatten()
+    return residuals
+
+def get_camera_block(params, camera_data, camera_id):
+    """
+    Return (R, t) for the specified camera.
+    If the camera is fixed, we read from camera_data.
+    If free, we slice from the params vector.
+    """
+    # If it's fixed, just parse camera_data['rvec','tvec'] and convert to R
+    if camera_data[camera_id]["fixed"]:
+        rvec = camera_data[camera_id]["rvec"]  
+        tvec = camera_data[camera_id]["tvec"]
+        #if rvec = np.zeros, R is identity
+        if np.all(rvec == 0):
+            R = np.eye(3)
+        else:
+            R = expm(crossMatrix(rvec))
+
+        return R, tvec
+
+    # Otherwise, it's free. We look up the block index:
+    idx = camera_data[camera_id]["index"]
+    start = idx*6
+    rvec = params[start:start+3]
+    tvec = params[start+3:start+6]
+    R = expm(crossMatrix(rvec))
+
+    return R, tvec
+
+def build_parameter_vector(camera_data, points_3d_dict):
+    """
+    Build a parameter vector from the camera_data dictionary and the 3D points.
+    We only store 'free' cameras (fixed cameras are not included).
+    """
+    # 1) Figure out how many cameras are free
+    free_cam_ids = [cid for cid, caminfo in camera_data.items() if not caminfo["fixed"]]
+    # Sort them by 'index' to have a consistent ordering
+    free_cam_ids.sort(key=lambda c: camera_data[c]["index"])
+
+    # 2) Build camera param array
+    cam_params_list = []
+    for cid in free_cam_ids:
+        # each free camera has rvec, tvec
+        rvec_init = camera_data[cid]["rvec"]
+        tvec_init = camera_data[cid]["tvec"]
+        cam_params_list.append(rvec_init)
+        cam_params_list.append(tvec_init)
+    camera_params_init = np.concatenate(cam_params_list, axis=0)  # shape (6*N_free,)
+
+    # 3) Build points array
+    unique_pids = sorted(points_3d_dict.keys())
+    points_3d_list = []
+    for pid in unique_pids:
+        X, Y, Z = points_3d_dict[pid]
+        points_3d_list.append([X, Y, Z])
+    points_3d_init = np.array(points_3d_list).flatten()  # shape (3*N_points,)
+
+    # Combine
+    params_init = np.concatenate([camera_params_init, points_3d_init], axis=0)
+    return params_init, unique_pids
+
+
+
+
 #endregion
 
 
-#################################################### SQLITE FUNCTIONS ####################################################
+#################################################### SQLITE/ CORRESPONDENCE FUNCTIONS ####################################################
 #region SQLITE FUNCTIONS
 
 def extract_R_t_from_F(db_name, image_name1, image_name2, K):
@@ -1053,6 +1385,7 @@ def get_camera_intrinsics(db_name):
     conn.close()
     return K
 
+#BUG: retrieving second match incorrectly. FIXED: use adjancey graph from in-memory structure
 def retrieve_matched_points_with_pair_id(db_name, image_name1, image_name2):
     """
     Retrieve matched 2D points (x1, x2) from the database using `pair_id`.
@@ -1068,11 +1401,10 @@ def retrieve_matched_points_with_pair_id(db_name, image_name1, image_name2):
         x1: 2D points from the first image (Nx2 numpy array).
         x2: 2D points from the second image (Nx2 numpy array).
     """
-    import sqlite3
-    import numpy as np
 
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
+    pair_id_exchange_FLAG = False
 
     # Retrieve image IDs
     cursor.execute("SELECT image_id FROM Images WHERE name = ?;", (image_name1,))
@@ -1097,6 +1429,7 @@ def retrieve_matched_points_with_pair_id(db_name, image_name1, image_name2):
         pair_id = f"{image_name2}_{image_name1}"
         cursor.execute("SELECT pair_id FROM two_view_geometries WHERE pair_id = ?;", (pair_id,))
         result = cursor.fetchone()
+        pair_id_exchange_FLAG = True
 
     if result is None:
         conn.close()
@@ -1113,11 +1446,16 @@ def retrieve_matched_points_with_pair_id(db_name, image_name1, image_name2):
     if not matches:
         raise ValueError(f"No matches found for pair ID: {pair_id}")
 
-    keypoint_ids1, keypoint_ids2 = zip(*matches)
+    # BUG: SOlucionar cuando se dan vuelta los nombres
+    #FIXED?
+    if not pair_id_exchange_FLAG:
+        keypoint_ids1, keypoint_ids2 = zip(*matches)
+    else:
+        keypoint_ids2, keypoint_ids1 = zip(*matches)
 
     # Retrieve keypoints for the first image
     cursor.execute(f"""
-    SELECT row, col
+    SELECT col, row
     FROM Keypoints
     WHERE ImageID = ? AND KeypointID IN ({','.join('?' * len(keypoint_ids1))});
     """, (image_id1, *keypoint_ids1))
@@ -1125,7 +1463,7 @@ def retrieve_matched_points_with_pair_id(db_name, image_name1, image_name2):
 
     # Retrieve keypoints for the second image
     cursor.execute(f"""
-    SELECT row, col
+    SELECT col, row
     FROM Keypoints
     WHERE ImageID = ? AND KeypointID IN ({','.join('?' * len(keypoint_ids2))});
     """, (image_id2, *keypoint_ids2))
@@ -1141,5 +1479,241 @@ def retrieve_matched_points_with_pair_id(db_name, image_name1, image_name2):
     x2 = np.array(keypoints2, dtype=np.float32)
 
     return x1, x2
+
+def build_correspondence_graph(db_name):
+    """
+    Reads data from the database and constructs:
+      1. images_info: a dict storing keypoint locations, etc.
+      2. adjacency: a nested dict storing matched keypoints between image pairs.
+    Returns (images_info, adjacency).
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # --------------------------------------------------
+    # 1. Load images
+    # --------------------------------------------------
+    images_info = {}
+    cursor.execute("SELECT image_id, name, camera_id FROM Images")
+    rows = cursor.fetchall()
+    for (image_id, name, camera_id) in rows:
+        images_info[image_id] = {
+            "name": name,
+            "camera_id": camera_id,
+            "keypoints": {},  # keypoint_id -> (col, row)
+            "kp3D": {}        # keypoint_id -> Point3DID or None
+        }
+
+    # --------------------------------------------------
+    # 2. Load keypoints
+    # --------------------------------------------------
+    cursor.execute("SELECT ImageID, KeypointID, col, row FROM Keypoints")
+    rows = cursor.fetchall()
+    for (ImageID, KeypointID, r, c) in rows:
+        if ImageID in images_info:
+            images_info[ImageID]["keypoints"][KeypointID] = (r, c)
+
+    # --------------------------------------------------
+    # 3. Build adjacency structure
+    # --------------------------------------------------
+    adjacency = defaultdict(lambda: defaultdict(list))
+    cursor.execute("""
+        SELECT pair_id, ImageID1, KeypointID1, ImageID2, KeypointID2
+        FROM Matches
+    """)
+    rows = cursor.fetchall()
+    for (pair_id, img1, kp1, img2, kp2) in rows:
+        if img1 in images_info and img2 in images_info:
+            adjacency[img1][img2].append((kp1, kp2))
+            adjacency[img2][img1].append((kp2, kp1))
+
+    conn.close()
+    return images_info, adjacency
+
+def insert_3d_points_in_memory_and_db(db_name, images_info, X_c1, match_list, c1_id, c2_id):
+    """
+    Inserts triangulated 3D points into Points3D, and updates Tracks for camera 1 & camera 2.
+    X_c1: np.array shape (3, N)
+    match_list: list of (kp1, kp2) pairs from adjacency
+    c1_id, c2_id: image IDs
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    for i in range(X_c1.shape[1]):
+        X, Y, Z = X_c1[:3, i]
+
+        kp1, kp2 = match_list[i]
+
+        # ---- 1) CHECK IF ALREADY HAS A 3D ASSIGNMENT (IN-MEMORY) ----
+        kp1_3d_id = images_info[c1_id]["kp3D"].get(kp1, None)
+        kp2_3d_id = images_info[c2_id]["kp3D"].get(kp2, None)
+
+        # Check in-memory data structure
+        if kp1_3d_id is not None or kp2_3d_id is not None:
+        # Either keypoint already has a 3D point assigned => skip in-memory and db
+            continue
+
+         # Check database
+        kp1_3d_id = already_has_3D_in_db(db_name, c1_id, kp1)
+        kp2_3d_id = already_has_3D_in_db(db_name, c2_id, kp2)
+
+        #if kp1_3d_id not False
+        if kp1_3d_id is not False or kp2_3d_id is not False:
+
+            images_info[c1_id]["kp3D"][kp1] = kp1_3d_id
+            images_info[c2_id]["kp3D"][kp2] = kp2_3d_id
+            continue
+
+        
+        ## IF NOT, insert in db and data-structure in-memory
+        # Insert the new 3D point
+        cursor.execute("""
+            INSERT OR IGNORE INTO Points3D (X, Y, Z, R, G, B, Error)
+            VALUES (?, ?, ?, 128, 128, 128, 0.0)
+        """, (float(X), float(Y), float(Z)))
+        
+        # Get the newly assigned Point3DID
+        new_3d_id = cursor.lastrowid
+
+        # Add track references: match_list[i] -> (kp1, kp2)
+        # Insert track for camera 1
+        cursor.execute("""
+            INSERT OR IGNORE INTO Tracks (Point3DID, ImageID, KeypointID)
+            VALUES (?, ?, ?)
+        """, (new_3d_id, c1_id, kp1))
+
+        # Insert track for camera 2
+        cursor.execute("""
+            INSERT OR IGNORE INTO Tracks (Point3DID, ImageID, KeypointID)
+            VALUES (?, ?, ?)
+        """, (new_3d_id, c2_id, kp2))
+
+        # Also update  in-memory data structure
+        images_info[c1_id]["kp3D"][kp1] = new_3d_id
+        images_info[c2_id]["kp3D"][kp2] = new_3d_id
+
+    conn.commit()
+    conn.close()
+
+def already_has_3D_in_db(db_name, image_id, kp_id):
+    """
+    Returns True if (image_id, kp_id) is already in 'Tracks' 
+    (meaning that keypoint is assigned to some 3D point).
+    """
+    import sqlite3
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT Point3DID
+        FROM Tracks
+        WHERE ImageID = ? AND KeypointID = ?
+    """, (image_id, kp_id))
+    row = cursor.fetchone()
+    conn.close()
+    if row is not None:
+        return row[0]  # Return the Point3DID
+    else:
+        return False  # Return False if no row is found
+
+def get_3d_point_coordinates(db_name, point_id):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute("SELECT X, Y, Z FROM Points3D WHERE Point3DID=?", (point_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return row  # (X, Y, Z)
+
+def find_untriangulated_matches(images_info, adjacency, c1_id, c2_id):
+    """
+    Return the matched keypoints (kp1, kp2) between c1_id and c2_id
+    that do NOT already have a 3D ID assigned (in both memory and DB).
+    """
+    matches = adjacency[c1_id][c2_id]  # list of (kp1, kp2)
+    new_match_list = []
+    for (kp1, kp2) in matches:
+        kp1_3d = images_info[c1_id]["kp3D"].get(kp1, None)
+        kp2_3d = images_info[c2_id]["kp3D"].get(kp2, None)
+        if kp1_3d is None and kp2_3d is None:
+            new_match_list.append((kp1, kp2))
+    return new_match_list
+
+def get_all_3d_points(db_name):
+    """
+    Fetch all (X, Y, Z) rows from Points3D in the given SQLite database.
+    Returns: np.array of shape (N, 3), where N is the number of 3D points.
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute("SELECT X, Y, Z FROM Points3D")
+    rows = cursor.fetchall()  # list of (X, Y, Z) tuples
+    conn.close()
+
+    # Convert to a NumPy array
+    points_3d = np.array(rows, dtype=float)  # shape (N, 3)
+    return points_3d
+
+def load_observations_and_points(db_name):
+    """
+    Reads the Tracks table (for 3D assignments) and Keypoints table (for 2D positions)
+    from the database, returns:
+      - obs_list: a list of (image_id, point3D_id, x, y)
+      - points_3d_dict: dict of point3D_id -> (X, Y, Z)
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # 1) Load all 3D points into a dict
+    points_3d_dict = {}
+    cursor.execute("SELECT Point3DID, X, Y, Z FROM Points3D")
+    for (pid, X, Y, Z) in cursor.fetchall():
+        points_3d_dict[pid] = [X, Y, Z]   # we can store as list to make them mutable if needed
+
+    # 2) load obs_list from db joining Tracks and Keypoints
+    obs_list = []
+    cursor.execute("""
+        SELECT Tracks.Point3DID, Tracks.ImageID, Tracks.KeypointID, 
+               Keypoints.col, Keypoints.row
+        FROM Tracks
+        JOIN Keypoints ON 
+            Tracks.ImageID = Keypoints.ImageID 
+            AND Tracks.KeypointID = Keypoints.KeypointID
+    """)
+    rows = cursor.fetchall()
+    for (pid, img_id, kp_id, c, r) in rows:
+        
+        # DEBUGGING:
+        # first obs should be
+        # image keypoint col row
+        # 4	1	369.0	8.0
+
+        x_meas = c
+        y_meas = r
+        obs_list.append((img_id, pid, x_meas, y_meas))
+
+    conn.close()
+    return obs_list, points_3d_dict
+
 #endregion
 
+#################################################### OTHER FUNCTIONS ####################################################
+#region 
+
+def save_matrix(file_path, matrix):
+    """
+    Save a matrix to a file.
+    - Input:
+        · file_path (str): Path to the file.
+        · matrix (np.array): Matrix to save.
+    """
+    np.savetxt(file_path, matrix)
+
+def load_matrix(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+    try:
+        return np.loadtxt(file_path)
+    except Exception as e:
+        raise ValueError(f"Error loading matrix from {file_path}: {str(e)}")
+    
+#endregion
