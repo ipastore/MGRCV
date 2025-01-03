@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from scipy.linalg import expm, logm
 from scipy.optimize import least_squares
+import cv2
 
 def compute_normalization_matrix(points):
     # Calculate mean for centering
@@ -584,7 +585,7 @@ def crossMatrixInv(M):
     x = [M[2, 1], M[0, 2], M[1, 0]]
     return np.array(x)
 
-def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints):
+def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints, verbose=False):
     """
     -input:
     Op: Optimization parameters: this must include a paramtrization for T_21 
@@ -637,11 +638,11 @@ def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints):
     res_x1_total = np.sum(np.abs(res_x1))
     res_x2_total = np.sum(np.abs(res_x1))
 
-
-    print("\n residuals 1:")
-    print(res_x1_total)
-    print("\n residuals 2:")
-    print(res_x2_total)
+    if verbose:
+        print("\n residuals 1:")
+        print(res_x1_total)
+        print("\n residuals 2:")
+        print(res_x2_total)
 
     residuals = np.hstack((res_x1.flatten(), res_x2.flatten()))
 
@@ -661,3 +662,340 @@ def crossMatrixInv(M):
     """Extracts a vector x from a skew-symmetric matrix M."""
     x = [M[2, 1], M[0, 2], M[1, 0]]
     return np.array(x)
+
+
+def resBundleProjection_multicamera(Op, point3D_map, keypoints_2D, K_c, n_cameras):
+    """
+    Calcula los residuales por cámara para el Bundle Adjustment.
+
+    Args:
+        Op (np.ndarray): Vector de parámetros optimizados.
+        point3D_map (dict): Diccionario que mapea puntos 3D a cámaras y keypoints.
+        keypoints_2D (list of np.ndarray): Keypoints observados para cada cámara.
+        K_c (np.ndarray): Matriz intrínseca de la cámara.
+        n_cameras (int): Número total de cámaras (incluyendo la de referencia).
+
+    Returns:
+        np.ndarray: Vector de residuales concatenados.
+    """
+    # Extraer rotaciones, traslaciones y puntos 3D del vector Op
+    offset = 0
+    rotations = []
+    translations = []
+
+    # Cámara 2 (rotación y traslación en polares)
+    theta_cam2 = Op[offset:offset+3]
+    t_theta_cam2 = Op[offset+3]
+    t_phi_cam2 = Op[offset+4]
+    t_cam2 = np.array([
+        np.sin(t_theta_cam2) * np.cos(t_phi_cam2),
+        np.sin(t_theta_cam2) * np.sin(t_phi_cam2),
+        np.cos(t_theta_cam2)
+    ])
+    rotations.append(theta_cam2)
+    translations.append(t_cam2)
+    offset += 5
+
+    # Cámaras adicionales (cartesianas)
+    for i in range(2, n_cameras):
+        theta = Op[offset:offset+3]
+        t = Op[offset+3:offset+6]
+        rotations.append(theta)
+        translations.append(t)
+        offset += 6
+
+    # Puntos 3D
+    points_3D = Op[offset:].reshape(3, -1)
+
+    # Inicializar vector de residuales
+    residuals = []
+
+    # **Calcular residuales para cámaras adicionales**
+    for cam_idx in range(1, n_cameras + 1):  # Cam2 es 2, Cam3 es 3, etc.
+        
+        if cam_idx == 1:
+            P = K_c @ np.hstack((np.eye(3), np.zeros((3, 1))))  # Matriz de proyección fija
+        else:
+            R = expm(crossMatrix(rotations[cam_idx - 2]))
+            t = translations[cam_idx - 2].reshape(-1, 1)
+
+            # Matriz de proyección
+            T = np.hstack((R, t))
+            P = K_c @ T
+
+        # **1. Filtrado de puntos visibles**
+        visible_points = [
+            (point_idx, cam_info[cam_idx])
+            for point_idx, cam_info in point3D_map.items()
+            if cam_idx in cam_info
+        ]
+
+        if not visible_points:
+            continue  # Si no hay puntos visibles, saltar esta cámara
+
+        # Crear arrays de puntos y keypoints
+        point_indices = [point_idx for point_idx, _ in visible_points]
+        keypoint_indices = [keypoint_idx for _, keypoint_idx in visible_points]
+
+        points_3D_visible = points_3D[:, point_indices]  # (3, N)
+        keypoints_2D_visible = keypoints_2D[cam_idx - 1][:, keypoint_indices]  # (2, N)
+
+        # **2. Calcular residuales**
+        points_h = np.vstack((points_3D_visible, np.ones((1, points_3D_visible.shape[1]))))  # (4, N)
+        projected_2D = project_to_camera(P, points_h)  # (2, N)
+
+        # Residuales (vectorizados)
+        residuals_2D = keypoints_2D_visible - projected_2D[0:2,:]
+        residuals.extend(residuals_2D.flatten())
+
+    return np.array(residuals)
+
+
+def prepare_op_vector(R_cameras, t_cameras, points_3D_initial):
+    """
+    Prepara el vector de parámetros para la optimización (op_vector).
+
+    Args:
+        R_cameras (list of np.ndarray): Lista de matrices de rotación (3x3) para todas las cámaras (excluyendo la de referencia).
+        t_cameras (list of np.ndarray): Lista de vectores de traslación (3,) para todas las cámaras (excluyendo la de referencia).
+        points_3D_initial (np.ndarray): Matriz (3xN) con las coordenadas iniciales de los puntos 3D.
+
+    Returns:
+        np.ndarray: Vector concatenado de parámetros iniciales para la optimización.
+    """
+    op_vector = []
+
+    # Rotación y traslación de la cámara 2 (usando coordenadas polares para la traslación)
+    R_cam2 = R_cameras[0]  # Primera cámara adicional respecto a la referencia
+    t_cam2 = t_cameras[0]
+
+    initial_guess_theta_cam2 = crossMatrixInv(logm(R_cam2.astype('float64')))
+    t_norm_cam2 = np.linalg.norm(t_cam2)
+    t_theta_cam2 = np.arccos(t_cam2[2] / t_norm_cam2)
+    t_phi_cam2 = np.arctan2(t_cam2[1], t_cam2[0])
+
+    op_vector.extend(initial_guess_theta_cam2)
+    op_vector.append(t_theta_cam2)
+    op_vector.append(t_phi_cam2)
+
+    # Rotaciones y traslaciones para cámaras adicionales (en coordenadas cartesianas)
+    for i in range(1, len(R_cameras)):
+        R_cam = R_cameras[i]
+        t_cam = t_cameras[i]
+
+        # Representación logarítmica para la rotación
+        initial_guess_theta_cam = crossMatrixInv(logm(R_cam.astype('float64')))
+        op_vector.extend(initial_guess_theta_cam)
+
+        # Traslación en coordenadas cartesianas
+        op_vector.extend(t_cam)
+
+    # Puntos 3D en coordenadas cartesianas
+    op_vector.extend(points_3D_initial.flatten())
+
+    return np.array(op_vector)
+
+
+def recover_parameters(op_vector, n_cameras, n_points):
+    """
+    Recupera las rotaciones, traslaciones y puntos 3D del vector optimizado.
+
+    Args:
+        op_vector (np.ndarray): Vector de parámetros optimizados.
+        n_cameras (int): Número total de cámaras (incluyendo la de referencia).
+        n_points (int): Número total de puntos 3D.
+
+    Returns:
+        dict: Diccionario con rotaciones, traslaciones y puntos 3D:
+            {
+                "rotations": list of np.ndarray,  # Lista de vectores de rotación (logm)
+                "translations": list of np.ndarray,  # Lista de vectores de traslación (3,)
+                "points_3D": np.ndarray  # Matriz de puntos 3D optimizados (n_points x 3)
+            }
+    """
+    offset = 0
+    rotations = []
+    translations = []
+
+    # **Cámara de referencia** (fija, no está en el vector optimizado)
+    rotations.append(np.zeros(3))  # Rotación identidad (logm(R_ref) = [0, 0, 0])
+    translations.append(np.zeros(3))  # Traslación fija en el origen [0, 0, 0]
+
+    # **Cámara 2 (en coordenadas polares)**
+    theta_c2_ref = op_vector[offset:offset+3]
+    t_theta = op_vector[offset+3]
+    t_phi = op_vector[offset+4]
+    t_c2_ref = np.array([
+        np.sin(t_theta) * np.cos(t_phi),
+        np.sin(t_theta) * np.sin(t_phi),
+        np.cos(t_theta)
+    ])
+    rotations.append(theta_c2_ref)
+    translations.append(t_c2_ref)
+    offset += 5
+
+    # **Cámaras adicionales (en cartesiano)**
+    for _ in range(3, n_cameras + 1):  # Desde cam3 en adelante
+        theta = op_vector[offset:offset+3]
+        t = op_vector[offset+3:offset+6]
+        rotations.append(theta)
+        translations.append(t)
+        offset += 6
+    
+    # **Puntos 3D**
+    points_3D = op_vector[offset:].reshape(3, n_points).T
+
+    return {
+        "rotations": rotations,        # Rotaciones optimizadas (logm)
+        "translations": translations,  # Traslaciones optimizadas
+        "points_3D": points_3D         # Coordenadas optimizadas de puntos 3D
+    }
+    
+    
+def get_image(image_id):
+    image_path = os.path.join(os.path.dirname(__file__), f'../Images/Set_12MP/EntireSet/{image_id}.jpg')
+    return plt.imread(image_path) 
+
+def get_matrix(image_id):
+    image_path = os.path.join(os.path.dirname(__file__), f'../Images/Set_12MP/EntireSet/{image_id}.jpg')
+    return plt.imread(image_path) 
+
+
+# Function to load npz data
+def load_npz_data(base_path, reference_image, target_image):
+    npz_path = os.path.join(
+        os.path.dirname(__file__), 
+        f'{base_path}/{reference_image}_vs_{target_image}_inliers.npz'
+    )
+    if not os.path.exists(npz_path):
+        raise FileNotFoundError(f"No se encontró el archivo: {npz_path}")
+    return np.load(npz_path)
+
+
+
+def perform_pnp_and_triangulate(
+    reference_image, target_image, K_C, point3D_map, optimized_3D_points, ref_cam_id, target_cam_id
+):
+    # Cargar correspondencias entre las cámaras
+    pnp_data = np.load(os.path.join(os.path.dirname(__file__),f'../RANSAC/results/inliers/{reference_image}_vs_{target_image}_inliers.npz'))
+    pnp_keypoints_ref = pnp_data['keypoints0']
+    pnp_keypoints_new = pnp_data['keypoints1']
+    pnp_mask = pnp_data['inliers_matches']
+
+    # Filtrar puntos existentes y actualizar `point3D_map`
+    existing_points = []
+    new_matches = []
+
+    for match in pnp_mask:
+        ref_idx, cam3_idx = match[0], match[1]
+        found = False
+        for pid, cameras in point3D_map.items():
+            if cameras.get(ref_cam_id) == ref_idx:  # Si el punto ya está en el diccionario
+                point3D_map[pid][target_cam_id] = cam3_idx  # Actualizar keypoint en cam3
+                existing_points.append(pid)
+                found = True
+                break
+        if not found:
+            new_matches.append(match)  # Matches que generan nuevos puntos 3D
+
+    # Hacer PNP con puntos existentes
+    if existing_points:
+        # Obtener puntos 3D existentes y keypoints en cam3
+        filtered_3D_points = np.array([optimized_3D_points[pid] for pid in existing_points])
+        keypoints_cam3 = np.array([pnp_keypoints_new[point3D_map[pid][target_cam_id]] for pid in existing_points])
+        
+        # Convertir keypoints a coordenadas homogéneas
+        x_cam3_h = np.vstack((keypoints_cam3.T, np.ones(keypoints_cam3.shape[0])))
+        image_points = np.ascontiguousarray(x_cam3_h[0:2, :].T).reshape((x_cam3_h.shape[1], 1, 2))
+        
+        # Resolver PNP
+        retval, rotation_vector, translation_vector = cv2.solvePnP(
+            filtered_3D_points, image_points, K_C, np.zeros((4, 1)), flags=cv2.SOLVEPNP_EPNP
+        )
+        if not retval:
+            raise ValueError("PNP falló al calcular la pose de la cámara")
+        
+        # Convertir a matriz de rotación
+        R_pnp = expm(crossMatrix(rotation_vector))
+        t_pnp = translation_vector.ravel()
+    else:
+        raise ValueError("No hay puntos existentes para calcular el PNP")
+
+    # Triangular nuevos puntos 3D
+    if new_matches:
+        keypoints_ref_new = np.array([pnp_keypoints_ref[match[0]] for match in new_matches])
+        keypoints_cam3_new = np.array([pnp_keypoints_new[match[1]] for match in new_matches])
+
+        # Convertir keypoints a coordenadas homogéneas
+        x_ref_h = np.vstack((keypoints_ref_new.T, np.ones(keypoints_ref_new.shape[0])))
+        x_cam3_h = np.vstack((keypoints_cam3_new.T, np.ones(keypoints_cam3_new.shape[0])))
+
+        # Matrices de proyección para ref y cam3
+        P_ref = get_projection_matrix(K_C, np.eye(4))
+        T_cam3_to_ref = ensamble_T(R_pnp, t_pnp)
+        P_cam3 = get_projection_matrix(K_C, T_cam3_to_ref)
+
+        # Triangular nuevos puntos 3D
+        new_points_3D = triangulate_points(x_ref_h, x_cam3_h, P_ref, P_cam3)
+        new_points_3D = new_points_3D[:3, :].T.reshape(-1, 3)
+
+        # Actualizar el diccionario con los nuevos puntos
+        for i, match in enumerate(new_matches):
+            new_point_id = len(point3D_map)  # Generar nuevo ID para el punto 3D
+            point3D_map[new_point_id] = {ref_cam_id: match[0], target_cam_id: match[1]}
+            optimized_3D_points = np.vstack((optimized_3D_points, new_points_3D[i,:]))
+
+    return R_pnp, t_pnp, point3D_map, optimized_3D_points
+
+
+def visualize_3D_3cameras_optimization(T_w_c1, T_w_c2, T_w_c3, X_w, T_c1_c2_initial, T_c1_c3_initial, T_c1_c2_opt, T_c1_c3_opt, X_c1_w_initial, X_c1_w_opt):
+    """
+    Visualize 3D results for ground truth, initial guess, and optimized solution.
+
+    - T_w_c1, T_w_c2, T_w_c3: Ground truth transformation matrices for cameras 1, 2, and 3.
+    - X_w: Ground truth 3D points in the world coordinate system.
+    - T_c2_c1_initial, T_c3_c1_initial: Initial transformation matrices for cameras 2 and 3 with respect to camera 1.
+    - T_c2_c1_opt, T_c3_c1_opt: Optimized transformation matrices for cameras 2 and 3 with respect to camera 1.
+    - X_initial: Initial 3D points.
+    - X_opt_scaled: Optimized 3D points, scaled.
+    """
+
+    # Transform ground truth points and cameras into Camera 1's frame
+    T_c1_w = np.linalg.inv(T_w_c1)
+    T_c1_c2_gt = T_c1_w @ T_w_c2  # Ground truth transformation of Camera 2 in Camera 1's frame
+    T_c1_c3_gt = T_c1_w @ T_w_c3  # Ground truth transformation of Camera 3 in Camera 1's frame
+    X_c1_w_gt = T_c1_w @ X_w        # Transform ground truth points into Camera 1's frame
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Ground truth points and cameras
+    drawRefSystem(ax, np.eye(4), '-', 'C1')
+    drawRefSystem(ax, T_c1_c2_gt, '-', 'C2 (Ground Truth)')
+    drawRefSystem(ax, T_c1_c3_gt, '-', 'C3 (Ground Truth)')
+    ax.scatter(X_c1_w_gt[0, :], X_c1_w_gt[1, :], X_c1_w_gt[2, :], marker='o', color='g', label='3D Points (Ground Truth)')
+
+    # Initial guess points and cameras
+    drawRefSystem(ax, T_c1_c2_initial, '--', 'C2 (Initial)')
+    drawRefSystem(ax, T_c1_c3_initial, '--', 'C3 (Initial)')
+    ax.scatter(X_c1_w_initial[0, :], X_c1_w_initial[1, :], X_c1_w_initial[2, :], marker='^', color='b', label='3D Points (Initial)')
+
+    # Optimized points and cameras
+    drawRefSystem(ax, T_c1_c2_opt, '-.', 'C2 (Optimized)')
+    drawRefSystem(ax, T_c1_c3_opt, '-.', 'C3 (Optimized)')
+    ax.scatter(X_c1_w_opt[0, :], X_c1_w_opt[1, :], X_c1_w_opt[2, :], marker='x', color='r', label='3D Points (Optimized)')
+
+    # Set plot labels and legend
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    plt.title("3D Visualization of Ground Truth, Initial, and Optimized Results")
+
+    # Optional: set plot limits to manage scale and view
+    ax.set_xlim([-5, 5])
+    ax.set_ylim([-5, 5])
+    ax.set_zlim([-5, 5])
+
+    plt.show()
+
+

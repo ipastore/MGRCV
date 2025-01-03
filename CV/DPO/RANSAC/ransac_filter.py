@@ -132,8 +132,7 @@ def save_matches_RANSAC(keypoints0, keypoints1, matches, inliers_mask, name_imag
 
 if __name__ == "__main__":
     
-    
-    path = '../Images/Set_12MP/matches_results/Group1_Group1'
+    path = '../Images/Set_12MP/matches_results/Group1_Group2'
     if not os.path.exists(path):
         print(f"Error: El directorio {path} no existe.")
     else:

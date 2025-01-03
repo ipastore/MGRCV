@@ -1,4 +1,4 @@
-from lightglue import LightGlue, SuperPoint, viz2d
+from lightglue import LightGlue, SuperPoint
 from lightglue.utils import load_image, rbd
 import torch
 import os
@@ -20,7 +20,9 @@ def extract_index(filename):
         raise ValueError(f"Formato incorrecto en nombre de archivo: {filename}")
 
 # Pedir al usuario qué grupos incluir
-selected_groups = ["Group0", "Group1", "Group2", "Group3"]
+# selected_groups = ["Group0", "Group1", "Group2", "Group3"]
+selected_groups = ["Group1", "Group3"]
+
 # selected_groups = ["Group1"]
 
 if not selected_groups:
