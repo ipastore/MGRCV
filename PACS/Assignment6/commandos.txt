@@ -1,0 +1,22 @@
+g++ -std=c++11 gpu_balancer.cpp -o gpu_balancer -I CImg/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+g++ -std=c++11 sober_filter_nonhete.cpp -o sober_filter_nonhete -I CImg/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+. /opt/intel/oneapi/setvars.sh
+
+g++ -std=c++11 sober_filter_nonhete.cpp -o sober_filter_nonhete -I include/CImg/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+g++ -std=c++11 src/sober_filter_nonhete.cpp -o build/sober_filter_nonhete -I include/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+g++ -std=c++11 src/simulacion.cpp -o build/simulacion -I include/ -lm -lpthread -lX11 -ljpeg
+
+g++ -std=c++11 src/gpu_filter.cpp -o build/gpu_filter -I include/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+g++ -std=c++11 src/cpu_filter.cpp -o build/cpu_filter -I include/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+g++ -std=c++11 src/detector.cpp -o build/detector -I include/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+
+g++ -std=c++11 src/heterogeneus_unbalanced.cpp -o build/heterogeneus_unbalanced -I include/ -lm -lpthread -lX11 -ljpeg -lOpenCL
+
+g++ -std=c++11 src/heterogeneus_balanced.cpp -o build/heterogeneus_balanced -I include/ -lm -lpthread -lX11 -ljpeg -lOpenCL

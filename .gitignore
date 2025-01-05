@@ -2,3 +2,12 @@
 **/build
 .vscode
 *.zip
+
+CV/DPO/*.npz
+CV/DPO/**/*.npz
+CV/DPO/*.jpg
+CV/DPO/**/*.jpg
+CV/DPO/*.png
+CV/DPO/**/*.png
+CV/DPO/*.pyc
+CV/DPO/**/*.pyc
