@@ -300,7 +300,9 @@ if __name__ == "__main__":
     # Define project structure
     project_root_dir = "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CV/Colon_assignment/own_projects"
     seq_name = "Seq_035"
-    type = "toy"
+    type = "toy_more_flexible"
+    # type = "toy_flexible"
+    # type = "toy_harsh"
     db_name = "database.db"
     project_dir = os.path.join(project_root_dir, seq_name, type)
     database_path = os.path.join(project_dir,db_name)

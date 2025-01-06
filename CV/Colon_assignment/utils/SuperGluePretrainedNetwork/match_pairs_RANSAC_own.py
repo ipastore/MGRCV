@@ -308,18 +308,20 @@ if __name__ == '__main__':
         # Parameters for RANSAC.
 
         # #Kind of Flexible
-        # ransacReprojThreshold = 1
-        # confidence = 0.999
+        ransacReprojThreshold = 1
+        confidence = 0.999
+        p = 0.25
 
-        # # Harsh
+        # Harsh
         # ransacReprojThreshold = 0.3
+        # p = 0.25
         # confidence = 0.999
 
 
-        # More Flexible
-        ransacReprojThreshold = 4
-        p = 0.5
-        confidence = 0.9999
+        # # More Flexible
+        # ransacReprojThreshold = 4
+        # p = 0.25
+        # confidence = 0.9999
 
         # Calculate F matrix from the matches and keypoints.
         if len(mkpts0) >= 8:  

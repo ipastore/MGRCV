@@ -2,6 +2,8 @@ import os
 import numpy as np
 import sqlite3
 import cv2
+import scipy
+
 
 from utils.cv_plot_bundle_sqlite_helpers_functions import *
 
@@ -11,22 +13,27 @@ def debug_print(*args, **kwargs):
 
 if __name__ == "__main__":
 
+    #TODO:
+    # Add camera structure reading from two_view_geometries
+    # Update cameras relative poses to c1 in the database whenever calculating new pose
+    # Filter points with high reprojection error
+
+
     #DEBUG FLAG
     DEBUG = True
-    FIRST_TRIANGULATION_FLAG = False
-    # TODO: Fix warning
-    # WARNING: If disable, in-memory data structure won´t be initialized
+    FIRST_TRIANGULATION_FLAG = True
     PNP_FLAG = True
+    PNP_GT_FLAG = True
     TRIANGULATE_3_CAMERAS_FLAG = True
     FULL_BUNDLE_3_CAMERAS = True
-    VISUALIZATION_FULL_BUNDLE_3CAMERAS_FLAG = False
-    ALL_VIZ_FLAG = False
-    PNP_GT_FLAG = False
+    VISUALIZATION_FULL_BUNDLE_3CAMERAS_FLAG = True
+    ALL_VIZ_FLAG = True
+
 
     # Define project structure
     project_root_dir = "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CV/Colon_assignment/own_projects"
     seq_name = "Seq_035"
-    type = "toy"
+    type = "toy_more_flexible"
     db_name = "database.db"
     project_dir = os.path.join(project_root_dir, seq_name, type)
     database_path = os.path.join(project_dir,db_name)
@@ -62,11 +69,12 @@ if __name__ == "__main__":
     images_list = [image4, image2, image1, image3]
 
 
+
     # Get camera K matrix. We only assume one camera for now with a pinhole model
     K = get_camera_intrinsics(database_path)
-    # debug_print("Camera intrinsic matrix (K):")
-    # debug_print(K)
-    # debug_print(f"\n")
+    debug_print("Camera intrinsic matrix (K):")
+    debug_print(K)
+    debug_print(f"\n")
 
 
     #Toy example for seq 035 with images 2,3,5 and 22
@@ -77,9 +85,10 @@ if __name__ == "__main__":
     # Step 0: Build a correspondence_graph
     images_info, adjacency = build_correspondence_graph(database_path)
     print(f"In-memory adjacency loaded: {len(images_info)} images.")
-
-    
+    # TODO: automate for all cameras
     match_list_1_2 = adjacency[c_ids[0]][c_ids[1]]   # kp1 --> c4, kp2 --> c2
+    match_list_3_1 = adjacency[c_ids[2]][c_ids[0]] 
+    match_list_3_2 = adjacency[c_ids[2]][c_ids[1]]  
 
     if FIRST_TRIANGULATION_FLAG: 
 
@@ -87,8 +96,8 @@ if __name__ == "__main__":
         x1 = []
         x2 = []
         for (kp1, kp2)in match_list_1_2:
-            (r1, c1) = images_info[c_ids[0]]["keypoints"][kp1]
-            (r2, c2) = images_info[c_ids[1]]["keypoints"][kp2]
+            (c1, r1) = images_info[c_ids[0]]["keypoints"][kp1]
+            (c2, r2) = images_info[c_ids[1]]["keypoints"][kp2]
             x1.append([c1, r1])  # (x, y)
             x2.append([c2, r2])
 
@@ -98,7 +107,8 @@ if __name__ == "__main__":
 
         # Step 1 Extract R and t from F of images 4 and 23. Where 4 is the reference image as c1 and 2 is c2. world frame = c1 frame
         # image_names[0] = 4, image_names[1] = 2
-        # Inside the function the F is transposed to get F_c2_c1
+        # Inside the function the F is transposed to get F_c2_c1. If the pair in the database is already transposed, 
+        # the F is not transposed again to always return F21 of image_names[0](c1) to image_names[1](c2)
         R_c2_c1_option1, R_c2_c1_option2, t_c2_c1, F21= extract_R_t_from_F(database_path, image_names[0], image_names[1], K)
 
         # Retrieve 2D points from images 22 and 3 as x1 and x2
@@ -124,33 +134,24 @@ if __name__ == "__main__":
 
         
         # Select correct pose
-
-        ######################################## POSSIBLE BUG ########################################
-        #BUG: check how to select valid pose, getting negative depths in camera 2. for the first example, when plotting demonstrates the contrary
-        R_c2_c1_initial, t_c2_c1_initial, X_c1_initial = select_correct_pose_flexible(x1_h, x2_h, K, K, R_c2_c1_option1, R_c2_c1_option2, t_c2_c1)
+        # Filter the negative depths for X_c1_initial, x1_h, x2_h
+        R_c2_c1_initial, t_c2_c1_initial, X_c1_initial, x1_h, x2_h, match_list_1_2 = select_correct_pose_flexible_and_filter(x1_h, x2_h, K, K, R_c2_c1_option1, 
+                                                                                                             R_c2_c1_option2, t_c2_c1, match_list_1_2, plot_FLAG=ALL_VIZ_FLAG,
+                                                                                                             filtering = False)
         
         if R_c2_c1_initial is None:
             raise ValueError("No valid pose found")
         
-
-        # Visualize residuals between 2D points and reprojection of 3D points
-        #From World to image4 that is c1
-        P_c1_c1_initial = get_projection_matrix(K, np.eye(4))
-        x1_proj_initial = project_to_camera(P_c1_c1_initial, X_c1_initial)
-
-        #From World to image2
-        T_c2_c1_initial = ensamble_T(R_c2_c1_initial,t_c2_c1_initial)
-        P_c2_c1_initial = get_projection_matrix(K,T_c2_c1_initial)
-        x2_proj_initial = project_to_camera(P_c2_c1_initial, X_c1_initial)
-
-        visualize_epipolar_lines(F21, images_list[0], images_list[1], show_epipoles=False)
-
-        fig, axs = plt.subplots(1, 2, figsize=(18, 6))
-        visualize_residuals(images_list[0], x1, x1_proj_initial, "Initial Residuals in Image 4", ax=axs[0])
-        visualize_residuals(images_list[1], x2, x2_proj_initial, 'Initial Residuals in Image 2', ax=axs[1])
-        plt.tight_layout()
-        plt.show()
-
+        # Visualize epipolar lines: x2 points in image 1
+        visualize_epipolar_lines(F21, images_list[1], images_list[0], show_epipoles=True)
+        
+        # Compute and visualize residuals
+        # Filter is apply by calculating the percentile of residuals and keeping the best points for X_c1_initial, x1_h, x2_h
+        X_c1_initial,x1_h, x2_h, match_list_1_2 = compute_residulas_and_filter(x1_h, x2_h, X_c1_initial, R_c2_c1_initial, t_c2_c1_initial,
+                                                                                match_list=match_list_1_2, K=K,img1= images_list[0],
+                                                                                img2= images_list[1], c_id_1=c_ids[0],c_id_2=c_ids[1],
+                                                                                percentile_filter = 90, plot_FLAG = ALL_VIZ_FLAG)
+                
 
         #Step 2 Full bundle adjustment
         # Initial guess for optimization
@@ -161,11 +162,14 @@ if __name__ == "__main__":
         intial_guess = np.hstack((theta_c2_c1_initial, t_theta, t_phi, X_c1_initial[:3, :].flatten())) 
         nPoints = X_c1_initial.shape[1]
 
+
         # Least squares optimization
         optimized = least_squares(resBundleProjection, 
                             intial_guess, 
-                            args=(x1, x2, K, nPoints),
-                            method='lm'
+                            args=(x1_h[:2,:], x2_h[:2,:], K, nPoints),
+                            method= "lm",
+                            verbose=2,
+                            ftol=1e-2,
                             )
             
         # Extract optimized parameters
@@ -177,38 +181,53 @@ if __name__ == "__main__":
         X_c1_opt = optimized.x[5:].reshape(3, -1).T
         save_matrix(os.path.join(cache_dir, "theta_c2_c1_opt.txt"), theta_c2_c1_opt)
         save_matrix(os.path.join(cache_dir, "t_c2_c1_opt.txt"), t_c2_c1_opt)
+
+        # Filter by norm
+        norms = np.linalg.norm(X_c1_opt[:, :3], axis=1)
+        percentile_norm = np.percentile(norms, 90)
+        filtered_indices = norms <= percentile_norm
+
+        X_c1_opt = X_c1_opt[filtered_indices, :]
+        match_list_1_2 = [match_list_1_2[i] for i in range(len(match_list_1_2)) if filtered_indices[i]]
+        x1_h = x1_h[:, filtered_indices]
+        x2_h = x2_h[:, filtered_indices]
+
+        print(f"Filtered out {np.sum(~filtered_indices)} points with high norm.")
+
         
         ## Visualize optimization
         R_c2_c1_opt = expm(crossMatrix(theta_c2_c1_opt))
         T_c2_c1_opt = ensamble_T(R_c2_c1_opt, t_c2_c1_opt)
         P_c2_c1_opt = get_projection_matrix(K, T_c2_c1_opt)
         X_c1_opt_h = np.vstack((X_c1_opt.T, np.ones((1, X_c1_opt.shape[0]))))
+        P_c1_c1_initial = get_projection_matrix(K, np.eye(4))
         x1_proj_opt = project_to_camera(P_c1_c1_initial, X_c1_opt_h)
         x2_proj_opt = project_to_camera(P_c2_c1_opt, X_c1_opt_h)
 
         # View residuals from optimized calculations
         fig, axs = plt.subplots(1, 2, figsize=(18, 6))
-        visualize_residuals(images_list[0], x1, x1_proj_opt, "Optimized Residuals in Image 4", ax=axs[0])
-        visualize_residuals(images_list[1], x2, x2_proj_opt, 'Optimized Residuals in Image 2', ax=axs[1])
+        visualize_residuals(images_list[0], x1_h[:2,:], x1_proj_opt, "Optimized Residuals in Image 4", ax=axs[0], adjust_limits= False)
+        visualize_residuals(images_list[1], x2_h[:2,:], x2_proj_opt, 'Optimized Residuals in Image 2', ax=axs[1], adjust_limits= False)
         plt.tight_layout()
         plt.show()
 
         # Initial T 
+        T_c2_c1_initial = ensamble_T(R_c2_c1_initial, t_c2_c1_initial)
         T_c1_c2_initial = np.linalg.inv(T_c2_c1_initial)
         
         #Opt T
         T_c1_c2_opt = np.linalg.inv(T_c2_c1_opt)
         
-        # Create a 3D plot to compare all results
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        visualize_3D_comparison(
-        ax,
-        T_c1_c2_initial, X_c1_initial, # Initial estimate
-        T_c1_c2_opt, X_c1_opt_h          # Optimized solution
-        )
+        if ALL_VIZ_FLAG: # Create a 3D plot to compare all results
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            visualize_3D_comparison(
+            ax,
+            T_c1_c2_initial, X_c1_initial, # Initial estimate
+            T_c1_c2_opt, X_c1_opt_h          # Optimized solution
+            )
 
-        visualize_3D_c1_2cameras(T_c1_c2_opt,X_c1_opt_h)
+            visualize_3D_c1_2cameras(T_c1_c2_opt,X_c1_opt_h)
 
         # save the matrix in cache
         T_c1_c2_opt_path = os.path.join(cache_dir, "T_c1_c2_opt.txt")
@@ -216,22 +235,19 @@ if __name__ == "__main__":
         save_matrix(T_c1_c2_opt_path, T_c1_c2_opt)
         save_matrix(X_c1_opt_h_path, X_c1_opt_h)
     
+        # Filter and update database 
+        X_opt_h = load_matrix(os.path.join(cache_dir, "X_opt_h.txt"))
+
+        insert_3d_points_in_memory_and_db(database_path, images_info,  X_opt_h, match_list_1_2, c_ids[0], c_ids[1])
+        print(f"Inserted {X_opt_h.shape[1]} 3D points in the database")
+    
     if PNP_FLAG:
 
         # Loading from cache
-        #### WARNING: little change of name. Now X_c4_opt_h is X_opt_h
         T_c1_c2_opt_path = os.path.join(cache_dir, "T_c1_c2_opt.txt")
         X_c1_opt_h_path = os.path.join(cache_dir, "X_opt_h.txt")
         T_c1_c2_opt = load_matrix(T_c1_c2_opt_path)
         X_opt_h = load_matrix(X_c1_opt_h_path)
-
-        #Step3  Update database to keep track of 3D points
-        insert_3d_points_in_memory_and_db(database_path, images_info,  X_opt_h, match_list_1_2, c_ids[0], c_ids[1])
-        print("Triangulated points added to the database")
-
-        #Step 4 Add image 2 and retrieve 3D points already plotted, seen by image 2
-        match_list_3_1 = adjacency[c_ids[2]][c_ids[0]] 
-        match_list_3_2 = adjacency[c_ids[2]][c_ids[1]]  
 
         # For each match, see if kp1 or kp2 has a 3D point
         # Save x1 points for pnp to select the correct pose for the initial guess from the F31
@@ -239,30 +255,13 @@ if __name__ == "__main__":
         pnp_points_3d = []
         x1_for_pnp = []
         x2_for_pnp = []
-        for (kp3, kp1) in match_list_3_1:
-            if kp1 in images_info[c_ids[0]]["kp3D"]: 
-                p3d_id = images_info[c_ids[0]]["kp3D"][kp1]
-                if p3d_id is not None:
-                    # Query its 3D coordinates from DB or store it in memory
-                    X, Y, Z = get_3d_point_coordinates(database_path, p3d_id)
-                    (r3, c3) = images_info[c_ids[2]]["keypoints"][kp3] 
-                    (r1, c1) = images_info[c_ids[0]]["keypoints"][kp1]
-                    pnp_points_2d.append([c3, r3])
-                    pnp_points_3d.append([X, Y, Z])
-                    x1_for_pnp.append([c1, r1])
 
 
-        # Repeat for c3-c2
-        for (kp3, kp2) in match_list_3_2:
-            if kp2 in images_info[c_ids[1]]["kp3D"]:
-                p3d_id = images_info[c_ids[1]]["kp3D"][kp2]
-                if p3d_id is not None:
-                    X, Y, Z = get_3d_point_coordinates(database_path, p3d_id)
-                    (r3, c3) = images_info[c_ids[2]]["keypoints"][kp3]
-                    (r2, c2) = images_info[c_ids[1]]["keypoints"][kp2]
-                    pnp_points_2d.append([c3, r3])
-                    pnp_points_3d.append([X, Y, Z])
-                    x2_for_pnp.append([c2, r2])
+        pnp_points_2d, pnp_points_3d, x1_for_pnp = get_points_seen_by_camera(database_path, images_info, c_ids[2],c_ids[0], 
+                                                        match_list_3_1, pnp_points_2d, pnp_points_3d, x1_for_pnp)
+
+        pnp_points_2d, pnp_points_3d, x2_for_pnp = get_points_seen_by_camera(database_path, images_info, c_ids[2],c_ids[1],match_list_3_2,
+                                                        pnp_points_2d, pnp_points_3d, x2_for_pnp)
 
         pnp_points_2d = np.array(pnp_points_2d, dtype=np.float64).T    # shape (2, N)
         x1_for_pnp = np.array(x1_for_pnp, dtype=np.float64).T        # shape (2, N)
@@ -280,23 +279,28 @@ if __name__ == "__main__":
         debug_print(pnp_points_3d.shape)
         debug_print(f"\n")
         
-         # 103 out of 109 points. 33 are for c1 and 76 for c2
+        
         print(f"New camera sees {pnp_points_2d.shape[1]} 3D points out of {X_opt_h.shape[1]}")
 
 
         #Step 5 pnp for the 3rd camera
-        # Own pnp is implemented as a linear optimization of the camera pose given seen 3D points and their 2D projections
-        # Initial guess is important for the optimization
+        # Own pnp is implemented as a least square optimization of the camera pose given seen 3D points and their 2D projections
+        # Initial guess is important for the optimization. The pose is calculated from camera 1 frame
         R_c3_c1_option1, R_c3_c1_option2, t_c3_c1, F31= extract_R_t_from_F(database_path, image_names[0], image_names[2], K)
 
         # Convert x1_for_pnp  pnp_points_2d to homogeneous coordinates
         x1_for_pnp_h = np.vstack((x1_for_pnp, np.ones(x1_for_pnp.shape[1])))
         pnp_points_2d_h = np.vstack((pnp_points_2d, np.ones(pnp_points_2d.shape[1])))
+        x3_x1_for_pnp = x3_for_pnp[:, :x1_for_pnp.shape[1]]
+        x3_x1_for_pnp_h = np.vstack((x3_x1_for_pnp, np.ones(x3_x1_for_pnp.shape[1])))
         
         # Select correct initial pose
-        # Computing the correct pose with x1_for_pnp_h.shape[1] = 33 points
-        R_c3_c1_initial, t_c3_c1_initial, _ = select_correct_pose_flexible(x1_for_pnp_h, pnp_points_2d_h, K, K, R_c3_c1_option1, R_c3_c1_option2, t_c3_c1)
-            
+        # Computing the correct pose with x1_for_pnp_h.shape[1]. In this case we are not filtering, hence not returning X, x1 and x2
+        R_c3_c1_initial, t_c3_c1_initial, _, _, _, _ = select_correct_pose_flexible_and_filter(x1_for_pnp_h, x3_x1_for_pnp_h, K, K,
+                                                                                             R_c3_c1_option1, R_c3_c1_option2, 
+                                                                                         t_c3_c1, plot_FLAG = ALL_VIZ_FLAG,
+                                                                                         filtering = False)
+        
         if R_c3_c1_initial is None:
             raise ValueError("No valid pose found")
         
@@ -307,6 +311,7 @@ if __name__ == "__main__":
         pnp_intial_guess = np.hstack((rvec_c3_c1_initial, t_c3_c1_initial))
 
         # # Solve own PnP
+        #pnp_points_3d are in a different to use it later for the cv2 PnP comparison
         rvec_c3_c1_pnp, t_c3_c1_pnp = own_PnP(pnp_points_3d, pnp_points_2d, K, pnp_intial_guess)
         print("Own PnP success:", rvec_c3_c1_pnp, t_c3_c1_pnp)
         print(f"\n")
@@ -323,12 +328,13 @@ if __name__ == "__main__":
 
         # Invert T matrix to get T_c1_c3 and plot
         T_c1_c3_pnp = np.linalg.inv(T_c3_c1_pnp)
+        save_matrix(os.path.join(cache_dir, "T_c1_c3_pnp.txt"), T_c1_c3_pnp)
 
         # Visualize 3D
         if ALL_VIZ_FLAG:
             visualize_3D_3cameras(T_c1_c2_opt,T_c1_c3_pnp,X_opt_h)
 
-            ### POSSIBLE BUG:WARNING: WHen compairing with pnp of CV2 translation vector is huge
+            ### POSSIBLE BUG:WARNING: translation vector in x and y are negative. In own Pnp are positive.
             if PNP_GT_FLAG: # Transpose 2D points for cv2
                 points2d_for_pnp_cv2 = pnp_points_2d.T
                 # PnP cv2 for comparison
@@ -361,20 +367,24 @@ if __name__ == "__main__":
 
     if TRIANGULATE_3_CAMERAS_FLAG:
         # Load from cache
+        T_c1_c2_opt = load_matrix(os.path.join(cache_dir, "T_c1_c2_opt.txt"))
         R_c3_c1_pnp = load_matrix(os.path.join(cache_dir, "R_c3_c1_pnp.txt"))
         t_c3_c1_pnp = load_matrix(os.path.join(cache_dir, "t_c3_c1_pnp.txt"))
+        T_c1_c3_pnp = load_matrix(os.path.join(cache_dir, "T_c1_c3_pnp.txt"))
         x1_for_pnp = load_matrix(os.path.join(cache_dir, "x1.txt"))
         x2_for_pnp = load_matrix(os.path.join(cache_dir, "x2.txt"))
         x3_for_pnp = load_matrix(os.path.join(cache_dir, "x3.txt"))
+        rvec_c2_c1_opt = load_matrix(os.path.join(cache_dir, "theta_c2_c1_opt.txt"))
+        R_c2_c1_opt = expm(crossMatrix(rvec_c2_c1_opt))
+        t_c2_c1_opt = load_matrix(os.path.join(cache_dir, "t_c2_c1_opt.txt"))
 
         # Triangulate new points for pair c3-c1
-        new_X_c1 = triangulate_new_points_for_pair(
+        #TODO: filter within the function
+        triangulate_new_points_for_pair(
             database_path, adjacency, images_info,
-            c1_id = c_ids[0], c2_id=c_ids[2],
-            R_c2_c1 = R_c3_c1_pnp,  
-            t_c2_c1 = t_c3_c1_pnp,
-            K=K, plot_residuals=True, img1 = images_list[0], img2 = images_list[2])
-            
+            c_ids[0], c_ids[2], R_c3_c1_pnp, t_c3_c1_pnp, K,
+            plot_residuals=ALL_VIZ_FLAG, img1 = images_list[0], img2 = images_list[2])
+        
 
         # Visualize 3D
         all_triangulated_points_3d = get_all_3d_points(database_path)
@@ -382,37 +392,40 @@ if __name__ == "__main__":
         if ALL_VIZ_FLAG:
             visualize_3D_3cameras(T_c1_c3_pnp,T_c1_c2_opt,all_triangulated_points_3d)
 
-        
-        # # Triangulate new points for pair c3-c2
+        # BUG: Points are triangulated incorrectly.
+        # Triangulate new points for pair c3-c2
 
-        # # Get R_c3_c2
-        R_c3_c2_option1, R_c3_c2_option2, t_c3_c2, F32= extract_R_t_from_F(database_path, image_names[1], image_names[2], K)
+        # # # Get R_c3_c2
+        # R_c3_c2_option1, R_c3_c2_option2, t_c3_c2, F32= extract_R_t_from_F(database_path, image_names[1], image_names[2], K)
 
-        # Convert x1_for_pnp  pnp_points_2d to homogeneous coordinates
-        x2_for_pnp_h = np.vstack((x2_for_pnp, np.ones(x2_for_pnp.shape[1])))
-        # Get the 3D points seen by camera 2, indexing after camera 1
-        # TODO: not so robust logic, should be improved
-        x3_for_triangulate_c2 = x3_for_pnp[:, :x2_for_pnp.shape[1]]
-        x3_for_triangulate_c2 = np.vstack((x3_for_triangulate_c2, np.ones(x3_for_triangulate_c2.shape[1])))
+        # # Convert x2_for_pnp  pnp_points_2d to homogeneous coordinates
+        # x2_for_pnp_h = np.vstack((x2_for_pnp, np.ones(x2_for_pnp.shape[1])))
+        # # Get the 3D points seen by camera 2, indexing after camera 1
+        # # TODO: not so robust logic, should be improved
+        # x3_for_triangulate_c2 = x3_for_pnp[:, :x2_for_pnp.shape[1]]
+        # x3_for_triangulate_c2 = np.vstack((x3_for_triangulate_c2, np.ones(x3_for_triangulate_c2.shape[1])))
         
-        # Select correct initial pose
-        # Computing the correct pose with x2_for_pnp_h.shape[1] =76 points
-        R_c3_c2_initial, t_c3_c2_initial, _ = select_correct_pose_flexible(x2_for_pnp_h, x3_for_triangulate_c2, K, K, R_c3_c2_option1, R_c3_c2_option2, t_c3_c2, plot_FLAG=False)
+        # # Select correct initial pose
+        # # Computing the correct pose with x2_for_pnp_h.shape[1]. Here we are not filtering. The filter is made when triangulating
+        # R_c3_c2_initial, t_c3_c2_initial, _, _, _  = select_correct_pose_flexible_and_filter(x2_for_pnp_h, x3_for_triangulate_c2, K, K, R_c3_c2_option1, R_c3_c2_option2, t_c3_c2, plot_FLAG=True, filtering=False)
             
-        if R_c3_c2_initial is None:
-            raise ValueError("No valid pose found")
+        # if R_c3_c2_initial is None:
+        #     raise ValueError("No valid pose found")
         
-        # Get new matches for c3-c2
-        # WARNING: Points should be plotted in c1 frame
-        # Should multiply new points by T_c1_c2_opt
-        # TODO: FIX NAMING! of images they got mixed up often
-        new_X_c1 = triangulate_new_points_for_pair(
-            database_path, adjacency, images_info,
-            c1_id = c_ids[1], c2_id=c_ids[2],
-            R_c2_c1 = R_c3_c2_initial,  
-            t_c2_c1 = t_c3_c2,
-            K=K, plot_residuals=True, 
-            img1 = images_list[1], img2 = images_list[2], T_c1_c2 = T_c1_c2_opt)
+        # Triangulate for c3-c2
+        triangulate_new_points_for_pair_in_c1(database_path, adjacency, images_info,
+                                          c_ids[1], c_ids[2],
+                                          R_c2_c1_opt, t_c2_c1, R_c3_c1_pnp, t_c3_c1,
+                                          K, plot_residuals=True, img2=images_list[1], img3=images_list[2])
+        
+        # # Get new matches for c3-c2
+        # triangulate_new_points_for_pair(
+        #     database_path, adjacency, images_info,
+        #     c1_id = c_ids[1], c2_id=c_ids[2],
+        #     R_c2_c1 = R_c3_c2_initial,  
+        #     t_c2_c1 = t_c3_c2,
+        #     K=K, plot_residuals=ALL_VIZ_FLAG, 
+        #     img1 = images_list[1], img2 = images_list[2], T_c1_c2 = T_c1_c2_opt)
         
         all_triangulated_points_3d = get_all_3d_points(database_path)
         all_triangulated_points_3d = all_triangulated_points_3d.T
@@ -454,74 +467,121 @@ if __name__ == "__main__":
             },
             c_ids[2]: {
                 "fixed": False,
-                "rvec": rvec_c2_c1_opt,
-                "tvec": t_c2_c1_opt,
+                "rvec": rvec_c3_c1_pnp,
+                "tvec": t_c3_c1_pnp,
                 "index": 1
             },
         }
 
-         # Run BA
-        result = run_incremental_ba(database_path, camera_data, obs_list, points_3d_dict, K)
+        visualize_residuals_from_cameras(obs_list, points_3d_dict, camera_data, K, images_list, c_ids)
+
+
         
+         # Run BA
+        result = run_incremental_ba(camera_data, obs_list, points_3d_dict, K)
+
+        ba_cuhunks_dir = "ba_chunks"
+        ba_cachedir = os.path.join(cache_dir, ba_cuhunks_dir)
+        np.save(os.path.join(ba_cachedir, "ba_params_full_least_debugging1.npy"), result)
+
     
-    # if VISUALIZATION_FULL_BUNDLE_3CAMERAS_FLAG:
-    #     #load from cache
-    #     theta_c2_c1_opt = load_matrix('../data/cache/theta_c2_c1_opt.txt')
-    #     t_c2_c1_opt = load_matrix('../data/cache/t_c2_c1_opt.txt')
-    #     theta_c3_c1_opt = load_matrix('../data/cache/theta_c3_c1_opt.txt')
-    #     t_c3_c1_opt = load_matrix('../data/cache/t_c3_c1_opt.txt')
-    #     X_c1_opt = load_matrix('../data/cache/X_c1_w_opt.txt')
+    if VISUALIZATION_FULL_BUNDLE_3CAMERAS_FLAG:
+        # Load data
+        # load from cache
+        ba_cuhunks_dir = "ba_chunks"
+        ba_cachedir = os.path.join(cache_dir, ba_cuhunks_dir)
+        params_opt = np.load(os.path.join(ba_cachedir, "ba_params_full_least_debugging1.npy"))
+        # params_opt = np.load(os.path.join(ba_cachedir, "ba_params_chunk_2.npy"))
 
-    #     # Recover results
 
-    #     X_c1_w_opt_h = np.vstack((X_c1_opt, np.ones((1, X_c1_opt.shape[1]))))
+        # Load from cache
+        rvec_c3_c1_pnp = load_matrix(os.path.join(cache_dir, "rvec_c3_c1_pnp.txt"))
+        t_c3_c1_pnp = load_matrix(os.path.join(cache_dir, "t_c3_c1_pnp.txt"))
+        rvec_c2_c1_opt = load_matrix(os.path.join(cache_dir, "theta_c2_c1_opt.txt"))
+        t_c2_c1_opt = load_matrix(os.path.join(cache_dir, "t_c2_c1_opt.txt"))
+        
+        # Buld a new data-structure for observation list list and 3d points dictionary
+        # obs_list contains: img_id, pid, x_meas, y_meas
+        # points_3d_dict contains: pid, X, Y, Z
+        obs_list, points_3d_dict = load_observations_and_points(database_path)
 
-    #     # Convert rotation vectors back to matrices for visualization
-    #     R_c2_c1_opt = expm(crossMatrix(theta_c2_c1_opt))
-    #     R_c3_c1_opt = expm(crossMatrix(theta_c3_c1_opt))
+        # Build a new data-structure to store the cameras poses. Assume camera 1 is fixed in the origin. All cameras share K intrinsics, loaded at start
+        # TODO: to fully automate the process later for all cameras: I should store initial rvec and tvec in db in the two_view_geometries
+        camera_data = {
+            c_ids[0]: {
+                "fixed": True,
+                "rvec": np.zeros(3),  
+                "tvec": np.zeros(3),
+                "index": None         # not used if fixed
+            },
+            c_ids[1]: {
+                "fixed": False,
+                "rvec": rvec_c2_c1_opt,  
+                "tvec": t_c2_c1_opt,
+                "index": 0              # offset for indexing
+            },
+            c_ids[2]: {
+                "fixed": False,
+                "rvec": rvec_c3_c1_pnp,
+                "tvec": t_c3_c1_pnp,
+                "index": 1
+            },
+        }
 
-    #     # Print results
-    #     print("Optimized Camera 2 Rotation Vector:", theta_c2_c1_opt)
-    #     print("Optimized Camera 2 Translation Vector:", t_c2_c1_opt)
-    #     print("Optimized Camera 3 Rotation Angle (around y-axis):", theta_c3_c1_opt)
-    #     print("Optimized Camera 3 Translation (along z-axis):", t_c3_c1_opt)
-
-    #     # Initiliaze the visualization
-    #     R_c2_c1_initial = expm(crossMatrix(theta_c2_c1_initial))
-    #     T_c2_c1_initial = ensamble_T(R_c2_c1_initial,t_c2_c1_initial)
-       
-    #     T_c3_c1_initial = ensamble_T(R_c3_c1_initial,t_c3_c1_initial)
-       
-    #     T_c1_c2_initial = np.linalg.inv(T_c2_c1_initial)
-    #     T_c1_c3_initial = np.linalg.inv(T_c3_c1_initial)
-
-    #     R_c2_c1_opt = expm(crossMatrix(theta_c2_c1_opt))
-    #     T_c2_c1_opt = ensamble_T(R_c2_c1_opt,t_c2_c1_opt)
-
-    #     R_c3_c1_opt = expm(crossMatrix(theta_c3_c1_opt))
-    #     T_c3_c1_opt = ensamble_T(R_c3_c1_opt,t_c3_c1_opt)
-
-    #     T_c1_c2_opt = np.linalg.inv(T_c2_c1_opt)
-    #     T_c1_c3_opt = np.linalg.inv(T_c3_c1_opt)
-
-    #     P_c1_c1 = get_projection_matrix(K, np.eye(4))
-    #     P_c2_c1_opt = get_projection_matrix(K, T_c2_c1_opt)
-    #     P_c3_c1_opt = get_projection_matrix(K, T_c3_c1_opt)
-
-    #     x1_proj_opt = project_to_camera(P_c1_c1, X_c1_w_opt_h)
-    #     x2_proj_opt = project_to_camera(P_c2_c1_opt, X_c1_w_opt_h)
-    #     x3_proj_opt = project_to_camera(P_c3_c1_opt, X_c1_w_opt_h)
-
-    #     # View residuals from optimized calculations
-    #     fig, axs = plt.subplots(1, 3, figsize=(18, 6))
-    #     visualize_residuals(image1, x1, x1_proj_opt, "Optimized Residuals in Image 1",ax=axs[0])
-    #     visualize_residuals(image2, x2, x2_proj_opt, 'Optimized Residuals in Image 2',ax=axs[1])
-    #     visualize_residuals(image3, x3, x3_proj_opt, 'Optimized Residuals in Image 3',ax=axs[2])
-    #     plt.tight_layout()
-    #     plt.show()
+        # calculate the number of free cameras
+        n_free = len([cid for cid, cinfo in camera_data.items() if not cinfo["fixed"]])
+        offset_3d = 6*n_free
+        # WARNING: the 3D points where stacked in another other than the prvious bundle
+        X_c1_opt = params_opt[offset_3d:]
+        # Recover X_c1_opt that was flatten in X,Y,Z to a 3xN np array
+        X_c1_opt = X_c1_opt.reshape(-1, 3)
+        X_c1_opt = X_c1_opt.T
 
 
 
+        # get unique point ids from points_3d_dict
+        unique_pids = list(points_3d_dict.keys())
+        
+        # update camera_data
+        for cid, cinfo in camera_data.items():
+            if cinfo["fixed"]:
+                # no changes
+                continue
+            idx = cinfo["index"]
+            start = idx*6
+            rvec_opt = params_opt[start:start+3]
+            tvec_opt = params_opt[start+3:start+6]
+            camera_data[cid]["rvec"] = rvec_opt
+            camera_data[cid]["tvec"] = tvec_opt
+
+        
+        # update points
+        for i, pid in enumerate(unique_pids):
+            points_3d_dict[pid] = X_c1_opt[:,i]  # store the updated coords
+        
+
+        #TODO: plot 3D
+        # Extract T matrices to plot camera poses
+        T_c1_c3_opt = extract_camera_pose(camera_data, c_ids[2])
+        T_c1_c2_opt = extract_camera_pose(camera_data, c_ids[1])
 
 
-    #Step 8 Repeat steps 4 to 8 for the rest of the cameras. Some effort should be done to automate the process
+        # X_c1_opt shold be (3,N)
+        visualize_3D_3cameras(T_c1_c3_opt,T_c1_c2_opt,X_c1_opt)
+
+
+
+        #TODO: plot residuals
+        visualize_residuals_from_cameras(obs_list, points_3d_dict, camera_data, K, images_list, c_ids)
+
+
+
+            #TODO: update cameras poses and 3D points in the database
+        #update in db
+
+
+
+
+
+
+    #Step 8 Repeat steps 4 to 8 for the rest of the cameras. Some effort should be done to automate the process_

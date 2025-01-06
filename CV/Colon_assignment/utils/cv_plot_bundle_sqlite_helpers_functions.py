@@ -65,7 +65,6 @@ def is_valid_pose(X, P1, P2):
 
     return np.all(depth1 > 1e-6) and np.all(depth2 > 0)
 
-#BUG?: Need to check the projection of the second camera (or maybe is the plotting). 
 def count_valid_points(X, P1, P2):
     """
      Count the number of valid points in front of both cameras.
@@ -77,17 +76,14 @@ def count_valid_points(X, P1, P2):
     """
     depth1 = P1[2, :] @ X
     depth2 = P2[2, :] @ X
-    # valid_depths = (depth1 > 1e-6) & (depth2 > 1e-6)
     valid_depths1 = depth1 > 1e-6
     valid_depths2 = depth2 > 1e-6
-    ##################################### CHECK IF IT IS CORRECT ######################################
-    # HARDCODE to negative, check in future if it is correct
-    # valid_depths2 = depth2 < 1e-6
-    #################################################################################################### 
+
     count_valid_depths1 = np.sum(valid_depths1)
     count_valid_depths2 = np.sum(valid_depths2)
     count_all_valid_depths = count_valid_depths1 + count_valid_depths2
-    return count_all_valid_depths
+
+    return count_all_valid_depths, valid_depths1, valid_depths2
     
 def select_correct_pose_harsh(x1_h, x2_h, K1, K2, R1, R2, t):
     """
@@ -174,7 +170,7 @@ def select_correct_pose_harsh(x1_h, x2_h, K1, K2, R1, R2, t):
         print("No valid pose found, try with a different method")
         return None, None, None
 
-def select_correct_pose_flexible(x1_h, x2_h, K1, K2, R1, R2, t, plot_FLAG = False):
+def select_correct_pose_flexible_and_filter(x1_h, x2_h, K1, K2, R1, R2, t, match_list=None, plot_FLAG = False, filtering=True):
     """
     Select the best pose from the four possible solutions.
     """
@@ -196,27 +192,41 @@ def select_correct_pose_flexible(x1_h, x2_h, K1, K2, R1, R2, t, plot_FLAG = Fals
     X2 = triangulate_points(x1_h, x2_h, P1, P2_2)
     X3 = triangulate_points(x1_h, x2_h, P1, P2_3)
     X4 = triangulate_points(x1_h, x2_h, P1, P2_4)
+
+    ##Plot the 3D cameras and the 3D points
+    #Ensemble T
+    T1 = ensamble_T(R1, t)
+    T2 = ensamble_T(R1, -t)
+    T3 = ensamble_T(R2, t)
+    T4 = ensamble_T(R2, -t)
+
+    # Transpose T
+    T1 = np.linalg.inv(T1)
+    T2 = np.linalg.inv(T2)
+    T3 = np.linalg.inv(T3)
+    T4 = np.linalg.inv(T4)
+    
     
     if plot_FLAG:
         ##Plot the 3D cameras and the 3D points
         #P2_1
         ax = plt.axes(projection='3d', adjustable='box')
-        fig3D = draw_possible_poses(ax, R1_t, X1)
+        fig3D = draw_possible_poses(ax, T1, X1)
         adjust_plot_limits(ax, X1)
         plt.title('Possible Pose R1_t')
         plt.show()
         #P2_2
-        fig3D = draw_possible_poses(ax, R1_minust, X2)
+        fig3D = draw_possible_poses(ax, T2, X2)
         adjust_plot_limits(ax, X1)
         plt.title('Possible Pose R1_minust')
         plt.show()
         #P2_3
-        fig3D = draw_possible_poses(ax, R2_t, X3)
+        fig3D = draw_possible_poses(ax, T3, X3)
         adjust_plot_limits(ax, X1)
         plt.title('Possible Pose R2_t')
         plt.show()
         #P2_4
-        fig3D = draw_possible_poses(ax, R2_minust, X4)
+        fig3D = draw_possible_poses(ax, T4, X4)
         adjust_plot_limits(ax, X1)
         plt.title('Possible Pose R2_minust')
         plt.show()
@@ -224,26 +234,44 @@ def select_correct_pose_flexible(x1_h, x2_h, K1, K2, R1, R2, t, plot_FLAG = Fals
 
     # Count valid points for each pose
     # BUG: Check why depths in camera2 are negative
-    valid_counts = [
-        count_valid_points(X1, P1, P2_1),
-        count_valid_points(X2, P1, P2_2),
-        count_valid_points(X3, P1, P2_3),
-        count_valid_points(X4, P1, P2_4)
-    ]
+    count1, valid_depths1X1, validdepths2X1 = count_valid_points(X1, P1, P2_1)
+    count2, valid_depths1X2, validdepths2X2 = count_valid_points(X2, P1, P2_2)
+    count3, valid_depths1X3, validdepths2X3 = count_valid_points(X3, P1, P2_3)
+    count4, valid_depths1X4, validdepths2X4 = count_valid_points(X4, P1, P2_4)
+
+    valid_counts = [count1, count2, count3, count4]
+    valid_depths1 = [valid_depths1X1, valid_depths1X2, valid_depths1X3, valid_depths1X4]
+    valid_depths2 = [validdepths2X1, validdepths2X2, validdepths2X3, validdepths2X4]
+    X_list = [X1, X2, X3, X4]
+
     print("Valid counts")
     print(valid_counts)
     # Select the pose with the maximum valid points
     best_pose_idx = np.argmax(valid_counts)
-    
-    #DEBUG:
-    # best_pose_idx = 1
 
-    poses = [(R1, t, X1), (R1, -t, X2), (R2, t, X3), (R2, -t, X4)]
+    X = X_list[best_pose_idx]
+    
+    # # #DEBUG:
+    # best_pose_idx = 1
+    if filtering : 
+        # For best pose id filter X x1_h and x2_h
+        X_filtered = X[:, valid_depths1[best_pose_idx] & valid_depths2[best_pose_idx]]
+        x1_h = x1_h[:, valid_depths1[best_pose_idx] & valid_depths2[best_pose_idx]]
+        x2_h = x2_h[:, valid_depths1[best_pose_idx] & valid_depths2[best_pose_idx]]
+        match_list = [match_list[i] for i in range(len(match_list)) if valid_depths1[best_pose_idx][i] & valid_depths2[best_pose_idx][i]]
+
+        poses = [(R1, t, X_filtered, x1_h, x2_h, match_list), (R1, -t, X_filtered,x1_h, x2_h,match_list),
+              (R2, t, X_filtered,x1_h, x2_h,match_list), (R2, -t, X_filtered,x1_h, x2_h,match_list)]
+    else:
+        poses = [(R1, t, X, x1_h, x2_h, match_list), (R1, -t, X, x1_h, x2_h, match_list),
+              (R2, t, X, x1_h, x2_h, match_list), (R2, -t, X, x1_h, x2_h, match_list)]
 
     if valid_counts[best_pose_idx] == 0:
         raise ValueError("No valid pose found!")
     print("Best_pose_idx")
     print(best_pose_idx)
+    if filtering:
+        print(f"Points filtered: {X.shape[1] - X_filtered.shape[1]} with negative depth, out of {X.shape[1]}")
     return poses[best_pose_idx]  # Return the best pose (R, t, X)
 
 def crossMatrix(x):
@@ -335,6 +363,7 @@ def triangulate_points(x1, x2, P1, P2):
         - Inputs:
             · x1, x2 (np.array): 2D points from image 1 and 2 (shape: 2 x num_points, where each column is a point)
             · P1, P2 (np.array): Projection matrices (3x3) for camera 1 and 2
+            
         - Output:
             · np.array: Triangulated points.
     """
@@ -506,7 +535,8 @@ def own_PnP(pts_3D, pts_2D, K, initial_guess):
     # initial_guess = np.zeros(6)
     # initial_guess[3:] = centroid_3D - (centroid_3D/2)  # Use the negative centroid as an initial guess for translation
 
-    result = least_squares(reprojection_error_for_pnp, initial_guess, args=(pts_3D, pts_2D, K))
+    result = least_squares(reprojection_error_for_pnp, initial_guess, args=(pts_3D, pts_2D, K),
+                           method="lm", verbose=2, ftol=1e-2)
     
     R_vec, t = result.x[:3], result.x[3:]
     return R_vec, t
@@ -559,78 +589,312 @@ def triangulate_new_points_for_pair(db_name, adjacency, images_info,
     # P1 is identity matrix
     P1 = get_projection_matrix(K, np.eye(4))
     P2 = get_projection_matrix(K, ensamble_T(R_c2_c1, t_c2_c1))
-
     
-    X_c1 = triangulate_points(pts2d_c2, pts2d_c1, P1, P2)
+    
+    X_c1 = triangulate_points(pts2d_c1, pts2d_c2, P1, P2)
     print(f"Triangulated {X_c1.shape[1]} new 3D points from cameras {c1_id} & {c2_id}.")
     
-    if T_c1_c2 is not None:
-        X_c1 = np.dot(T_c1_c2, X_c1)
-        
+
+    
+    # TODO: compute resiudals and filter X , x1, x2 and match list
+    X_c1, pts2d_c1, pts2d_c2, new_matches = compute_residulas_and_filter(pts2d_c1, pts2d_c2, X_c1, R_c2_c1, t_c2_c1, 
+                                                                        new_matches, K, img1, img2, c1_id, c2_id,
+                                                                          percentile_filter = 90, plot_FLAG = True)
+
+    # TODO: filter X points with negative depth
+    count, valid_depths1, valid_depths2 = count_valid_points(X_c1, P1, P2)
+    X_c1_filtered = X_c1[:, valid_depths1 & valid_depths2]
+    pts2d_c1 = pts2d_c1[:, valid_depths1 & valid_depths2]
+    pts2d_c2 = pts2d_c2[:, valid_depths1 & valid_depths2]
+    new_matches = [new_matches[i] for i in range(len(new_matches)) if valid_depths1[i] & valid_depths2[i]]
+
+    print(f"Filtered out {X_c1.shape[1] - X_c1_filtered.shape[1]} points with negative depth.")
+
+    # Filter outliers with a percentile of the norm of the X_c1_filtered 3D point
+    # Calculate norm vector of X_c1_filtered
+    norms = np.linalg.norm(X_c1_filtered[:3, :], axis=0)
+    percentile_norm = np.percentile(norms, 90)
+    filtered_indices = norms <= percentile_norm
+
+    X_c1_norm_filtered = X_c1_filtered[:, filtered_indices]
+    pts2d_c1 = pts2d_c1[:, filtered_indices]
+    pts2d_c2 = pts2d_c2[:, filtered_indices]
+    new_matches = [new_matches[i] for i in range(len(new_matches)) if filtered_indices[i]]
+
+    print(f"Filtered out {X_c1_filtered.shape[1] - X_c1_norm_filtered.shape[1]} points with high norm.")
+    print(f"Inserting {X_c1_norm_filtered.shape[1]} 3D points into the database.")
+
+
+
     if plot_residuals:
         fig, axs = plt.subplots(1, 2, figsize=(18, 6))
-        visualize_residuals(img1, pts2d_c1, project_to_camera(P1, X_c1), "Residuals for camera 1", ax=axs[0])
-        visualize_residuals(img2, pts2d_c2, project_to_camera(P2, X_c1), "Residuals for camera 2", ax=axs[1])
+        visualize_residuals(img1, pts2d_c1, project_to_camera(P1, X_c1_norm_filtered), f"Depth filtered Camera id {c1_id}", ax=axs[0], adjust_limits=False)
+        visualize_residuals(img2, pts2d_c2, project_to_camera(P2, X_c1_norm_filtered),  f"Depth filteredCamera id {c2_id}", ax=axs[1], adjust_limits=False)
         plt.tight_layout()
         plt.show()
+
+    # Change of coordinates
+    if T_c1_c2 is not None:
+        X_c1 = np.dot(T_c1_c2, X_c1)
 
     # 4) Insert 3D points into DB & memory
     insert_3d_points_in_memory_and_db(
         db_name, images_info,
-        X_c1, new_matches,
+        X_c1_norm_filtered, new_matches,
         c1_id, c2_id
     )
 
     print("Done inserting new 3D points.")
 
-    return X_c1
+    return 
 
-def triangulate_new_points_for_pair_with_translation(db_name, adjacency, images_info,
-                                    c1_id, c2_id,
-                                    R_c3_c2, t_c3_c2, K, T_c1_c2,
-                                    plot_residuals= False, img1=None, img2=None,
-                                    ):
 
+def triangulate_new_points_for_pair_in_c1(db_name, adjacency, images_info,
+                                          c2_id, c3_id,
+                                          R_c2_c1, t_c2_c1, R_c3_c1, t_c3_c1,
+                                          K, plot_residuals=False, img2=None, img3=None):
     # 1) Find untriangulated pairs
-    new_matches = find_untriangulated_matches(images_info, adjacency, c1_id, c2_id)
+    new_matches = find_untriangulated_matches(images_info, adjacency, c2_id, c3_id)
     if not new_matches:
-        print(f"No new matches to triangulate between {c1_id} and {c2_id}")
+        print(f"No new matches to triangulate between {c2_id} and {c3_id}")
         return
 
     # 2) Gather pixel coords
-    pts2d_c1 = []
     pts2d_c2 = []
-    for (kp1, kp2) in new_matches:
-        (c1, r1) = images_info[c1_id]["keypoints"][kp1]  # (col, row)
+    pts2d_c3 = []
+    for (kp2, kp3) in new_matches:
         (c2, r2) = images_info[c2_id]["keypoints"][kp2]
-        # reorder to (x,y) => (col,row)
-        pts2d_c1.append([c1, r1])
+        (c3, r3) = images_info[c3_id]["keypoints"][kp3]
         pts2d_c2.append([c2, r2])
+        pts2d_c3.append([c3, r3])
 
-    pts2d_c1 = np.array(pts2d_c1, dtype=np.float64).T  # shape (2, N)
     pts2d_c2 = np.array(pts2d_c2, dtype=np.float64).T  # shape (2, N)
+    pts2d_c3 = np.array(pts2d_c3, dtype=np.float64).T  # shape (2, N)
 
-    # 3) Triangulate
-    # P1 is identity matrix
-    P1 = np.hstack((np.eye(3), np.zeros((3, 1))))
-    P2 = get_projection_matrix(K, ensamble_T(R_c3_c2, t_c3_c2))
+    # 3) Triangulate in C1 frame
+    T_c2_c1 = ensamble_T(R_c2_c1, t_c2_c1)
+    T_c3_c1 = ensamble_T(R_c3_c1, t_c3_c1)
 
-    X_c2 = triangulate_points(pts2d_c1, pts2d_c2, P1, P2)
-    print(f"Triangulated {X_c2.shape[1]} new 3D points from cameras {c1_id} & {c2_id}.")
+    P_c2 = get_projection_matrix(K, T_c2_c1)
+    P_c3 = get_projection_matrix(K, T_c3_c1)
+    
+    X_c1 = triangulate_points(pts2d_c2, pts2d_c3, P_c2, P_c3)
+    print(f"Triangulated {X_c1.shape[1]} new 3D points from cameras {c2_id} & {c3_id}.")
 
-    #4) Change of coordinates
-    X_c1 = np.dot(T_c1_c2, X_c2)
+    T_c1_c2 = np.linalg.inv(T_c2_c1)
+    T_c1_c3 = np.linalg.inv(T_c3_c1)
 
-    # 5) Insert 3D points into DB & memory
-    insert_3d_points_in_memory_and_db(
-        db_name, images_info,
-        X_c1, new_matches,
-        c1_id, c2_id
+    visualize_3D_3cameras(T_c1_c2,T_c1_c3,X_c1)
+
+
+    X_c1, pts2d_c2, pts2d_c3, new_matches = compute_residulas_and_filter_in_c1(pts2d_c2, pts2d_c3, X_c1, R_c2_c1, t_c2_c1, 
+                                R_c3_c1, t_c3_c1, new_matches, K, img2, img3, c2_id, c3_id, 
+                                percentile_filter = 90, plot_FLAG = True)
+
+    # 4) Filter points with negative depths
+    count, valid_depths2, valid_depths3 = count_valid_points(X_c1, P_c2, P_c3)
+    X_c1_filtered = X_c1[:, valid_depths2 & valid_depths3]
+    pts2d_c2 = pts2d_c2[:, valid_depths2 & valid_depths3]
+    pts2d_c3 = pts2d_c3[:, valid_depths2 & valid_depths3]
+    new_matches = [new_matches[i] for i in range(len(new_matches)) if valid_depths2[i] & valid_depths3[i]]
+    
+    print(f"Filtered out {X_c1.shape[1] - X_c1_filtered.shape[1]} points with negative depth.")
+    
+    # Filter outliers with a percentile of the norm of the X_c1_filtered 3D point
+    # Calculate norm vector of X_c1_filtered
+    norms = np.linalg.norm(X_c1_filtered[:3, :], axis=0)
+    percentile_norm = np.percentile(norms, 90)
+    filtered_indices = norms <= percentile_norm
+
+    X_c1_norm_filtered = X_c1_filtered[:, filtered_indices]
+    pts2d_c2 = pts2d_c2[:, filtered_indices]
+    pts2d_c3 = pts2d_c3[:, filtered_indices]
+    new_matches = [new_matches[i] for i in range(len(new_matches)) if filtered_indices[i]]
+
+    print(f"Filtered out {X_c1_filtered.shape[1] - X_c1_norm_filtered.shape[1]} points with high norm.")
+    print(f"Inserting {X_c1_norm_filtered.shape[1]} 3D points into the database.")
+
+
+
+    if plot_residuals:
+        fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+        visualize_residuals(img2, pts2d_c2, project_to_camera(P_c2, X_c1_norm_filtered), f"Depth filtered Camera id {c2_id}", ax=axs[0], adjust_limits=False)
+        visualize_residuals(img3, pts2d_c3, project_to_camera(P_c3, X_c1_norm_filtered),  f"Depth filteredCamera id {c3_id}", ax=axs[1], adjust_limits=False)
+        plt.tight_layout()
+        plt.show()
+
+    visualize_3D_3cameras(T_c1_c3,T_c1_c2,X_c1_filtered)
+
+    # Run a BA to refine the 3D points
+    params = X_c1_norm_filtered[:3, :].flatten()
+
+    def reprojection_error_for_ba(params, pts2d_c2, pts2d_c3, P_c2, P_c3):
+        X = params.reshape(3, -1)
+        X_h = np.vstack((X, np.ones(X.shape[1])))
+        x2_proj = project_to_camera(P_c2, X_h)
+        x3_proj = project_to_camera(P_c3, X_h)
+        residuals_c2 = pts2d_c2[:2, :] - x2_proj[:2, :]
+        residuals_c3 = pts2d_c3[:2, :] - x3_proj[:2, :]
+        residuals = np.hstack((residuals_c2.ravel(), residuals_c3.ravel()))
+        print
+        return residuals
+
+    result = least_squares(reprojection_error_for_ba,
+        params,
+        args=(pts2d_c2, pts2d_c3, P_c2, P_c3),
+        method="lm",
+        verbose=2,
+        ftol=1e-2,
     )
 
-    print("Done inserting new 3D points.")
+    X_c1_optimized = result.x.reshape(3, -1)
 
-    return X_c1
+    visualize_3D_3cameras(T_c1_c3,T_c1_c2,X_c1_optimized)
+
+    # 5) Insert into DB
+    insert_3d_points_in_memory_and_db(
+        db_name, images_info,
+        X_c1_optimized, new_matches,
+        c2_id, c3_id
+    )
+    print("Done inserting new 3D points.")
+    return
+
+
+def compute_residulas_and_filter_in_c1(pts2d_c2, pts2d_c3, X_c1, R_c2_c1, t_c2_c1, 
+                                R_c3_c1, t_c3_c1, match_list, K, img2, img3, c2_id, c3_id, 
+                                percentile_filter = 90, plot_FLAG = True):
+        
+        # Visualize residuals between 2D points and reprojection of 3D points
+        T_c2_c1 = ensamble_T(R_c2_c1,t_c2_c1)
+        P_c2_c1 = get_projection_matrix(K, T_c2_c1)
+        x2_proj = project_to_camera(P_c2_c1, X_c1)
+
+        T_c3_c1 = ensamble_T(R_c3_c1,t_c3_c1)
+        P_c3_c1 = get_projection_matrix(K,T_c3_c1)
+        x3_proj = project_to_camera(P_c3_c1, X_c1)
+
+        if plot_FLAG:
+            fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+            visualize_residuals(img2, pts2d_c2, x2_proj, f"Initial Residuals in Image id {c2_id}", ax=axs[0], adjust_limits= False)
+            visualize_residuals(img3, pts2d_c3, x3_proj, f'Initial Residuals in Image id {c3_id}', ax=axs[1], adjust_limits= False)
+            plt.tight_layout()
+            plt.show()
+
+        res_x2 = pts2d_c2[:2,:] - x2_proj[:2,:]
+        res_x3 = pts2d_c3[:2,:] - x3_proj[:2,:]
+
+        # Compute the norm of each vector in res_x1
+        res_x2_norms = np.linalg.norm(res_x2, axis=0)
+        res_x3_norms = np.linalg.norm(res_x3, axis=0)
+
+        # Calculate the 95th percentile of the norms
+        percentile_res_x2 = np.percentile(res_x2_norms, percentile_filter)
+        percentile_res_x3 = np.percentile(res_x3_norms, percentile_filter)
+
+        # Filter the residuals based on the 95th percentile
+        filtered_indices_res_x2 = res_x2_norms <= percentile_res_x2
+        filtered_indices_res_x3 = res_x3_norms <= percentile_res_x3
+
+        #Filter all the points
+        X_c1_filtered = X_c1[:, filtered_indices_res_x2 & filtered_indices_res_x3]
+        pts2d_c2 = pts2d_c2[:, filtered_indices_res_x2 & filtered_indices_res_x3]
+        pts2d_c3 = pts2d_c3[:, filtered_indices_res_x2 & filtered_indices_res_x3]
+        x2_proj = x2_proj[:, filtered_indices_res_x2 & filtered_indices_res_x3]
+        x3_proj = x3_proj[:, filtered_indices_res_x2 & filtered_indices_res_x3]
+        match_list = [match_list[i] for i in range(len(match_list)) if filtered_indices_res_x2[i] & filtered_indices_res_x3[i]]
+
+        #Print percentage of points filtered
+        print(f"{X_c1.shape[1] - X_c1_filtered.shape[1]} points with high initial residuals filtered out of {X_c1.shape[1]}")
+
+
+        if plot_FLAG:
+            fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+            visualize_residuals(img2, pts2d_c2, x2_proj, f"Filtered Residuals in Image id {c2_id}", ax=axs[0], adjust_limits= False)
+            visualize_residuals(img3, pts2d_c3, x3_proj, f'Filtered Residuals in Image id {c3_id}', ax=axs[1], adjust_limits= False)
+            plt.tight_layout()
+            plt.show()
+
+        return X_c1_filtered, pts2d_c2, pts2d_c3, match_list
+    
+
+
+def compute_residulas_and_filter(x1_h, x2_h, X_c1_initial, R_c2_c1_initial, t_c2_c1_initial, match_list, K, 
+                                img1, img2, c_id_1, c_id_2, percentile_filter = 90, plot_FLAG = True):
+
+        # Visualize residuals between 2D points and reprojection of 3D points
+        #From World to image4 that is c1
+        P_c1_c1_initial = get_projection_matrix(K, np.eye(4))
+        x1_proj_initial = project_to_camera(P_c1_c1_initial, X_c1_initial)
+        # Convert X1 to homogeneous coordinates (4 x nPoints)
+
+        #From World to image2
+        T_c2_c1_initial = ensamble_T(R_c2_c1_initial,t_c2_c1_initial)
+        P_c2_c1_initial = get_projection_matrix(K,T_c2_c1_initial)
+        x2_proj_initial = project_to_camera(P_c2_c1_initial, X_c1_initial)
+
+
+        if plot_FLAG:
+            fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+            visualize_residuals(img1, x1_h, x1_proj_initial, f"Initial Residuals in Image id {c_id_1}", ax=axs[0], adjust_limits= False)
+            visualize_residuals(img2, x2_h, x2_proj_initial, f'Initial Residuals in Image id {c_id_2}', ax=axs[1], adjust_limits= False)
+            plt.tight_layout()
+            plt.show()
+
+        # Compute residuals
+        res_x1 = x1_h[:2,:] - x1_proj_initial[:2]
+        res_x2 = x2_h[:2,:] - x2_proj_initial[:2]
+
+        # Filter out the points in X_c1_initial with high residuals
+        # Compute the norm of each vector in res_x1
+        res_x1_norms = np.linalg.norm(res_x1, axis=0)
+        res_x2_norms = np.linalg.norm(res_x2, axis=0)
+
+        # Calculate the 95th percentile of the norms
+        percentile_res_x1 = np.percentile(res_x1_norms, percentile_filter)
+        percentile_res_x2 = np.percentile(res_x2_norms, percentile_filter)
+
+        # Filter the residuals based on the 95th percentile
+        filtered_indices_res_x1 = res_x1_norms <= percentile_res_x1
+        filtered_indices_res_x2 = res_x2_norms <= percentile_res_x2
+
+        #Filter all the points
+        X_c1 = X_c1_initial[:, filtered_indices_res_x1 & filtered_indices_res_x2]
+        x1_h = x1_h[:, filtered_indices_res_x1 & filtered_indices_res_x2]
+        x2_h = x2_h[:, filtered_indices_res_x1 & filtered_indices_res_x2]
+        x1_proj_initial = x1_proj_initial[:, filtered_indices_res_x1 & filtered_indices_res_x2]
+        x2_proj_initial = x2_proj_initial[:, filtered_indices_res_x1 & filtered_indices_res_x2]
+        match_list = [match_list[i] for i in range(len(match_list)) if filtered_indices_res_x1[i] & filtered_indices_res_x2[i]]
+
+        #Print percentage of points filtered
+        print(f"{X_c1_initial.shape[1] - X_c1.shape[1]} points with high initial residuals filtered out of {X_c1_initial.shape[1]}")
+
+
+        if plot_FLAG:
+            fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+            visualize_residuals(img1, x1_h, x1_proj_initial, f"Filtered Residuals in Image id {c_id_1}", ax=axs[0], adjust_limits= False)
+            visualize_residuals(img2, x2_h, x2_proj_initial, f'Filtered Residuals in Image id {c_id_2}', ax=axs[1], adjust_limits= False)
+            plt.tight_layout()
+            plt.show()
+
+        return X_c1, x1_h, x2_h, match_list
+
+def get_points_seen_by_camera(database_path, images_info, c_id_3,c_id_1, match_list_3_1, pnp_points_2d, pnp_points_3d, x1_for_pnp):
+
+    for (kp3, kp1) in match_list_3_1:
+        if kp1 in images_info[c_id_1]["kp3D"]: 
+            p3d_id = images_info[c_id_1]["kp3D"][kp1]
+            if p3d_id is not None:
+                # Query its 3D coordinates from DB or store it in memory
+                X, Y, Z = get_3d_point_coordinates(database_path, p3d_id)
+                (c3, r3) = images_info[c_id_3]["keypoints"][kp3] 
+                (c1, r1) = images_info[c_id_1]["keypoints"][kp1]
+                pnp_points_2d.append([c3, r3])
+                pnp_points_3d.append([X, Y, Z])
+                x1_for_pnp.append([c1, r1])
+    
+    return pnp_points_2d, pnp_points_3d, x1_for_pnp
+
 
 #endregion
 
@@ -733,7 +997,7 @@ def drawRefSystem(ax, T_w_c, strStyle, nameStr):
     draw3DLine(ax, T_w_c[0:3, 3:4], T_w_c[0:3, 3:4] + T_w_c[0:3, 2:3], strStyle, 'b', 1)
     ax.text(np.squeeze( T_w_c[0, 3]+0.1), np.squeeze( T_w_c[1, 3]+0.1), np.squeeze( T_w_c[2, 3]+0.1), nameStr)           
 
-def visualize_residuals(image, observed_points, projected_points, title, ax=None):
+def visualize_residuals(image, observed_points, projected_points, title, ax=None, adjust_limits=True):
     """
     Visualize residuals between observed and projected points on an image.
     
@@ -753,8 +1017,9 @@ def visualize_residuals(image, observed_points, projected_points, title, ax=None
     for i in range(observed_points.shape[1]):
         ax.plot([observed_points[0, i], projected_points[0, i]], [observed_points[1, i], projected_points[1, i]], 'g-')
     
-    ax.set_xlim([0, image.shape[1]])
-    ax.set_ylim([image.shape[0], 0])
+    if adjust_limits:
+        ax.set_xlim([0, image.shape[1]])
+        ax.set_ylim([image.shape[0], 0])
     
     ax.set_title(title)
     ax.legend()
@@ -995,6 +1260,37 @@ def visualize_epipolar_lines(F, img1, img2, show_epipoles=False):
     print('\nClose the figure to continue. Select a point from Img1 to get the equivalent epipolar line.')
     plt.show()
 
+# Visualize  residuals
+def visualize_residuals_from_cameras(obs_list, points_3d_dict, camera_data, K, images_list, c_ids):
+    fig, axs = plt.subplots(1, len(camera_data), figsize=(18, 6))
+    for cid, cinfo in camera_data.items():
+        rvec = cinfo["rvec"]
+        tvec = cinfo["tvec"]
+        R = expm(crossMatrix(rvec))
+        T = ensamble_T(R, tvec)
+        P = get_projection_matrix(K, T)
+        img_points = []
+        proj_points = []
+        for obs in obs_list:
+            if obs[0] == cid:
+                pid = obs[1]
+                x_meas = obs[2]
+                y_meas = obs[3]
+                X = points_3d_dict[pid]
+                X_h = np.hstack((X, 1))
+                X_h = np.array([X_h])
+                X_h = X_h.T
+                x_proj = project_to_camera(P, X_h)
+                x_proj = x_proj[:2]
+                x_proj = x_proj.reshape(-1)
+                x_proj = x_proj.tolist()
+                img_points.append([x_meas, y_meas])
+                proj_points.append(x_proj)
+        img_points = np.array(img_points).T
+        proj_points = np.array(proj_points).T
+        visualize_residuals(images_list[c_ids.index(cid)], img_points, proj_points, f"Initial Residuals in Image {cid}", ax=axs[c_ids.index(cid)], adjust_limits=False)
+    plt.tight_layout()
+    plt.show()
 
 #endregion
 
@@ -1002,7 +1298,7 @@ def visualize_epipolar_lines(F, img1, img2, show_epipoles=False):
 #################################################### BUNDLE FUNCTIONS ####################################################
 #region BUNDLE FUNCTIONS
 
-def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints):
+def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints, bundle_method="lm"):
     """
     -input:
     Op: Optimization parameters: this must include a paramtrization for T_21 
@@ -1054,11 +1350,11 @@ def resBundleProjection(Op, x1Data, x2Data, K_c, nPoints):
     res_x1_total = np.sum(np.abs(res_x1))
     res_x2_total = np.sum(np.abs(res_x1))
 
-
-    print("\n residuals 1:")
-    print(res_x1_total)
-    print("\n residuals 2:")
-    print(res_x2_total)
+    if bundle_method == "lm":
+        print("\n residuals 1:")
+        print(res_x1_total)
+        print("\n residuals 2:")
+        print(res_x2_total)
 
     residuals = np.hstack((res_x1.flatten(), res_x2.flatten()))
 
@@ -1129,7 +1425,7 @@ def resBundleProjection3Views12DoF(Op, x1Data, x2Data, x3Data, K_c, nPoints):
 
     return residuals
 
-def run_incremental_ba(db_name, camera_data, obs_list, points_3d_dict, K):
+def run_incremental_ba(camera_data, obs_list, points_3d_dict, K):
     """
     camera_data: a dict containing 'fixed' or 'free' for each camera, 
                  plus rvec/tvec initial guess, plus 'index' for free cameras
@@ -1151,51 +1447,21 @@ def run_incremental_ba(db_name, camera_data, obs_list, points_3d_dict, K):
 
         return  residual_function_generic(p, obs_list, points_3d_index, camera_data, K)
     
-    def print_residuals_callback_and_save_current_result(params, iteration=[0]):
-        # This is called once per iteration, not for every function evaluation
-        iteration[0] += 1
-        # Evaluate the residual sum if you want
-        current_res = residual_func(params)
-        print(f"Iteration {iteration[0]}, residual sum: {np.sum(np.abs(current_res))}")
-        np.save(f"./cache/ba_result_{iteration[0]}.npy", params)
+
     
     # 4) run BA
     result = least_squares(residual_func,
                             params_init, 
                             method='lm',
-                            callback=print_residuals_callback_and_save_current_result,
                             verbose=2,
+                            ftol = 1e-1,
                                                     )
+    
+    np.save("result", result.x)
     
     print("BA finished:", result.success, result.message)
 
-    # 5) parse result
-    params_opt = result.x
-    n_free = len([cid for cid, cinfo in camera_data.items() if not cinfo["fixed"]])
-    offset_3d = 6*n_free
-
-    # update camera_data
-    for cid, cinfo in camera_data.items():
-        if cinfo["fixed"]:
-            # no changes
-            continue
-        idx = cinfo["index"]
-        start = idx*6
-        rvec_opt = params_opt[start:start+3]
-        tvec_opt = params_opt[start+3:start+6]
-        camera_data[cid]["rvec"] = rvec_opt
-        camera_data[cid]["tvec"] = tvec_opt
-
-    # update points
-    for i, pid in enumerate(unique_pids):
-        start_p = offset_3d + 3*i
-        X_opt = params_opt[start_p:start_p+3]
-        points_3d_dict[pid] = X_opt  # store the updated coords
-    
-    #TODO: update cameras poses and 3D points in the database
-    #6) update in db
-
-    return params_opt
+    return result.x
 
 def residual_function_generic(params, obs_list, points_3d_index, camera_data, K):
     """
@@ -1231,15 +1497,15 @@ def residual_function_generic(params, obs_list, points_3d_index, camera_data, K)
         P = get_projection_matrix(K, T)
         x_h_proj = project_to_camera(P, X_h)
 
-        x_res = np.abs(x_meas -  x_h_proj[1])
-        y_res = np.abs(y_meas - x_h_proj[0])
+        x_res = np.abs(x_meas -  x_h_proj[0])
+        y_res = np.abs(y_meas - x_h_proj[1])
         res_total = x_res + y_res
         residuals.append(x_res)
         residuals.append(y_res)
         # print(f"Residuals for image {img_id} and point {p3d_id}: {res_total}")
 
     # print("Residuals sum:")
-    # print(np.sum(np.abs(residuals)))
+    print(np.sum(np.abs(residuals)))
     residuals = np.array(residuals).flatten()
     return residuals
 
@@ -1302,6 +1568,31 @@ def build_parameter_vector(camera_data, points_3d_dict):
     params_init = np.concatenate([camera_params_init, points_3d_init], axis=0)
     return params_init, unique_pids
 
+def chunked_least_squares(fun, x0, chunk_evals=50, max_chunks=10, **kwargs):
+    x_current = np.copy(x0)
+    for chunk_idx in range(max_chunks):
+        try:
+            res = least_squares(fun, x_current,
+                                max_nfev=chunk_evals,
+                                **kwargs)
+        except KeyboardInterrupt:
+            # If user hits Ctrl+C mid-chunk, we don't get a partial solution.
+            print("Interrupted mid-chunk. No new partial result available!")
+            break
+
+        # Get the partial result after finishing this chunk of max_nfev
+        x_current = res.x  
+        cost = 0.5 * np.sum(res.fun**2)
+        print(f"Chunk {chunk_idx+1}: cost={cost}, status={res.status}, message='{res.message}'")
+        
+        # Save partial result to disk
+        np.save(f"ba_params_chunk_{chunk_idx+1}.npy", x_current)
+        
+        if res.status > 0:
+            # It converged or otherwise stopped early => done
+            break
+
+    return x_current
 
 
 
@@ -1311,7 +1602,7 @@ def build_parameter_vector(camera_data, points_3d_dict):
 #################################################### SQLITE/ CORRESPONDENCE FUNCTIONS ####################################################
 #region SQLITE FUNCTIONS
 
-def extract_R_t_from_F(db_name, image_name1, image_name2, K):
+def extract_R_t_from_F(db_name, image_id1, image_id2, K):
 
     """
     Extract R and t from the F matrix stored in the database for a pair of images.
@@ -1323,26 +1614,32 @@ def extract_R_t_from_F(db_name, image_name1, image_name2, K):
     """
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
+    inverse_id_FLAG = False
 
     # Retrieve the F matrix for the image pair
-    pair_id = f"{image_name1}_{image_name2}"
+    pair_id = f"{image_id1}_{image_id2}"
     cursor.execute("SELECT F FROM two_view_geometries WHERE pair_id = ?;", (pair_id,))
     result = cursor.fetchone()
 
     if result is None:
         # Try with the names interchanged
-        pair_id = f"{image_name2}_{image_name1}"
+        pair_id = f"{image_id2}_{image_id1}"
         cursor.execute("SELECT F FROM two_view_geometries WHERE pair_id = ?;", (pair_id,))
         result = cursor.fetchone()
+        print("Inverse pair id found")
+        inverse_id_FLAG = True
+
 
     if result is None:
         conn.close()
-        raise ValueError(f"Fundamental matrix not found for pair: {image_name1} and {image_name2}")
+        raise ValueError(f"Fundamental matrix not found for pair: {image_id1} and {image_id2}")
 
     
     F_json = result[0]
     F = np.array(json.loads(F_json))
-    F = F.T
+   
+    if not inverse_id_FLAG:
+        F = F.T
 
     # Compute the Essential matrix
     E = compute_essential_matrix_from_F(F, K, K)
@@ -1681,11 +1978,6 @@ def load_observations_and_points(db_name):
     """)
     rows = cursor.fetchall()
     for (pid, img_id, kp_id, c, r) in rows:
-        
-        # DEBUGGING:
-        # first obs should be
-        # image keypoint col row
-        # 4	1	369.0	8.0
 
         x_meas = c
         y_meas = r
@@ -1715,5 +2007,21 @@ def load_matrix(file_path):
         return np.loadtxt(file_path)
     except Exception as e:
         raise ValueError(f"Error loading matrix from {file_path}: {str(e)}")
-    
+
+def extract_camera_pose(camera_data, camera_id):
+    rvec = camera_data[camera_id]["rvec"]
+    tvec = camera_data[camera_id]["tvec"]
+    R = expm(crossMatrix(rvec))
+    T = ensamble_T(R, tvec)
+    T_inv = np.linalg.inv(T)
+    return T_inv
+
+def extract_rvec_(camera_data, camera_id):
+    rvec = camera_data[camera_id]["rvec"]
+    return rvec
+
+def extract_tvec(camera_data, camera_id):
+    tvec = camera_data[camera_id]["tvec"]
+    return tvec
+
 #endregion

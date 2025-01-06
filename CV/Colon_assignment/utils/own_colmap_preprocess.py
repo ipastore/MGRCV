@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     # Name of Seq
     seq_name = "Seq_035"
-    type = "toy_own"
+    type = "toy_harsh"
 
     # Directory containing .npz files
     npz_dir = f"../data/npz_outputs/{seq_name}/{type}"
