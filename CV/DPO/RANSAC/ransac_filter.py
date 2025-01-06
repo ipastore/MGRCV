@@ -132,7 +132,7 @@ def save_matches_RANSAC(keypoints0, keypoints1, matches, inliers_mask, name_imag
 
 if __name__ == "__main__":
     
-    path = '../Images/Set_12MP/matches_results/Group1_Group2'
+    path = '../Images/Set_12MP/matches_results/Group0_Group1'
     if not os.path.exists(path):
         print(f"Error: El directorio {path} no existe.")
     else:
@@ -165,7 +165,7 @@ if __name__ == "__main__":
             matched_keypoints1,   # Puntos clave emparejados en la primera imagen
             matched_keypoints2,   # Puntos clave emparejados en la segunda imagen
             nIter=1000,           # Número de iteraciones de RANSAC
-            threshold=2,           # Umbral de distancia para considerar un punto como inlier
+            threshold=4,           # Umbral de distancia para considerar un punto como inlier
             name_file = f"{img1_name}_vs_{img2_name}"  # Nombre del archivo de la matriz fundamental
         )
 

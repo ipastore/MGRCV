@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from scipy.linalg import expm, logm
+from scipy.linalg import expm, logm, rq
 from scipy.optimize import least_squares
 import cv2
+from random import sample
 
 def compute_normalization_matrix(points):
     # Calculate mean for centering
@@ -817,9 +818,9 @@ def recover_parameters(op_vector, n_cameras, n_points):
     rotations = []
     translations = []
 
-    # **Cámara de referencia** (fija, no está en el vector optimizado)
-    rotations.append(np.zeros(3))  # Rotación identidad (logm(R_ref) = [0, 0, 0])
-    translations.append(np.zeros(3))  # Traslación fija en el origen [0, 0, 0]
+    # # **Cámara de referencia** (fija, no está en el vector optimizado)
+    # rotations.append(np.zeros(3))  # Rotación identidad (logm(R_ref) = [0, 0, 0])
+    # translations.append(np.zeros(3))  # Traslación fija en el origen [0, 0, 0]
 
     # **Cámara 2 (en coordenadas polares)**
     theta_c2_ref = op_vector[offset:offset+3]
@@ -830,7 +831,8 @@ def recover_parameters(op_vector, n_cameras, n_points):
         np.sin(t_theta) * np.sin(t_phi),
         np.cos(t_theta)
     ])
-    rotations.append(theta_c2_ref)
+    R_new = expm(crossMatrix(theta_c2_ref))
+    rotations.append(R_new)
     translations.append(t_c2_ref)
     offset += 5
 
@@ -838,7 +840,8 @@ def recover_parameters(op_vector, n_cameras, n_points):
     for _ in range(3, n_cameras + 1):  # Desde cam3 en adelante
         theta = op_vector[offset:offset+3]
         t = op_vector[offset+3:offset+6]
-        rotations.append(theta)
+        R_new = expm(crossMatrix(theta))
+        rotations.append(R_new)
         translations.append(t)
         offset += 6
     
@@ -999,3 +1002,168 @@ def visualize_3D_3cameras_optimization(T_w_c1, T_w_c2, T_w_c3, X_w, T_c1_c2_init
     plt.show()
 
 
+def compute_projection_matrix_dlt(points_3d, points_2d):
+    """
+    Calcula la matriz de proyección P usando DLT (Direct Linear Transform).
+    """
+    num_points = points_3d.shape[0]
+    A = np.zeros((2 * num_points, 12))
+    for i in range(num_points):
+        X, Y, Z, W = points_3d[i]
+        x, y, w = points_2d[i]
+        A[2 * i] = [X, Y, Z, W, 0, 0, 0, 0, -x * X, -x * Y, -x * Z, -x * W]
+        A[2 * i + 1] = [0, 0, 0, 0, X, Y, Z, W, -y * X, -y * Y, -y * Z, -y * W]
+    U, S, Vt = np.linalg.svd(A)
+    P = Vt[-1].reshape((3, 4))
+    P /= P[2, 3]
+    return P
+
+def ransac_dlt(points_3d, points_2d, threshold=5, max_iterations=1000):
+    """
+    Aplica RANSAC para calcular la matriz de proyección P eliminando outliers.
+
+    Parámetros:
+    - points_3d: numpy array de forma (n, 4), puntos en coordenadas homogéneas.
+    - points_2d: numpy array de forma (n, 3), puntos en coordenadas homogéneas.
+    - threshold: umbral para clasificar inliers (en píxeles).
+    - max_iterations: número máximo de iteraciones.
+
+    Retorna:
+    - best_P: matriz de proyección P optimizada.
+    - inliers: boolean array indicando las correspondencias consideradas inliers.
+    """
+    num_points = points_3d.shape[0]
+    best_P = None
+    best_inliers = []
+
+    for _ in range(max_iterations):
+        # Selección aleatoria de 6 correspondencias
+        indices = sample(range(num_points), 6)
+        subset_3d = points_3d[indices]
+        subset_2d = points_2d[indices]
+
+        # Calcular matriz P provisional
+        P = compute_projection_matrix_dlt(subset_3d, subset_2d)
+
+        # Calcular reproyección para todas las correspondencias
+        projected = (P @ points_3d.T).T
+        projected /= projected[:, 2:3]  # Normalizar coordenadas homogéneas
+        errors = np.linalg.norm(projected[:, :2] - points_2d[:, :2], axis=1)
+
+        # Determinar inliers
+        inliers = errors < threshold
+
+        # Guardar el mejor modelo
+        if sum(inliers) > len(best_inliers):
+            best_P = P
+            best_inliers = inliers
+
+    return best_P, best_inliers
+
+
+
+def decompose_projection_matrix_with_sign(P):
+    """
+    Descompone la matriz de proyección P usando el signo del determinante de M.
+    """
+    # Extraer M (los primeros 3x3 de P)
+    M = P[:, :3]
+
+    # Calcular el signo del determinante de M
+    sign = np.sign(np.linalg.det(M))
+
+    # Ajustar P con el signo
+    P_adjusted = sign * P
+
+    # Llamar a la función de OpenCV
+    K, R_cw, t_wc, _, _, _, _ = cv2.decomposeProjectionMatrix(P_adjusted)
+
+    # Normalizar t_wc para que esté en coordenadas homogéneas
+    t_wc /= t_wc[-1]
+
+    return K, R_cw, t_wc
+
+
+def reprojection_error_cartesian(params, points_3d, points_2d, K):
+    """
+    Calcula el error de reproyección dado R (en representación logarítmica)
+    y t (en coordenadas cartesianas).
+
+    Parámetros:
+    - params: Vector con [theta_x, theta_y, theta_z, t_x, t_y, t_z].
+    - points_3d: Puntos 3D (n, 4).
+    - points_2d: Puntos 2D observados (n, 3).
+    - K: Matriz intrínseca de la cámara (3x3).
+
+    Retorna:
+    - error: Vector de reproyección para cada punto.
+    """
+    # Extraer parámetros
+    theta = params[:3]  # Rotación en logm (vector cartesiano)
+    t = params[3:].reshape((3, 1))  # Traslación en coordenadas cartesianas
+
+    # Reconstruir la matriz de rotación R usando expm
+    R = expm(crossMatrix(theta))
+    
+    # Proyección de los puntos 3D
+    P = K @ np.hstack((R, t))  # Matriz de proyección: P = K [R|t]
+    projected = (P @ points_3d.T).T  # Proyección de los puntos 3D en 2D
+    projected /= projected[:, 2:3]  # Normalizar coordenadas homogéneas
+
+    # Calcular error de reproyección
+    error = projected[:, :2] - points_2d[:, :2]
+    return error.flatten()
+
+def bundle_adjustment_old(points_3d, points_2d, K, R_init, t_init):
+    """
+    Optimiza R y t para minimizar el error de reproyección, usando representación logarítmica
+    para R y coordenadas cartesianas para t.
+
+    Parámetros:
+    - points_3d: Puntos 3D (n, 4).
+    - points_2d: Puntos 2D observados (n, 3).
+    - K: Matriz intrínseca de la cámara (3x3).
+    - R_init: Matriz inicial de rotación (3x3).
+    - t_init: Vector inicial de traslación (3x1).
+
+    Retorna:
+    - R_opt: Matriz optimizada de rotación (3x3).
+    - t_opt: Vector optimizado de traslación (3x1).
+    """
+    # Convertir R_init a su representación logarítmica
+    theta_init = crossMatrixInv(logm(R_init))
+
+    # Crear el vector inicial de parámetros (theta + t)
+    params_init = np.hstack((theta_init, t_init.flatten()))
+
+    # Optimización con Levenberg-Marquardt
+    result = least_squares(
+        reprojection_error_cartesian,
+        params_init,
+        args=(points_3d, points_2d, K),
+        method='lm'
+    )
+
+    # Extraer parámetros optimizados
+    theta_opt = result.x[:3]  # Rotación optimizada en logm
+    t_opt = result.x[3:].reshape((3, 1))  # Traslación optimizada
+
+    # Reconstruir R optimizada
+    R_opt = expm(crossMatrix(theta_opt))
+    
+    return R_opt, t_opt
+
+
+def compute_rmse(observed_2D, projected_2D):
+    """
+    Calcula el RMSE entre los puntos observados y proyectados.
+
+    Args:
+        observed_2D (np.ndarray): Puntos observados (2xN).
+        projected_2D (np.ndarray): Puntos proyectados (2xN).
+        
+    Returns:
+        float: RMSE entre los puntos observados y proyectados.
+    """
+    squared_errors = np.linalg.norm(observed_2D - projected_2D, axis=0) ** 2
+    return np.sqrt(np.mean(squared_errors))
