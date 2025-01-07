@@ -37,8 +37,8 @@ if __name__ == "__main__":
     # Define project structure
     project_root_dir = "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CV/Colon_assignment/own_projects"
     # seq_name = "Seq_035"
-    seq_name = "Seq_027"
-    type = "more_flexible"
+    seq_name = "Seq_035"
+    type = "toy_more_flexible_4_cameras_working"
     db_name = "database.db"
     project_dir = os.path.join(project_root_dir, seq_name, type)
     database_path = os.path.join(project_dir,db_name)
@@ -53,55 +53,54 @@ if __name__ == "__main__":
     
     
     ############################ SEQ_035 ########################################
-    # image_names = ["f_0082926", "f_0082492", "f_0082452","f_0082558"]
-    # image_names = [ "f_0082492", "f_0082558","f_0082452", "f_0082926"]
-    # image_names =["f_0082558","f_0082452", "f_0082926", "f_0082492"]
-    # image_names =["f_0082452", "f_0082926", "f_0082492", "f_0082558"]
+    image_names = ["f_0082926", "f_0082492", "f_0082452","f_0082558"]
+    image_names = [ "f_0082492", "f_0082558","f_0082452", "f_0082926"]
+    image_names =["f_0082558","f_0082452", "f_0082926", "f_0082492"]
+    image_names =["f_0082452", "f_0082926", "f_0082492", "f_0082558"]
 
-    #SEQ_035 IDs are assigned in alphabetical order
-    # c1 = 1   # f_0082452
-    # c2 = 2   # f_0082492
-    # c3 = 3   # f_0082558
-    # c4 = 4   # f_0082926
+    # SEQ_035 IDs are assigned in alphabetical order
+    c1 = 1   # f_0082452
+    c2 = 2   # f_0082492
+    c3 = 3   # f_0082558
+    c4 = 4   # f_0082926
 
     # c_ids
-    # c_ids = [4, 2, 1, 3]
+    c_ids = [4, 2, 1, 3]
 
-    #Images are displayed in BGR. 
-    # # Same convention as IDs
-    # image_dir = os.path.join(project_dir, "images")
-    # image4 = cv2.imread(os.path.join(image_dir, f"{image_names[0]}.png"))
-    # image2 = cv2.imread(os.path.join(image_dir, f"{image_names[1]}.png"))
-    # image1 = cv2.imread(os.path.join(image_dir, f"{image_names[2]}.png"))
-    # image3 = cv2.imread(os.path.join(image_dir, f"{image_names[3]}.png"))
+    # Same convention as IDs
+    image_dir = os.path.join(project_dir, "images")
+    image4 = cv2.imread(os.path.join(image_dir, f"{image_names[0]}.png"))
+    image2 = cv2.imread(os.path.join(image_dir, f"{image_names[1]}.png"))
+    image1 = cv2.imread(os.path.join(image_dir, f"{image_names[2]}.png"))
+    image3 = cv2.imread(os.path.join(image_dir, f"{image_names[3]}.png"))
 
-    # images_list = [image4, image2, image1, image3]
+    images_list = [image4, image2, image1, image3]
     ############################ SEQ_035 ########################################
 
     ############################ SEQ_027 ########################################
-    image_names = ["f_0064636", "f_0064722", "f_0064886","f_0064962", "f_0064556"]
+    # image_names = ["f_0064636", "f_0064722", "f_0064886","f_0064962", "f_0064556"]
 
 
-    #SEQ_035 IDs are assigned in alphabetical order
-    # c1 = 1   # f_0064556
-    # c2 = 2   # f_0064636
-    # c3 = 3   # f_0064722
-    # c4 = 4   # f_0064886
-    # c5 = 5   # f_0064962
+    # #SEQ_035 IDs are assigned in alphabetical order
+    # # c1 = 1   # f_0064556
+    # # c2 = 2   # f_0064636
+    # # c3 = 3   # f_0064722
+    # # c4 = 4   # f_0064886
+    # # c5 = 5   # f_0064962
 
-    # c_ids
-    c_ids = [2, 3, 4, 5, 1]
+    # # c_ids
+    # c_ids = [2, 3, 4, 5, 1]
 
-    #Images are displayed in BGR. 
-    # Same convention as IDs
-    image_dir = os.path.join(project_dir, "images")
-    image2 = cv2.imread(os.path.join(image_dir, f"{image_names[0]}.png"))
-    image3 = cv2.imread(os.path.join(image_dir, f"{image_names[1]}.png"))
-    image4 = cv2.imread(os.path.join(image_dir, f"{image_names[2]}.png"))
-    image5 = cv2.imread(os.path.join(image_dir, f"{image_names[3]}.png"))
-    image1 = cv2.imread(os.path.join(image_dir, f"{image_names[4]}.png"))
+    
+    # # Same convention as IDs
+    # image_dir = os.path.join(project_dir, "images")
+    # image2 = cv2.imread(os.path.join(image_dir, f"{image_names[0]}.png"))
+    # image3 = cv2.imread(os.path.join(image_dir, f"{image_names[1]}.png"))
+    # image4 = cv2.imread(os.path.join(image_dir, f"{image_names[2]}.png"))
+    # image5 = cv2.imread(os.path.join(image_dir, f"{image_names[3]}.png"))
+    # image1 = cv2.imread(os.path.join(image_dir, f"{image_names[4]}.png"))
 
-    images_list = [image2, image3, image4, image5, image1]
+    # images_list = [image2, image3, image4, image5, image1]
 
     ############################ SEQ_027 ########################################
 
@@ -127,8 +126,7 @@ if __name__ == "__main__":
 
 
     if FIRST_TRIANGULATION_FLAG: 
-        
-        # Get 2D points from the matches
+
         x1 = []
         x2 = []
         for (kp1, kp2)in match_list_1_2:
@@ -165,8 +163,8 @@ if __name__ == "__main__":
         # Select correct pose
         # Filter the negative depths for X_c1_initial, x1_h, x2_h
         R_c2_c1_initial, t_c2_c1_initial, X_c1_initial, x1_h, x2_h, match_list_1_2 = select_correct_pose_flexible_and_filter(x1_h, x2_h, K, K, R_c2_c1_option1, 
-                                                                                                             R_c2_c1_option2, t_c2_c1, match_list_1_2, plot_FLAG=True,
-                                                                                                             filtering = True)
+                                                                                                             R_c2_c1_option2, t_c2_c1, match_list_1_2, plot_FLAG=False,
+                                                                                                             filtering = False)
         
         if R_c2_c1_initial is None:
             raise ValueError("No valid pose found")
@@ -179,7 +177,7 @@ if __name__ == "__main__":
         X_c1_initial,x1_h, x2_h, match_list_1_2 = compute_residulas_and_filter(x1_h, x2_h, X_c1_initial, R_c2_c1_initial, t_c2_c1_initial,
                                                                                 match_list=match_list_1_2, K=K,img1= images_list[0],
                                                                                 img2= images_list[1], c_id_1=c_ids[0],c_id_2=c_ids[1],
-                                                                                percentile_filter = 100, plot_FLAG = ALL_VIZ_FLAG)
+                                                                                percentile_filter = 90, plot_FLAG = ALL_VIZ_FLAG)
                 
         #Step 2 Full bundle adjustment
         # Initial guess for optimization
@@ -209,9 +207,9 @@ if __name__ == "__main__":
         save_matrix(os.path.join(cache_dir, "theta_c2_c1_opt.txt"), theta_c2_c1_opt)
         save_matrix(os.path.join(cache_dir, "t_c2_c1_opt.txt"), t_c2_c1_opt)
 
-        # Filter by norm: tuning for Seq_027 (no filter)
+        # Filter by norm
         norms = np.linalg.norm(X_c1_opt[:, :3], axis=1)
-        percentile_norm = np.percentile(norms, 100)
+        percentile_norm = np.percentile(norms, 90)
         filtered_indices = norms <= percentile_norm
 
         X_c1_opt = X_c1_opt[filtered_indices, :]
@@ -564,7 +562,7 @@ if __name__ == "__main__":
         T_c1_c2_opt = extract_camera_pose(camera_data, c_ids[1])
 
         # Plot camera poses and 3D points optimized
-        visualize_3D_3cameras(T_c1_c2_opt,T_c1_c3_opt,X_c1_opt)
+        visualize_3D_3cameras(T_c1_c3_opt,T_c1_c2_opt,X_c1_opt)
 
         #Plot optimized residuals
         visualize_residuals_from_cameras(obs_list, points_3d_dict, camera_data, K, images_list, c_ids)

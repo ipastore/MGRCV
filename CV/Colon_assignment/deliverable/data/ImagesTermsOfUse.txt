@@ -1,0 +1,9 @@
+The images and the calibration are part of the EndoMapper dataset
+https://www.nature.com/articles/s41597-023-02564-7.
+
+The usage of the images are limited to the CVIS assignment. The images CANNOT BE REDISTIRBUTED OR REUSED. For any other use follow the procedure described in:
+https://www.synapse.org/Synapse:syn26707219/wiki/615178
+
+Zaragoza
+29 october 2024
+
