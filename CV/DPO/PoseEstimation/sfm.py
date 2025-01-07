@@ -1286,3 +1286,50 @@ def changePoseTransformation(R_wc, t_wc):
 
     return R_cw, t_cw   
 
+
+def save_transformations(R_list, t_list, rotation_file="rotations.npz", translation_file="translations.npz"):
+    """
+    Guarda las matrices de rotación y los vectores de traslación en archivos separados.
+
+    Args:
+        R_list (list of np.ndarray): Lista de matrices de rotación (3x3 cada una).
+        t_list (list of np.ndarray): Lista de vectores de traslación (3x1 cada uno).
+        rotation_file (str): Nombre del archivo para guardar las rotaciones.
+        translation_file (str): Nombre del archivo para guardar las traslaciones.
+    """
+    output_dir = os.path.join(os.path.dirname(__file__), 'results')
+    os.makedirs(output_dir, exist_ok=True)
+    # Guardar matrices de rotación
+    np.savez(os.path.join(output_dir, rotation_file), *R_list)
+    print(f"Rotaciones guardadas en {rotation_file}")
+
+    # Guardar vectores de traslación
+    np.savez(os.path.join(output_dir, translation_file), *t_list)
+    print(f"Traslaciones guardadas en {translation_file}")
+    
+    
+
+def load_transformations(rotation_file="rotations.npz", translation_file="translations.npz"):
+    """
+    Carga las matrices de rotación y los vectores de traslación desde archivos separados.
+
+    Args:
+        rotation_file (str): Nombre del archivo de las rotaciones.
+        translation_file (str): Nombre del archivo de las traslaciones.
+
+    Returns:
+        tuple: (R_list, t_list)
+            R_list (list of np.ndarray): Lista de matrices de rotación (3x3 cada una).
+            t_list (list of np.ndarray): Lista de vectores de traslación (3x1 cada uno).
+    """
+    # Cargar matrices de rotación
+    with np.load(rotation_file) as data:
+        R_list = [data[key] for key in data.files]
+    print(f"Rotaciones cargadas desde {rotation_file}")
+
+    # Cargar vectores de traslación
+    with np.load(translation_file) as data:
+        t_list = [data[key] for key in data.files]
+    print(f"Traslaciones cargadas desde {translation_file}")
+
+    return R_list, t_list
