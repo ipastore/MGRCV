@@ -559,7 +559,7 @@ def reprojection_error_for_pnp(params, pts_3D, pts_2D, K):
 
     return residuals
 
-
+# Tuning filter for different Seqs
 def triangulate_new_points_for_pair(db_name, adjacency, images_info,
                                     c1_id, c2_id,
                                     R_c2_c1, t_c2_c1,
@@ -599,7 +599,7 @@ def triangulate_new_points_for_pair(db_name, adjacency, images_info,
     # TODO: compute resiudals and filter X , x1, x2 and match list
     X_c1, pts2d_c1, pts2d_c2, new_matches = compute_residulas_and_filter(pts2d_c1, pts2d_c2, X_c1, R_c2_c1, t_c2_c1, 
                                                                         new_matches, K, img1, img2, c1_id, c2_id,
-                                                                          percentile_filter = 90, plot_FLAG = True)
+                                                                          percentile_filter = 100, plot_FLAG = True)
 
     # TODO: filter X points with negative depth
     count, valid_depths1, valid_depths2 = count_valid_points(X_c1, P1, P2)
@@ -613,7 +613,7 @@ def triangulate_new_points_for_pair(db_name, adjacency, images_info,
     # Filter outliers with a percentile of the norm of the X_c1_filtered 3D point
     # Calculate norm vector of X_c1_filtered
     norms = np.linalg.norm(X_c1_filtered[:3, :], axis=0)
-    percentile_norm = np.percentile(norms, 90)
+    percentile_norm = np.percentile(norms, 100)
     filtered_indices = norms <= percentile_norm
 
     X_c1_norm_filtered = X_c1_filtered[:, filtered_indices]
@@ -648,7 +648,7 @@ def triangulate_new_points_for_pair(db_name, adjacency, images_info,
 
     return 
 
-
+# Tuning filter for different Seqs
 def triangulate_new_points_for_pair_in_c1(db_name, adjacency, images_info,
                                           c2_id, c3_id,
                                           R_c2_c1, t_c2_c1, R_c3_c1, t_c3_c1,
@@ -686,10 +686,10 @@ def triangulate_new_points_for_pair_in_c1(db_name, adjacency, images_info,
 
     visualize_3D_3cameras(T_c1_c2,T_c1_c3,X_c1)
 
-
+    # FINE-TUNE FILTER as you wish
     X_c1, pts2d_c2, pts2d_c3, new_matches = compute_residulas_and_filter_in_c1(pts2d_c2, pts2d_c3, X_c1, R_c2_c1, t_c2_c1, 
                                 R_c3_c1, t_c3_c1, new_matches, K, img2, img3, c2_id, c3_id, 
-                                percentile_filter = 90, plot_FLAG = True)
+                                percentile_filter = 100, plot_FLAG = True)
 
     # 4) Filter points with negative depths
     count, valid_depths2, valid_depths3 = count_valid_points(X_c1, P_c2, P_c3)
@@ -703,7 +703,8 @@ def triangulate_new_points_for_pair_in_c1(db_name, adjacency, images_info,
     # Filter outliers with a percentile of the norm of the X_c1_filtered 3D point
     # Calculate norm vector of X_c1_filtered
     norms = np.linalg.norm(X_c1_filtered[:3, :], axis=0)
-    percentile_norm = np.percentile(norms, 90)
+    # FINE-TUNE FILTER as you wish
+    percentile_norm = np.percentile(norms, 100)
     filtered_indices = norms <= percentile_norm
 
     X_c1_norm_filtered = X_c1_filtered[:, filtered_indices]
@@ -763,7 +764,7 @@ def triangulate_new_points_for_pair_in_c1(db_name, adjacency, images_info,
 
 def compute_residulas_and_filter_in_c1(pts2d_c2, pts2d_c3, X_c1, R_c2_c1, t_c2_c1, 
                                 R_c3_c1, t_c3_c1, match_list, K, img2, img3, c2_id, c3_id, 
-                                percentile_filter = 90, plot_FLAG = True):
+                                percentile_filter = 100, plot_FLAG = True):
         
         # Visualize residuals between 2D points and reprojection of 3D points
         T_c2_c1 = ensamble_T(R_c2_c1,t_c2_c1)
@@ -820,7 +821,7 @@ def compute_residulas_and_filter_in_c1(pts2d_c2, pts2d_c3, X_c1, R_c2_c1, t_c2_c
 
 
 def compute_residulas_and_filter(x1_h, x2_h, X_c1_initial, R_c2_c1_initial, t_c2_c1_initial, match_list, K, 
-                                img1, img2, c_id_1, c_id_2, percentile_filter = 90, plot_FLAG = True):
+                                img1, img2, c_id_1, c_id_2, percentile_filter = 100, plot_FLAG = True):
 
         # Visualize residuals between 2D points and reprojection of 3D points
         #From World to image4 that is c1
@@ -1037,6 +1038,40 @@ def visualize_3D_3cameras(T_c1_c2, T_c1_c3, X, adjust_plot_limits=True):
     drawRefSystem(ax, np.eye(4, 4), '-', 'C1')
     drawRefSystem(ax, T_c1_c2, '-', 'C2')
     drawRefSystem(ax, T_c1_c3, '-', 'C3')
+
+    ax.scatter(X[0, :], X[1, :], X[2, :], marker='.')
+    # plotNumbered3DPoints(ax, X_w, 'r', 0.1)
+
+    # Matplotlib does not correctly manage the axis('equal')
+    xFakeBoundingBox = np.linspace(0, 4, 2)
+    yFakeBoundingBox = np.linspace(0, 4, 2)
+    zFakeBoundingBox = np.linspace(0, 4, 2)
+    plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
+    
+    # Optional: set plot limits to manage scale and view
+    if adjust_plot_limits:
+        ax.set_xlim([2,-2])
+        ax.set_ylim([2,-2])
+        ax.set_zlim([3,-1])
+
+
+    print('Close the figure to continue. Left button for orbit, right button for zoom.')
+    plt.show()  
+
+def visualize_3D_4cameras(T_c1_c2, T_c1_c3, T_c1_c4, X, adjust_plot_limits=True):
+    """
+    Plot the 3D cameras and the 3D points.
+    """
+    plt.figure()
+    ax = plt.axes(projection='3d', adjustable='box')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    drawRefSystem(ax, np.eye(4, 4), '-', 'C1')
+    drawRefSystem(ax, T_c1_c2, '-', 'C2')
+    drawRefSystem(ax, T_c1_c3, '-', 'C3')
+    drawRefSystem(ax, T_c1_c4, '-', 'C4')
 
     ax.scatter(X[0, :], X[1, :], X[2, :], marker='.')
     # plotNumbered3DPoints(ax, X_w, 'r', 0.1)
@@ -1288,7 +1323,7 @@ def visualize_residuals_from_cameras(obs_list, points_3d_dict, camera_data, K, i
                 proj_points.append(x_proj)
         img_points = np.array(img_points).T
         proj_points = np.array(proj_points).T
-        visualize_residuals(images_list[c_ids.index(cid)], img_points, proj_points, f"Initial Residuals in Image {cid}", ax=axs[c_ids.index(cid)], adjust_limits=False)
+        visualize_residuals(images_list[c_ids.index(cid)], img_points, proj_points, f"Residuals in Image {cid}", ax=axs[c_ids.index(cid)], adjust_limits=False)
     plt.tight_layout()
     plt.show()
 
@@ -1893,6 +1928,50 @@ def insert_3d_points_in_memory_and_db(db_name, images_info, X_c1, match_list, c1
     conn.commit()
     conn.close()
 
+def rebuild_images_info(db_name, images_info):
+    """
+    Rebuild the images_info dictionary from the database.
+    Returns: images_info dict
+    """
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # 1. Load images
+    cursor.execute("SELECT image_id, name, camera_id FROM Images")
+    rows = cursor.fetchall()
+    for (image_id, name, camera_id) in rows:
+        images_info[image_id] = {
+            "name": name,
+            "camera_id": camera_id,
+            "keypoints": {},  # keypoint_id -> (col, row)
+            "kp3D": {}        # keypoint_id -> Point3DID (or None if unassigned)
+        }
+
+    # Load keypoints (col, row) for each image
+    cursor.execute("SELECT ImageID, KeypointID, col, row FROM Keypoints")
+    rows = cursor.fetchall()
+    for (img_id, kp_id, c, r) in rows:
+        # c = col (x), r = row (y)
+        if img_id in images_info:
+            images_info[img_id]["keypoints"][kp_id] = (c, r)
+
+
+    # Tracks(Point3DID, ImageID, KeypointID)
+    cursor.execute("""
+        SELECT Point3DID, ImageID, KeypointID
+        FROM Tracks
+    """)
+    rows = cursor.fetchall()
+    for (p3d_id, img_id, kp_id) in rows:
+        if img_id in images_info and kp_id in images_info[img_id]["keypoints"]:
+            # Assign that keypoint to the 3D point
+            images_info[img_id]["kp3D"][kp_id] = p3d_id
+
+    conn.close()
+    return images_info
+
+
 def already_has_3D_in_db(db_name, image_id, kp_id):
     """
     Returns True if (image_id, kp_id) is already in 'Tracks' 
@@ -1986,6 +2065,36 @@ def load_observations_and_points(db_name):
     conn.close()
     return obs_list, points_3d_dict
 
+
+def update_3d_points_in_db(db_name, points_3d_dict):
+    """
+    Update the X, Y, Z columns in the Points3D table using the optimized 3D coordinates
+    from points_3d_dict. Returns none.
+
+    Parameters
+    ----------
+    db_name : str
+        Path to the SQLite database.
+    points_3d_dict : dict
+        A dictionary with keys = Point3DID (int), values = [X, Y, Z] (list or tuple).
+
+    """
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # For each 3D point ID and its updated coordinates, run an UPDATE command
+    for pID, coords in points_3d_dict.items():
+        x, y, z = coords
+        cursor.execute("""
+            UPDATE Points3D
+            SET X = ?, Y = ?, Z = ?
+            WHERE Point3DID = ?
+        """, (float(x), float(y), float(z), pID))
+
+    conn.commit()
+    conn.close()
+
+    print(f"Updated {len(points_3d_dict)} 3D points in the database.")
 #endregion
 
 #################################################### OTHER FUNCTIONS ####################################################

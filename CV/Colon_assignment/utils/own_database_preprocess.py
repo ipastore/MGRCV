@@ -299,8 +299,8 @@ def get_two_view_geometry(db_name, image_name1, image_name2):
 if __name__ == "__main__":
     # Define project structure
     project_root_dir = "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CV/Colon_assignment/own_projects"
-    seq_name = "Seq_035"
-    type = "toy_more_flexible"
+    seq_name = "Seq_027"
+    type = "more_flexible"
     # type = "toy_flexible"
     # type = "toy_harsh"
     db_name = "database.db"

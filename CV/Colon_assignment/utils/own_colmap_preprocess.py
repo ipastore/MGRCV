@@ -84,8 +84,8 @@ def save_matches(matches, image1, image2, F,filepath):
 if __name__ == "__main__":
 
     # Name of Seq
-    seq_name = "Seq_035"
-    type = "toy_harsh"
+    seq_name = "Seq_027"
+    type = "flexible_exhaustive_undistorted"
 
     # Directory containing .npz files
     npz_dir = f"../data/npz_outputs/{seq_name}/{type}"

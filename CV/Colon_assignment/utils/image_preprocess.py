@@ -24,10 +24,10 @@ def undistort_kannala_brandt(image, fx, fy, cx, cy, k1, k2, k3, k4):
     return undistorted_image
 
 
-seq_name = "Seq_035"
-seq_path = f"./data/{seq_name}"
-output_dir = f"./data/{seq_name}/resized_undistorted/"
-calibration_path = f"./data/calib.yaml"
+seq_name = "Seq_027"
+seq_path = f"../data/{seq_name}"
+output_dir = f"../data/{seq_name}/resized_undistorted/"
+calibration_path = f"../data/calib.yaml"
 os.makedirs(output_dir, exist_ok=True)
 
 #read YAML file: 
@@ -35,16 +35,12 @@ with open(calibration_path,"r") as file:
     calib = yaml.load(file, Loader=yaml.FullLoader)
     print(calib)
 
- 
+
 # Extract the camera matrix
 fx = calib["Camera"]["fx"]
 fy = calib["Camera"]["fy"]
 cx = calib["Camera"]["cx"]
 cy = calib["Camera"]["cy"]
-
-# camera_matrix = np.array([[fx, 0, cx],
-#                           [0, fy, cy],
-#                           [0, 0, 1]])
 
 
 # Extract the distortion coefficients
@@ -52,8 +48,6 @@ k1 = calib["Camera"]["k1"]
 k2 = calib["Camera"]["k2"]
 k3 = calib["Camera"]["k3"]
 k4 = calib["Camera"]["k4"]
-
-# dist_coeffs = np.array([[k1, k2, k3, k4]])
 
 
 for image in os.listdir(seq_path):
