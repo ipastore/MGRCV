@@ -393,123 +393,183 @@ print(f"3D points saved to {points_3D_file_path}")
 # # DLT FOR POSE ESTIMATION OLD CAMERA
 # # ===================================
 
-# camOld_img = sfm.get_image('Img00_Try1_12M')
-# dlt_data = np.load(os.path.join(os.path.dirname(__file__),f'../RANSAC/results/inliers/Img00_Try1_12M_vs_Img02_Try1_12M_inliers.npz'))
-# dlt_keypoints_ref = dlt_data['keypoints1']
-# dlt_keypoints_old = dlt_data['keypoints0']
-# dlt_mask = dlt_data['inliers_matches']
-# # Filtrar puntos existentes y actualizar `point3D_map`
-# for match in dlt_mask:
-#     ref_idx, old_idx = match[1], match[0]
-#     found = False
-#     for pid, cameras in point3D_map.items():
-#         if cameras.get(1) == ref_idx:  # Si el punto ya está en el diccionario
-#             point3D_map[pid][0] = old_idx  # Actualizar keypoint en cam3
-#             found = True
-#             break
+camOld_img = sfm.get_image('Img00_Try1_12M')
+dlt_data = np.load(os.path.join(os.path.dirname(__file__),f'../RANSAC/results/inliers/Img00_Try1_12M_vs_Img02_Try1_12M_inliers.npz'))
+dlt_keypoints_ref = dlt_data['keypoints1']
+dlt_keypoints_old = dlt_data['keypoints0']
+dlt_mask = dlt_data['inliers_matches']
+# Filtrar puntos existentes y actualizar `point3D_map`
+for match in dlt_mask:
+    ref_idx, old_idx = match[1], match[0]
+    found = False
+    for pid, cameras in point3D_map.items():
+        if cameras.get(1) == ref_idx:  # Si el punto ya está en el diccionario
+            point3D_map[pid][0] = old_idx  # Actualizar keypoint en cam3
+            found = True
+            break
         
-# # Filtrar los puntos visibles en ambas cámaras
-# CamOld_idx_visible_points = [
-#     pid for pid, cameras in point3D_map.items() if 1 in cameras and 0 in cameras
-# ]
+# Filtrar los puntos visibles en ambas cámaras
+CamOld_idx_visible_points = [
+    pid for pid, cameras in point3D_map.items() if 1 in cameras and 0 in cameras
+]
 
-# # Proyección en coordenadas homogéneas para los puntos visibles
-# CamOld_filtered3DPoints_h = np.vstack((
-#     np.array([current_3DPoints_opt[pid] for pid in CamOld_idx_visible_points]).T,
-#     np.ones(len(CamOld_idx_visible_points))
-# ))
+# Proyección en coordenadas homogéneas para los puntos visibles
+CamOld_filtered3DPoints_h = np.vstack((
+    np.array([current_3DPoints_opt[pid] for pid in CamOld_idx_visible_points]).T,
+    np.ones(len(CamOld_idx_visible_points))
+))
 
-# camOld_FilteredKeypoints_pairOld = np.array([dlt_keypoints_old[point3D_map[pid][0]] for pid in CamOld_idx_visible_points])
-# camOld_FilteredKeypoints_pairOld_h = np.vstack((camOld_FilteredKeypoints_pairOld.T, np.ones((1, camOld_FilteredKeypoints_pairOld.shape[0]))))
+camOld_FilteredKeypoints_pairOld = np.array([dlt_keypoints_old[point3D_map[pid][0]] for pid in CamOld_idx_visible_points])
+camOld_FilteredKeypoints_pairOld_h = np.vstack((camOld_FilteredKeypoints_pairOld.T, np.ones((1, camOld_FilteredKeypoints_pairOld.shape[0]))))
 
-# P_old, inliers_old = sfm.ransac_dlt(CamOld_filtered3DPoints_h.T, camOld_FilteredKeypoints_pairOld_h.T, threshold=5, max_iterations=1000)
-# print("Matriz de proyección P:")
-# print(P_old)
-# print("Inliers encontrados:")
-# print(np.where(inliers_old)[0])
+P_old, inliers_old = sfm.ransac_dlt(CamOld_filtered3DPoints_h.T, camOld_FilteredKeypoints_pairOld_h.T, threshold=5, max_iterations=3000)
+print("Matriz de proyección P:")
+print(P_old)
+print("Inliers encontrados:")
+print(np.where(inliers_old)[0])
 
-# inlier_indices = np.where(inliers_old)[0]
-# prueba_3d_points = CamOld_filtered3DPoints_h.T[inlier_indices]
-# prueba_2d_points = camOld_FilteredKeypoints_pairOld_h.T[inlier_indices]
-# ref_keypoints_filtered = np.array([dlt_keypoints_ref[point3D_map[pid][1]] for pid in CamOld_idx_visible_points])
-# ref_keypoints_filtered = ref_keypoints_filtered[inlier_indices]
+inlier_indices = np.where(inliers_old)[0]
+prueba_3d_points = CamOld_filtered3DPoints_h.T[inlier_indices]
+prueba_2d_points = camOld_FilteredKeypoints_pairOld_h.T[inlier_indices]
+ref_keypoints_filtered = np.array([dlt_keypoints_ref[point3D_map[pid][1]] for pid in CamOld_idx_visible_points])
+ref_keypoints_filtered = ref_keypoints_filtered[inlier_indices]
 
-# ref_proj2DPoints_pairOld = sfm.project_to_camera(P_ref, prueba_3d_points.T)
-# camOld_proj2DPoints_pairOld = sfm.project_to_camera(P_old, prueba_3d_points.T)
+ref_proj2DPoints_pairOld = sfm.project_to_camera(P_ref, prueba_3d_points.T)
+camOld_proj2DPoints_pairOld = sfm.project_to_camera(P_old, prueba_3d_points.T)
 
-# # RMSE antes del Bundle Adjustment
-# rmse_before = sfm.compute_rmse(prueba_2d_points.T[:2,:], camOld_proj2DPoints_pairOld[:2,:])
-# print(f"RMSE antes del BA: {rmse_before:.4f}")
+# RMSE antes del Bundle Adjustment
+rmse_before = sfm.compute_rmse(prueba_2d_points.T[:2,:], camOld_proj2DPoints_pairOld[:2,:])
+print(f"RMSE antes del BA: {rmse_before:.4f}")
 
-# # Visualize initial residuals
-# fig, axs = plt.subplots(1, 2, figsize=(18, 6))
-# sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Initial Residuals in PnP Image", ax=axs[0])
-# sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld, "Initial Residuals in PnP Image", ax=axs[1])
-# plt.tight_layout()
-# plt.show()
+# Visualize initial residuals
+fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Initial Residuals in PnP Image", ax=axs[0])
+sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld, "Initial Residuals in PnP Image", ax=axs[1])
+plt.tight_layout()
+plt.show()
 
-# K_old, R_old, t_old = sfm.decompose_projection_matrix_with_sign(P_old)
-# t_old = t_old[0:3]
-# # Normalizar K
-# K_old /= K_old[2, 2]
-# print("Intrinsics matrix K:")
-# print(K_old)
-# print("Rotation matrix R:")
-# print(R_old)
-# print("Translation vector t:")
-# print(t_old)
+K_old, R_old, t_old = sfm.decompose_projection_matrix_with_sign(P_old)
+t_old = t_old[0:3]
+# Normalizar K
+K_old /= K_old[2, 2]
+print("Intrinsics matrix K:")
+print(K_old)
+print("Rotation matrix R:")
+print(R_old)
+print("Translation vector t:")
+print(t_old)
 
-# R_old_opt, t_old_opt = sfm.bundle_adjustment_old(prueba_3d_points, prueba_2d_points, K_old, R_old, t_old)
+K_old_NSkew = K_old.copy()
+K_old_NSkew[0, 1] = 0
+print("Intrinsics matrix K:")
+print(K_old_NSkew)
+T_CamOld = sfm.ensamble_T(R_old, t_old)
+P_CamOld_NSkew = sfm.get_projection_matrix(K_old_NSkew, T_CamOld)
+camOld_proj2DPoints_pairOld_NSkew = sfm.project_to_camera(P_CamOld_NSkew, prueba_3d_points.T)
 
-# T_CamOld_opt = sfm.ensamble_T(R_old_opt, t_old_opt)
-# P_CamOld_opt = sfm.get_projection_matrix(K_old, T_CamOld_opt)
-# camOld_proj2DPoints_pairOld_opt = sfm.project_to_camera(P_CamOld_opt, prueba_3d_points.T)
+# RMSE antes del Bundle Adjustment
+rmse_before = sfm.compute_rmse(prueba_2d_points.T[:2,:], camOld_proj2DPoints_pairOld_NSkew[:2,:])
+print(f"RMSE sin skew: {rmse_before:.4f}")
 
-# # RMSE después del Bundle Adjustment
-# rmse_after = sfm.compute_rmse(prueba_2d_points.T[:2,:], camOld_proj2DPoints_pairOld_opt[:2,:])
-# print(f"RMSE después del BA: {rmse_after:.4f}")
+# Visualize initial residuals
+fig, axs = plt.subplots(1, 2, figsize=(18, 6))
+sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Initial Residuals in PnP Image", ax=axs[0])
+sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld_NSkew, "Initial Residuals in PnP Image", ax=axs[1])
+plt.tight_layout()
+plt.show()
 
-# # Cambio porcentual en el RMSE
-# rmse_improvement = (rmse_before - rmse_after) / rmse_before * 100
-# print(f"Mejora porcentual en el RMSE: {rmse_improvement:.2f}%")
+R_old_opt, t_old_opt = sfm.bundle_adjustment_old(prueba_3d_points, prueba_2d_points, K_old, R_old, t_old)
 
+T_CamOld_opt = sfm.ensamble_T(R_old_opt, t_old_opt)
+P_CamOld_opt = sfm.get_projection_matrix(K_old, T_CamOld_opt)
+camOld_proj2DPoints_pairOld_opt = sfm.project_to_camera(P_CamOld_opt, prueba_3d_points.T)
 
-# # Visualize optimized residuals
-# fig, axs = plt.subplots(2, 2, figsize=(18, 6))
-# sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Reference Image BEFORE opt", ax=axs[0, 0])
-# sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Reference Image AFTER opt", ax=axs[0, 1])
-# sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld, "Cam3 BEFORE opt", ax=axs[1, 0])
-# sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld_opt, "Cam3 AFTER opt", ax=axs[1, 1])
-# plt.tight_layout()
-# plt.show()
-# plt.close(fig)
+# RMSE después del Bundle Adjustment
+rmse_after = sfm.compute_rmse(prueba_2d_points.T[:2,:], camOld_proj2DPoints_pairOld_opt[:2,:])
+print(f"RMSE después del BA: {rmse_after:.4f}")
 
-
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-# sfm.drawRefSystem(ax, np.eye(4), '-', 'C1_ref')
-# # sfm.drawRefSystem(ax, (sfm.ensamble_T(R_old_opt, t_old_opt)), '-', 'C_OLD')
-# sfm.drawRefSystem(ax, np.linalg.inv(sfm.ensamble_T(R_old_opt, t_old_opt)), '-', 'C_OLD')
-# for extra_cameras_idx in range(len(R_list)):
-#     sfm.drawRefSystem(ax, np.linalg.inv(sfm.ensamble_T(R_list[extra_cameras_idx], t_list[extra_cameras_idx])), '-', f'C{extra_cameras_idx+2}')
-# ax.scatter(current_3DPoints_opt.T[0, :], current_3DPoints_opt.T[1, :], current_3DPoints_opt.T[2, :], marker='o', color='g', s=5, label='3D Points')
-# xFakeBoundingBox = np.linspace(-6, 10, 2)
-# yFakeBoundingBox = np.linspace(-6, 10, 2)
-# zFakeBoundingBox = np.linspace(-6, 10, 2)
-# plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
-# plt.show()
-# plt.close(fig)
+# Cambio porcentual en el RMSE
+rmse_improvement = (rmse_before - rmse_after) / rmse_before * 100
+print(f"Mejora porcentual en el RMSE: {rmse_improvement:.2f}%")
 
 
-# fig, ax = plt.subplots()
-# # sfm.drawRefSystem(ax, np.eye(4), '-', 'C1_ref', projection='2d')
-# # sfm.drawRefSystem(ax, np.linalg.inv(sfm.ensamble_T(R_old_opt, t_old_opt)), '-', 'C_OLD', projection='2d')
-# # for extra_cameras_idx in range(len(R_list)):
-# #     sfm.drawRefSystem(ax, np.linalg.inv(sfm.ensamble_T(R_list[extra_cameras_idx], t_list[extra_cameras_idx])), '-', f'C{extra_cameras_idx+2}', projection='2d')
-# ax.scatter(current_3DPoints_opt.T[0, :], current_3DPoints_opt.T[1, :], marker='o', color='g', s=5, label='3D Points')
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.legend()
-# plt.show()
-# plt.close(fig)
+# Visualize optimized residuals
+fig, axs = plt.subplots(2, 2, figsize=(18, 6))
+sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Reference Image BEFORE opt", ax=axs[0, 0])
+sfm.visualize_residuals(ref_img, ref_keypoints_filtered.T, ref_proj2DPoints_pairOld, "Reference Image AFTER opt", ax=axs[0, 1])
+sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld, "Cam3 BEFORE opt", ax=axs[1, 0])
+sfm.visualize_residuals(camOld_img, prueba_2d_points.T, camOld_proj2DPoints_pairOld_opt, "Cam3 AFTER opt", ax=axs[1, 1])
+plt.tight_layout()
+plt.show()
+plt.close(fig)
 
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+sfm.drawRefSystem(ax, np.eye(4), '-', 'C1_ref')
+# sfm.drawRefSystem(ax, (sfm.ensamble_T(R_old_opt, t_old_opt)), '-', 'C_OLD')
+sfm.drawRefSystem(ax, np.linalg.inv(sfm.ensamble_T(R_old_opt, t_old_opt)), '-', 'C_OLD')
+for extra_cameras_idx in range(len(R_list)):
+    sfm.drawRefSystem(ax, np.linalg.inv(sfm.ensamble_T(R_list[extra_cameras_idx], t_list[extra_cameras_idx])), '-', f'C{extra_cameras_idx+2}')
+ax.scatter(current_3DPoints_opt.T[0, :], current_3DPoints_opt.T[1, :], current_3DPoints_opt.T[2, :], marker='o', color='g', s=5, label='3D Points')
+xFakeBoundingBox = np.linspace(-6, 10, 2)
+yFakeBoundingBox = np.linspace(-6, 10, 2)
+zFakeBoundingBox = np.linspace(-6, 10, 2)
+plt.plot(xFakeBoundingBox, yFakeBoundingBox, zFakeBoundingBox, 'w.')
+plt.show()
+plt.close(fig)
+
+
+
+
+# H, maskH = cv2.findHomography(prueba_2d_points[:,:2], ref_keypoints_filtered, cv2.RANSAC, 5.0)
+
+# # Paso 5: Transformar la imagen antigua
+# altura, ancho = ref_img.shape[:2]
+# imagen_antigua_registrada = cv2.warpPerspective(camOld_img, H, (ancho, altura))
+
+# cv2.imshow('Máscara de Cambios', camOld_img)
+
+# # Paso 6: Detectar cambios (diferencia de píxeles)
+# diferencia = cv2.absdiff(imagen_antigua_registrada, ref_img)
+# diferencia_grises = cv2.cvtColor(diferencia, cv2.COLOR_BGR2GRAY)
+
+# # Umbralizar para resaltar cambios significativos
+# _, mascara_cambios = cv2.threshold(diferencia_grises, 30, 255, cv2.THRESH_BINARY)
+
+# # Paso 7: Refinar la máscara de cambios
+# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+# mascara_refinada = cv2.morphologyEx(mascara_cambios, cv2.MORPH_CLOSE, kernel)
+
+# # Paso 8: Superponer los cambios en la nueva imagen
+# imagen_resultado = ref_img.copy()
+# imagen_resultado[mascara_refinada > 0] = [0, 0, 255]  # Rojo para los cambios
+
+# # Paso 9: Visualizar los resultados
+# # cv2.imshow('Diferencias', diferencia)
+# # cv2.imshow('Máscara de Cambios', mascara_refinada)
+# # cv2.imshow('Cambios Resaltados', imagen_resultado)
+
+# # Save the images to the specified directory
+# output_images_dir = os.path.join(os.path.dirname(__file__), 'results', 'images')
+# os.makedirs(output_images_dir, exist_ok=True)
+
+# # Save the difference image
+# difference_image_path = os.path.join(output_images_dir, 'difference.png')
+# cv2.imwrite(difference_image_path, diferencia)
+# print(f"Difference image saved to {difference_image_path}")
+
+# # Save the change mask
+# change_mask_path = os.path.join(output_images_dir, 'change_mask.png')
+# cv2.imwrite(change_mask_path, mascara_refinada)
+# print(f"Change mask saved to {change_mask_path}")
+
+# # Save the highlighted changes image
+# highlighted_changes_image_path = os.path.join(output_images_dir, 'highlighted_changes.png')
+# cv2.imwrite(highlighted_changes_image_path, imagen_resultado)
+# print(f"Highlighted changes image saved to {highlighted_changes_image_path}")
+# cv2.destroyAllWindows()
+
+
+
+# cv2.destroyAllWindows()

@@ -11,3 +11,12 @@ CV/DPO/*.png
 CV/DPO/**/*.png
 CV/DPO/*.jpg
 CV/DPO/**/*.jpg
+
+CV/DPO2/*.npz
+CV/DPO2/**/*.npz
+CV/DPO2/*.pyc
+CV/DPO2/**/*.pyc
+CV/DPO2/*.png
+CV/DPO2/**/*.png
+CV/DPO2/*.jpg
+CV/DPO2/**/*.jpg

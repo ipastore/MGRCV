@@ -1,0 +1,25 @@
+colmap database_creator \
+    --database_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/database.db
+
+
+colmap feature_importer \
+    --database_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/database.db \
+    --image_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/images \
+    --import_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/keypoints
+
+
+colmap matches_importer \
+    --database_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/database.db \
+    --match_list_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/matches/matches.txt \
+    --match_type inliers
+
+colmap mapper \
+    --database_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/database.db \
+    --image_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/images \
+    --output_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/sparse
+
+
+colmap model_converter \
+    --input_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/sparse/0 \
+    --output_path /home/padidavid/Documents/unizar/master/repositorios/MGRCV/CV/DPO2/colmap_project/output \
+    --output_type TXT

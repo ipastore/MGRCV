@@ -25,6 +25,9 @@
 		},
 		{
 			"path": "DPO"
+		},
+		{
+			"path": "DPO2"
 		}
 	],
 	"settings": {
