@@ -35,8 +35,8 @@ def initialize_database(db_name="database.db"):
     CREATE TABLE IF NOT EXISTS Keypoints (
         ImageID INTEGER,
         KeypointID INTEGER,
-        row REAL,
         col REAL,
+        row REAL,
         PRIMARY KEY (ImageID, KeypointID),
         FOREIGN KEY (ImageID) REFERENCES Images(image_id)
     );
@@ -166,11 +166,11 @@ def load_keypoints(db_name, image_name, keypoints_file):
     keypoints_data = np.asarray(keypoints_data, dtype=np.float32)
 
     # Insert keypoints into the database
-    for keypoint_id, (row, col) in enumerate(keypoints_data):
+    for keypoint_id, (col, row) in enumerate(keypoints_data):
         cursor.execute("""
-        INSERT OR IGNORE INTO Keypoints (ImageID, KeypointID, row, col)
+        INSERT OR IGNORE INTO Keypoints (ImageID, KeypointID, col, row)
         VALUES (?, ?, ?, ?);
-        """, (image_id, keypoint_id, float(row), float(col)))
+        """, (image_id, keypoint_id, float(col), float(row)))
 
     conn.commit()
     conn.close()
@@ -300,10 +300,17 @@ if __name__ == "__main__":
     # Define project structure
     project_root_dir = "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CV/Colon_assignment/own_projects"
     seq_name = "Seq_035"
-    type = "toy"
+    type = "toy_more_flexible_4_cameras_working"
+    # type = "toy_flexible"
+    # type = "toy_harsh"
     db_name = "database.db"
     project_dir = os.path.join(project_root_dir, seq_name, type)
     database_path = os.path.join(project_dir,db_name)
+
+    # Erase database if already exists
+    if os.path.exists(database_path):
+        os.remove(database_path)
+    
 
     # Initialize database
     initialize_database(database_path)
