@@ -1,0 +1,8 @@
+<library path="lib/libcustom_astar">
+    <class 
+    name="custom_astar/CustomAStarExpansion" 
+    type="custom_astar::CustomAStarExpansion" 
+    base_class_type="nav_core::BaseGlobalPlanner">
+        <description>Custom A* expansion with tunable heuristics</description>
+    </class>
+</library>

@@ -1,9 +1,9 @@
 shutdown_costmaps: false
 
 controller_frequency: 10.0
-controller_patience: 3.0
+controller_patience: 5.0
 
-planner_frequency: 0.1
+planner_frequency: 0.001
 planner_patience: 5.0
 
 oscillation_timeout: 10.0
@@ -15,7 +15,25 @@ base_local_planner: dwa_local_planner/DWAPlannerROS
 # WIth the llc_local_planner, we have a bug where there are no cmd_vel messages being published when the robot is near the goal.
 # We tried to modify the max_dist for the rrt_planner but did not see any changes in the robot's behavior.
 
-# Global planner
-base_global_planner: rrt_planner/RRTPlanner
-#rrt_planner/RRTPlanner
-# ALTERNATIVES: global_planner/GlobalPlanner, carrot_planner/CarrotPlanner, navfn/NavfnROS, 
+# # Global planner
+# base_global_planner: rrt_planner/RRTPlanner
+# #rrt_planner/RRTPlanner
+# # ALTERNATIVES: global_planner/GlobalPlanner, carrot_planner/CarrotPlanner, navfn/NavfnROS, 
+
+base_global_planner: global_planner/GlobalPlanner
+
+GlobalPlanner:
+  use_dijkstra: false        # Enable A*
+  allow_unknown: true        # Allow navigation through unknown cells
+  default_tolerance: 0.5     # Acceptable distance from goal
+  use_quadratic: true        # Smoother paths
+  use_grid_path: false       # Gradient-based paths
+  planner_window_x: 0.0      # Local search window width
+  planner_window_y: 0.0      # Local search window height
+  publish_scale: 100          # Scale for potential field visualization
+  outline_map: true         # Disable map outline
+  old_navfn_behavior: false  # Use modern behavior
+  neutral_cost: 50           # Cost for free space
+  lethal_cost: 253           # Cost for obstacles
+  cost_factor: 3.0           # Scaling for costs
+  orientation_filter: true   # Smooth final orientation
