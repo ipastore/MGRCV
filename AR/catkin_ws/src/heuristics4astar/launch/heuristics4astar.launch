@@ -20,7 +20,6 @@
 	<!-- Planners selection and configuration -->
 	<rosparam file="$(find heuristics4astar)/cfg/move_base/planners/planners_selection.yaml" command="load" />
 	<rosparam file="$(find heuristics4astar)/cfg/move_base/planners/dwa_local_planner_params.yaml" command="load" />
-    <rosparam file="$(find heuristics4astar)/cfg/custom_astar.yaml" command="load" />
 
    
 </node>
