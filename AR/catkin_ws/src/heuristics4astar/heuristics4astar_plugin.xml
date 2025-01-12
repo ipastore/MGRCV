@@ -1,0 +1,13 @@
+<!-- <library path="lib/libglobal_planner"> -->
+<library path="lib/libheuristics4astar_lib">
+  <!-- <class name="global_planner/GlobalPlanner"  -->
+  <!-- type="global_planner::GlobalPlanner"  -->
+    <class name="heuristics4astar/GlobalPlanner" 
+        type="heuristics4astar::GlobalPlanner"
+        base_class_type="nav_core::BaseGlobalPlanner">
+        <description>
+            A implementation of a grid based planner using Dijkstras or A* with tunable heuristics for A* at runtime.
+            Based on global_planner from navigation stack.
+        </description>
+    </class>
+</library>

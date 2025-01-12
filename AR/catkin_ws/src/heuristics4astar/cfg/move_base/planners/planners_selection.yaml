@@ -13,4 +13,4 @@ oscillation_distance: 0.5
 base_local_planner: dwa_local_planner/DWAPlannerROS
 
 # Global planner
-base_global_planner: custom_astar/CustomAStarExpansion
+base_global_planner: heuristics4astar/GlobalPlanner

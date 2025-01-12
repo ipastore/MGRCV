@@ -12,15 +12,15 @@
 <!-- MOVE_BASE --> <!-- DEBUG: launch-prefix="xterm \-e gdb \-\-args" --> 
 <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 	<!-- Costmaps configuration -->
-	<rosparam file="$(find heuristics4astar)/config/move_base/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />
-	<rosparam file="$(find heuristics4astar)/config/move_base/costmaps/costmap_common_params.yaml" command="load" ns="local_costmap" />
-	<rosparam file="$(find heuristics4astar)/config/move_base/costmaps/costmap_local_params.yaml"  command="load" />
-	<rosparam file="$(find heuristics4astar)/config/move_base/costmaps/costmap_global_params.yaml" command="load" />
+	<rosparam file="$(find heuristics4astar)/cfg/move_base/costmaps/costmap_common_params.yaml" command="load" ns="global_costmap" />
+	<rosparam file="$(find heuristics4astar)/cfg/move_base/costmaps/costmap_common_params.yaml" command="load" ns="local_costmap" />
+	<rosparam file="$(find heuristics4astar)/cfg/move_base/costmaps/costmap_local_params.yaml"  command="load" />
+	<rosparam file="$(find heuristics4astar)/cfg/move_base/costmaps/costmap_global_params.yaml" command="load" />
 
 	<!-- Planners selection and configuration -->
-	<rosparam file="$(find heuristics4astar)/config/move_base/planners/planners_selection.yaml" command="load" />
-	<rosparam file="$(find heuristics4astar)/config/move_base/planners/dwa_local_planner_params.yaml" command="load" />
-    <rosparam file="$(find heuristics4astar)/config/custom_astar.yaml" command="load" />
+	<rosparam file="$(find heuristics4astar)/cfg/move_base/planners/planners_selection.yaml" command="load" />
+	<rosparam file="$(find heuristics4astar)/cfg/move_base/planners/dwa_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find heuristics4astar)/cfg/custom_astar.yaml" command="load" />
 
    
 </node>
@@ -70,7 +70,7 @@
   </node>
 
   <!--  RVIZ  -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find heuristics4astar)/config/custom_astar_rviz.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find heuristics4astar)/cfg/custom_astar_rviz.rviz"/>
 
 </launch>
 

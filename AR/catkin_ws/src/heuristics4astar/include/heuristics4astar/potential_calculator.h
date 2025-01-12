@@ -35,46 +35,49 @@
  * Author: Eitan Marder-Eppstein
  *         David V. Lu!!
  *********************************************************************/
-#ifndef _ASTAR_H
-#define _ASTAR_H
+#ifndef _POTENTIAL_CALCULATOR_H
+#define _POTENTIAL_CALCULATOR_H
 
-// #include <global_planner/planner_core.h>
-// #include <global_planner/expander.h>
-#include <heuristics4astar/planner_core.h>
-#include <heuristics4astar/expander.h>
-
-#include <vector>
 #include <algorithm>
 
 // namespace global_planner {
 namespace heuristics4astar {
-class Index {
-    public:
-        Index(int a, float b) {
-            i = a;
-            cost = b;
-        }
-        int i;
-        float cost;
-};
 
-struct greater1 {
-        bool operator()(const Index& a, const Index& b) const {
-            return a.cost > b.cost;
-        }
-};
-
-class CustomAStarExpansion : public Expander {
+class PotentialCalculator {
     public:
-        CustomAStarExpansion(PotentialCalculator* p_calc, int nx, int ny);
-        virtual ~CustomAStarExpansion() {}
-        bool calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y, int cycles,
-                                float* potential);
-    private:
-        void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y);
-        std::vector<Index> queue_;
+        PotentialCalculator(int nx, int ny) {
+            setSize(nx, ny);
+        }
+        virtual ~PotentialCalculator() {}
+        virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_potential=-1){
+            if(prev_potential < 0){
+                // get min of neighbors
+                float min_h = std::min( potential[n - 1], potential[n + 1] ),
+                      min_v = std::min( potential[n - nx_], potential[n + nx_]);
+                prev_potential = std::min(min_h, min_v);
+            }
+
+            return prev_potential + cost;
+        }
+
+        /**
+         * @brief  Sets or resets the size of the map
+         * @param nx The x size of the map
+         * @param ny The y size of the map
+         */
+        virtual void setSize(int nx, int ny) {
+            nx_ = nx;
+            ny_ = ny;
+            ns_ = nx * ny;
+        } /**< sets or resets the size of the map */
+
+    protected:
+        inline int toIndex(int x, int y) {
+            return x + nx_ * y;
+        }
+
+        int nx_, ny_, ns_; /**< size of grid, in pixels */
 };
 
 } //end namespace heuristics4astar
 #endif
-

@@ -35,46 +35,22 @@
  * Author: Eitan Marder-Eppstein
  *         David V. Lu!!
  *********************************************************************/
-#ifndef _ASTAR_H
-#define _ASTAR_H
-
-// #include <global_planner/planner_core.h>
-// #include <global_planner/expander.h>
-#include <heuristics4astar/planner_core.h>
-#include <heuristics4astar/expander.h>
-
-#include <vector>
-#include <algorithm>
+#ifndef _QUADRATIC_CALCULATOR_H
+#define _QUADRATIC_CALCULATOR_H
+#include<vector>
+// #include<global_planner/potential_calculator.h>
+#include<heuristics4astar/potential_calculator.h>
 
 // namespace global_planner {
 namespace heuristics4astar {
-class Index {
+
+class QuadraticCalculator : public PotentialCalculator {
     public:
-        Index(int a, float b) {
-            i = a;
-            cost = b;
-        }
-        int i;
-        float cost;
+        QuadraticCalculator(int nx, int ny): PotentialCalculator(nx,ny) {}
+
+        float calculatePotential(float* potential, unsigned char cost, int n, float prev_potential);
 };
 
-struct greater1 {
-        bool operator()(const Index& a, const Index& b) const {
-            return a.cost > b.cost;
-        }
-};
-
-class CustomAStarExpansion : public Expander {
-    public:
-        CustomAStarExpansion(PotentialCalculator* p_calc, int nx, int ny);
-        virtual ~CustomAStarExpansion() {}
-        bool calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y, int cycles,
-                                float* potential);
-    private:
-        void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y);
-        std::vector<Index> queue_;
-};
 
 } //end namespace heuristics4astar
 #endif
-
