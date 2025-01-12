@@ -46,7 +46,8 @@ CustomAStarExpansion::CustomAStarExpansion(PotentialCalculator* p_calc, int xs, 
         Expander(p_calc, xs, ys)
         , heuristic_type_("manhattan") // default 
         {}
-
+        
+// For dynamic parameter
 void CustomAStarExpansion::setHeuristicType(int type)
 {
   // Convert the integer enum into a string
@@ -56,6 +57,19 @@ void CustomAStarExpansion::setHeuristicType(int type)
     case 2: heuristic_type_ = "chebyshev"; break;
     default: heuristic_type_ = "manhattan"; // fallback
   }
+}
+// For static parameter initialization
+void CustomAStarExpansion::setHeuristicTypeString(const std::string &heuristic_str)
+{
+    if (heuristic_str == "manhattan") {
+        heuristic_type_ = "manhattan";
+    } else if (heuristic_str == "euclidean") {
+        heuristic_type_ = "euclidean";
+    } else if (heuristic_str == "chebyshev") {
+        heuristic_type_ = "chebyshev";
+    } else {
+        heuristic_type_ = "manhattan"; // fallback
+    }
 }
 
 

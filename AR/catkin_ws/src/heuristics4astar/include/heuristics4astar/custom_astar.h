@@ -72,6 +72,8 @@ class CustomAStarExpansion : public Expander {
                                 float* potential); 
     // Called from reconfigureCB to change the heuristic at runtime
     void setHeuristicType(int type);
+    // Called from planner_core with initialize() to read from static parameter
+    void setHeuristicTypeString(const std::string& heuristic_str);
     
     private:
         void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y);
