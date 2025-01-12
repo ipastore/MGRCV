@@ -1,8 +1,12 @@
 #include <heuristics4astar/custom_astar.h>
 #include <global_planner/astar.h>
+#include <cmath>
+#include <pluginlib/class_list_macros.h>
 
 
 namespace custom_astar {
+
+CustomAStarExpansion::CustomAStarExpansion(): global_planner::AStarExpansion(nullptr, 0, 0) {}
 
 CustomAStarExpansion::CustomAStarExpansion(global_planner::PotentialCalculator* p_calc, int xs, int ys)
     : global_planner::AStarExpansion(p_calc, xs, ys) {
@@ -34,4 +38,6 @@ void CustomAStarExpansion::add(unsigned char* costs, float* potential, float pre
     std::push_heap(custom_queue_.begin(), custom_queue_.end(), global_planner::greater1());
 }
 
-}  // namespace custom_astar
+} // namespace custom_astar
+PLUGINLIB_EXPORT_CLASS(custom_astar::CustomAStarExpansion, nav_core::BaseGlobalPlanner)
+

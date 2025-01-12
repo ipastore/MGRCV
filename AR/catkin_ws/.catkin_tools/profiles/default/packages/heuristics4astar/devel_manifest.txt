@@ -1,6 +1,0 @@
-heuristics4astar
-/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/cmake.lock /home/ipastore/MGRCV/AR/catkin_ws/devel/./cmake.lock
-/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/libcustom_astar.so /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/libcustom_astar.so
-/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/pkgconfig/heuristics4astar.pc /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/pkgconfig/heuristics4astar.pc
-/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/cmake/heuristics4astarConfig-version.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/cmake/heuristics4astarConfig-version.cmake
-/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/cmake/heuristics4astarConfig.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/cmake/heuristics4astarConfig.cmake

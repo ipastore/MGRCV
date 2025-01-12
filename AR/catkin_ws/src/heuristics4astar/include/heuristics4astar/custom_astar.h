@@ -1,15 +1,16 @@
-#pragma once
-
 #include <global_planner/astar.h>
 #include <ros/ros.h>
 #include <string>
 #include <vector>
 
+#ifndef CUSTOM_ASTAR_H
+#define CUSTOM_ASTAR_H
 
 namespace custom_astar {
 
 class CustomAStarExpansion : public global_planner::AStarExpansion {
 public:
+    
     CustomAStarExpansion(global_planner::PotentialCalculator* p_calc, int xs, int ys);
 
 protected:
@@ -21,5 +22,6 @@ private:
 
     };
 
-}  
+};
+#endif
 
