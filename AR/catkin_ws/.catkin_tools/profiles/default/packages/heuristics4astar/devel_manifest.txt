@@ -1,0 +1,14 @@
+heuristics4astar
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/cmake.lock /home/ipastore/MGRCV/AR/catkin_ws/devel/./cmake.lock
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/libheuristics4astar.so /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/libheuristics4astar.so
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/heuristics4astar/planner /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/heuristics4astar/planner
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/pkgconfig/heuristics4astar.pc /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/pkgconfig/heuristics4astar.pc
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/python3/dist-packages/heuristics4astar/__init__.py /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/python3/dist-packages/heuristics4astar/__init__.py
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/python3/dist-packages/heuristics4astar/cfg/__init__.py /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/python3/dist-packages/heuristics4astar/cfg/__init__.py
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/lib/python3/dist-packages/heuristics4astar/cfg/Heuristics_GlobalPlannerConfig.py /home/ipastore/MGRCV/AR/catkin_ws/devel/lib/python3/dist-packages/heuristics4astar/cfg/Heuristics_GlobalPlannerConfig.py
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/include/heuristics4astar/Heuristics_GlobalPlannerConfig.h /home/ipastore/MGRCV/AR/catkin_ws/devel/include/heuristics4astar/Heuristics_GlobalPlannerConfig.h
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/docs/Heuristics_GlobalPlannerConfig.wikidoc /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/docs/Heuristics_GlobalPlannerConfig.wikidoc
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/docs/Heuristics_GlobalPlannerConfig-usage.dox /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/docs/Heuristics_GlobalPlannerConfig-usage.dox
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/docs/Heuristics_GlobalPlannerConfig.dox /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/docs/Heuristics_GlobalPlannerConfig.dox
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/cmake/heuristics4astarConfig-version.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/cmake/heuristics4astarConfig-version.cmake
+/home/ipastore/MGRCV/AR/catkin_ws/devel/.private/heuristics4astar/share/heuristics4astar/cmake/heuristics4astarConfig.cmake /home/ipastore/MGRCV/AR/catkin_ws/devel/share/heuristics4astar/cmake/heuristics4astarConfig.cmake

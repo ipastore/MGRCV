@@ -47,7 +47,7 @@
 // #include <global_planner/gradient_path.h>
 // #include <global_planner/quadratic_calculator.h>
 #include <heuristics4astar/dijkstra.h>
-#include <heuristics4astar/astar.h>
+#include <heuristics4astar/custom_astar.h>
 #include <heuristics4astar/grid_path.h>
 #include <heuristics4astar/gradient_path.h>
 #include <heuristics4astar/quadratic_calculator.h>
@@ -132,7 +132,7 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             planner_ = de;
         }
         else
-            planner_ = new AStarExpansion(p_calc_, cx, cy);
+            planner_ = new CustomAStarExpansion(p_calc_, cx, cy);
 
         bool use_grid_path;
         private_nh.param("use_grid_path", use_grid_path, false);
