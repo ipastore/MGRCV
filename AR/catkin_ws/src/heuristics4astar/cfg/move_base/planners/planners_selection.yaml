@@ -14,3 +14,4 @@ base_local_planner: dwa_local_planner/DWAPlannerROS
 
 # Global planner
 base_global_planner: heuristics4astar/GlobalPlanner
+use_dijkstra: false # set true to use dijkstra. By default is false to use A*.

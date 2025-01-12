@@ -38,6 +38,7 @@
 // #include<global_planner/astar.h>
 #include<heuristics4astar/custom_astar.h>
 #include<costmap_2d/cost_values.h>
+#include <ros/ros.h>
 
 // namespace global_planner {
 namespace heuristics4astar {
@@ -57,6 +58,8 @@ void CustomAStarExpansion::setHeuristicType(int type)
     case 2: heuristic_type_ = "chebyshev"; break;
     default: heuristic_type_ = "manhattan"; // fallback
   }
+    ROS_INFO("Using heuristic: %s", heuristic_type_.c_str());
+
 }
 // For static parameter initialization
 void CustomAStarExpansion::setHeuristicTypeString(const std::string &heuristic_str)
@@ -70,6 +73,9 @@ void CustomAStarExpansion::setHeuristicTypeString(const std::string &heuristic_s
     } else {
         heuristic_type_ = "manhattan"; // fallback
     }
+    
+    ROS_INFO("Using heuristic: %s", heuristic_type_.c_str());
+
 }
 
 

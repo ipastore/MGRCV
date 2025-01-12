@@ -123,17 +123,20 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             p_calc_ = new PotentialCalculator(cx, cy);
 
         bool use_dijkstra;
-        private_nh.param("use_dijkstra", use_dijkstra, true);
+        private_nh.param("use_dijkstra", use_dijkstra, false);
         if (use_dijkstra)
         {
             DijkstraExpansion* de = new DijkstraExpansion(p_calc_, cx, cy);
             if(!old_navfn_behavior_)
                 de->setPreciseStart(true);
             planner_ = de;
-        }
-        else
-            planner_ = new CustomAStarExpansion(p_calc_, cx, cy);
+            ROS_INFO("Planner: using DijkstraExpansion");
 
+        }
+        else{
+            planner_ = new CustomAStarExpansion(p_calc_, cx, cy);
+            ROS_INFO("Planner: using CustomAStarExpansion");
+        }
         bool use_grid_path;
         private_nh.param("use_grid_path", use_grid_path, false);
         if (use_grid_path)
@@ -156,6 +159,7 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
         // TODO add parameter for selecting heuristic
         std::string default_heuristic;
         private_nh.param("heuristic_type", default_heuristic, std::string("manhattan"));
+
 
         if (auto* astar = dynamic_cast<CustomAStarExpansion*>(planner_)) {
             astar->setHeuristicTypeString(default_heuristic);
