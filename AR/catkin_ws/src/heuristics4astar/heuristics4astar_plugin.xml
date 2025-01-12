@@ -1,5 +1,5 @@
 <!-- <library path="lib/libglobal_planner"> -->
-<library path="lib/libheuristics4astar_lib">
+<library path="lib/libheuristics4astar">
   <!-- <class name="global_planner/GlobalPlanner"  -->
   <!-- type="global_planner::GlobalPlanner"  -->
     <class name="heuristics4astar/GlobalPlanner" 
