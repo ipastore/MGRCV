@@ -69,10 +69,14 @@ class CustomAStarExpansion : public Expander {
         CustomAStarExpansion(PotentialCalculator* p_calc, int nx, int ny);
         virtual ~CustomAStarExpansion() {}
         bool calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y, int cycles,
-                                float* potential);
+                                float* potential); 
+    // Called from reconfigureCB to change the heuristic at runtime
+    void setHeuristicType(int type);
+    
     private:
         void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y);
         std::vector<Index> queue_;
+        std::string heuristic_type_; // e.g., "manhattan", "euclidean", "chebyshev"
 };
 
 } //end namespace heuristics4astar

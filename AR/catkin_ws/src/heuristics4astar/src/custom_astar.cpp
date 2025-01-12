@@ -43,8 +43,21 @@
 namespace heuristics4astar {
 
 CustomAStarExpansion::CustomAStarExpansion(PotentialCalculator* p_calc, int xs, int ys) :
-        Expander(p_calc, xs, ys) {
+        Expander(p_calc, xs, ys)
+        , heuristic_type_("manhattan") // default 
+        {}
+
+void CustomAStarExpansion::setHeuristicType(int type)
+{
+  // Convert the integer enum into a string
+  switch (type) {
+    case 0: heuristic_type_ = "manhattan"; break;
+    case 1: heuristic_type_ = "euclidean"; break;
+    case 2: heuristic_type_ = "chebyshev"; break;
+    default: heuristic_type_ = "manhattan"; // fallback
+  }
 }
+
 
 bool CustomAStarExpansion::calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y,
                                         int cycles, float* potential) {
@@ -91,10 +104,29 @@ void CustomAStarExpansion::add(unsigned char* costs, float* potential, float pre
 
     potential[next_i] = p_calc_->calculatePotential(potential, costs[next_i] + neutral_cost_, next_i, prev_potential);
     int x = next_i % nx_, y = next_i / nx_;
+    // float distance = abs(end_x - x) + abs(end_y - y);
     
     // TODO: add selection of heuristic managed in a config file
+    // Decide which distance to use, based on heuristic_type_
+    float distance = 0.0f;
 
-    float distance = abs(end_x - x) + abs(end_y - y);
+    if (heuristic_type_ == "manhattan") {
+        // L1 norm
+        distance = std::fabs(end_x - x) + std::fabs(end_y - y);
+    }
+    else if (heuristic_type_ == "euclidean") {
+        // L2 norm
+        float dx = static_cast<float>(end_x - x);
+        float dy = static_cast<float>(end_y - y);
+        distance = std::sqrt(dx * dx + dy * dy);
+    }
+    else if (heuristic_type_ == "chebyshev") {
+        // Linf norm
+        float dx = std::fabs(end_x - x);
+        float dy = std::fabs(end_y - y);
+        distance = std::max(dx, dy);
+    }
+    // else fallback is 0 => effectively Dijkstra's algorithm
 
     queue_.push_back(Index(next_i, potential[next_i] + distance * neutral_cost_));
     std::push_heap(queue_.begin(), queue_.end(), greater1());

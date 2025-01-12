@@ -154,6 +154,13 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
         private_nh.param("publish_scale", publish_scale_, 100);
         private_nh.param("outline_map", outline_map_, true);
         // TODO add parameter for selecting heuristic
+        std::string default_heuristic;
+        private_nh.param("heuristic_type", default_heuristic, std::string("manhattan"));
+
+        if (auto* astar = dynamic_cast<CustomAStarExpansion*>(planner_)) {
+            astar->setHeuristicTypeString(default_heuristic);
+        }
+
 
         make_plan_srv_ = private_nh.advertiseService("make_plan", &GlobalPlanner::makePlanService, this);
 
@@ -181,6 +188,14 @@ void GlobalPlanner::reconfigureCB(heuristics4astar::Heuristics_GlobalPlannerConf
     orientation_filter_->setMode(config.orientation_mode);
     orientation_filter_->setWindowSize(config.orientation_window_size);
     //TODO: add parameter for selecting heuristic
+    // OLD: If planner_ actually is our CustomAStarExpansion
+    // if (CustomAStarExpansion* astar = dynamic_cast<CustomAStarExpansion*>(planner_)) {
+    //     astar->setHeuristicType(config.heuristic_type);
+    // }
+    // NEW: If planner_ actually is our CustomAStarExpansion
+        if (auto* astar = dynamic_cast<CustomAStarExpansion*>(planner_)) {
+        astar->setHeuristicType(config.heuristic_type);
+    }
 }
 
 void GlobalPlanner::clearRobotCell(const geometry_msgs::PoseStamped& global_pose, unsigned int mx, unsigned int my) {

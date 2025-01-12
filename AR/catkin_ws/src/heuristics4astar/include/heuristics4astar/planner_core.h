@@ -57,6 +57,8 @@
 #include <heuristics4astar/traceback.h>
 #include <heuristics4astar/orientation_filter.h>
 #include <heuristics4astar/Heuristics_GlobalPlannerConfig.h>
+// NEW INCLUDE
+#include <heuristics4astar/custom_astar.h>
 
 
 namespace heuristics4astar {
