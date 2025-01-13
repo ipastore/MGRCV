@@ -74,12 +74,16 @@ class CustomAStarExpansion : public Expander {
     void setHeuristicType(int type);
     // Called from planner_core with initialize() to read from static parameter
     void setHeuristicTypeString(const std::string& heuristic_str);
+    // Getter for the heuristic type
+    std::string getHeuristicTypeName() const;
+
     
     private:
         void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y);
         std::vector<Index> queue_;
         std::string heuristic_type_; // e.g., "manhattan", "euclidean", "chebyshev"
 };
+
 
 } //end namespace heuristics4astar
 #endif

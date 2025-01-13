@@ -72,6 +72,12 @@ void CustomAStarExpansion::setHeuristicTypeString(const std::string &heuristic_s
     }
 }
 
+// Getter for the heuristic type
+std::string CustomAStarExpansion::getHeuristicTypeName() const
+{
+    return heuristic_type_; 
+}
+
 
 bool CustomAStarExpansion::calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y,
                                         int cycles, float* potential) {

@@ -256,6 +256,11 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     //clear the plan, just in case
     plan.clear();
 
+    // Start timing
+    static int run_count = 0;
+    run_count++;
+    ros::Time t0 = ros::Time::now();
+
     ros::NodeHandle n;
     std::string global_frame = frame_id_;
 
@@ -322,6 +327,81 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     bool found_legal = planner_->calculatePotentials(costmap_->getCharMap(), start_x, start_y, goal_x, goal_y,
                                                     nx * ny * 2, potential_array_);
 
+    // Stop timing
+    ros::Duration dt = ros::Time::now() - t0;
+    double planning_time = dt.toSec();
+
+    // Compute path length
+    double total_length = 0.0;
+    if (!plan.empty()) {
+        for (size_t i = 1; i < plan.size(); i++) {
+            double dx = plan[i].pose.position.x - plan[i-1].pose.position.x;
+            double dy = plan[i].pose.position.y - plan[i-1].pose.position.y;
+            total_length += std::sqrt(dx * dx + dy * dy);
+        }
+    }
+
+    // Compute path “smoothness”: sum of turn angles
+    double sum_of_turns = 0.0;
+    if (plan.size() >= 3) {
+        for (size_t i = 1; i + 1 < plan.size(); i++) {
+            double dx1 = plan[i].pose.position.x   - plan[i-1].pose.position.x;
+            double dy1 = plan[i].pose.position.y   - plan[i-1].pose.position.y;
+            double dx2 = plan[i+1].pose.position.x - plan[i].pose.position.x;
+            double dy2 = plan[i+1].pose.position.y - plan[i].pose.position.y;
+
+            double theta1 = std::atan2(dy1, dx1);
+            double theta2 = std::atan2(dy2, dx2);
+            double dtheta = std::fabs(theta2 - theta1);
+            if (dtheta > M_PI) {
+                dtheta = 2.0 * M_PI - dtheta; 
+            }
+            sum_of_turns += dtheta;
+        }
+    }
+
+    // Identify which global_planner expansion we are actually using:
+    std::string current_heuristic;
+
+    // 1) Check if it's Dijkstra
+    if (dynamic_cast<DijkstraExpansion*>(planner_)) {
+        current_heuristic = "dijkstra";
+
+    // 2) Otherwise, if it's our CustomAStarExpansion, get the actual heuristic name
+    } else if (auto* astar = dynamic_cast<CustomAStarExpansion*>(planner_)) {
+        current_heuristic = astar->getHeuristicTypeName();
+
+    // 3) Fallback case
+    } else {
+        current_heuristic = "unknown_planner";
+    }
+    
+    // Print results to screen
+    if (found_legal && !plan.empty()) {
+        ROS_INFO("[Run #%d] Heuristic=%s, Time=%.4fs, Length=%.2fm, SumTurns=%.2f rad",
+                 run_count, current_heuristic.c_str(), planning_time, total_length, sum_of_turns);
+    } else {
+        ROS_WARN("[Run #%d] No valid plan found. Heuristic=%s, Time=%.4fs",
+                 run_count, current_heuristic.c_str(), planning_time);
+    }
+
+    // Append results to a CSV file
+    {
+        std::ofstream csv_file("/tmp/planner_log.csv", std::ios_base::app);
+        if (csv_file.is_open()) {
+            // CSV header could be: run,heuristic,time,length,smoothness,found_plan
+            csv_file << run_count << ","
+                     << current_heuristic << ","
+                     << planning_time << ","
+                     << total_length << ","
+                     << sum_of_turns << ","
+                     << (found_legal && !plan.empty()) << "\n";
+            csv_file.close();
+        } else {
+            ROS_ERROR("Failed to open /tmp/planner_log.csv for writing.");
+        }
+    }    
+    
     if(!old_navfn_behavior_)
         planner_->clearEndpoint(costmap_->getCharMap(), potential_array_, goal_x_i, goal_y_i, 2);
     if(publish_potential_)
