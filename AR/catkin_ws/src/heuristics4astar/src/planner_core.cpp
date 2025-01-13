@@ -51,6 +51,8 @@
 #include <heuristics4astar/grid_path.h>
 #include <heuristics4astar/gradient_path.h>
 #include <heuristics4astar/quadratic_calculator.h>
+#include <chrono>
+
 
 //register this planner as a BaseGlobalPlanner plugin
 // PLUGINLIB_EXPORT_CLASS(global_planner::GlobalPlanner, nav_core::BaseGlobalPlanner)
@@ -123,16 +125,19 @@ void GlobalPlanner::initialize(std::string name, costmap_2d::Costmap2D* costmap,
             p_calc_ = new PotentialCalculator(cx, cy);
 
         bool use_dijkstra;
-        private_nh.param("use_dijkstra", use_dijkstra, true);
+        private_nh.param("use_dijkstra", use_dijkstra, false);
         if (use_dijkstra)
         {
             DijkstraExpansion* de = new DijkstraExpansion(p_calc_, cx, cy);
             if(!old_navfn_behavior_)
                 de->setPreciseStart(true);
             planner_ = de;
+            ROS_INFO("Planner: using DijkstraExpansion");
+
         }
         else
             planner_ = new CustomAStarExpansion(p_calc_, cx, cy);
+            ROS_INFO("Planner: using CustomAStarExpansion");
 
         bool use_grid_path;
         private_nh.param("use_grid_path", use_grid_path, false);
@@ -256,7 +261,9 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     // Start timer
     static int run_count = 0;
     run_count++;
-    ros::Time t0 = ros::Time::now();
+    // ros::Time t0 = ros::Time::now();
+    auto start_planning = std::chrono::steady_clock::now();
+
 
     //clear the plan, just in case
     plan.clear();
@@ -354,8 +361,10 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
     delete[] potential_array_;
 
     // Stop timing (now that plan is built)
-    ros::Duration dt = ros::Time::now() - t0;
-    double planning_time = dt.toSec();
+    // ros::Duration dt = ros::Time::now() - t0;
+    // double planning_time = dt.toSec();
+    auto end_planning = std::chrono::steady_clock::now();
+    double planning_time = std::chrono::duration<double>(end_planning - start_planning).count(); 
 
     // If plan is empty, skip logging or printing "no path" timing.
     // Only proceed with logging if we actually have a valid plan.
@@ -387,6 +396,7 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
             }
         }
 
+        std::string current_heuristic;
         // Check if it's Dijkstra
         if (dynamic_cast<DijkstraExpansion*>(planner_)) {
             current_heuristic = "dijkstra";
@@ -408,7 +418,7 @@ bool GlobalPlanner::makePlan(const geometry_msgs::PoseStamped& start, const geom
 
         // 6) Print results to screen
         ROS_INFO("[Run #%d] Start(%.2f, %.2f) -> Goal(%.2f, %.2f) | Heuristic=%s | "
-                 "Time=%.4fs | Length=%.2fm | SumTurns=%.2f",
+                 "Time=%.9fs | Length=%.2fm | SumTurns=%.2f",
                  run_count, sx, sy, gx, gy,
                  current_heuristic.c_str(), planning_time, total_length, sum_of_turns);
 
