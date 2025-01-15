@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main"] 1736958591 "main.aux" "main.bbl" "main" 1736958592 2
+["bibtex main"] 1736964082 "main.aux" "main.bbl" "main" 1736964082 2
   "./biblio.bib" 1736958591 321 97a37d70d791874cb1a622d2305e5add ""
   "/usr/local/texlive/2023/texmf-dist/bibtex/bst/ieeetran/IEEEtran.bst" 1440712899 57748 7c8250ecf02814ce6ddc0cdbb63df1dd ""
-  "main.aux" 1736958591 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "main.aux" 1736964082 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1736958564 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/main.tex" "main.pdf" "main" 1736958565 2
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/main.tex" 1736958563 10516 71fdcfd4daad8d544cabdb87a2162566 ""
+["pdflatex"] 1736964081 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" "main.pdf" "main" 1736964082 2
+  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" 1736958563 10516 71fdcfd4daad8d544cabdb87a2162566 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/adobe/courier/pcrr7t.tfm" 1136768653 960 379cc0019370a9e0208a0a3f949f847a ""
@@ -140,8 +140,8 @@
   "ieeeconf.cls" 1736956599 197574 ece0d1d68e7d93da26a38d986a993284 ""
   "images/maze_results_placeholder.png" 0 -1 0 ""
   "images/rqt_graph_placeholder.png" 0 -1 0 ""
-  "main.aux" 1736958591 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
-  "main.bbl" 1736958592 0 d41d8cd98f00b204e9800998ecf8427e "bibtex main"
+  "main.aux" 1736964082 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "main.bbl" 1736964082 0 d41d8cd98f00b204e9800998ecf8427e "bibtex main"
   "main.out" 0 -1 0 "pdflatex"
   "main.tex" 1736958563 10516 71fdcfd4daad8d544cabdb87a2162566 ""
   (generated)
