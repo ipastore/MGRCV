@@ -4,10 +4,13 @@
 <param name="/use_sim_time" value="true"/> 
 
 <!-- STAGE -->
-<node name="stage_ros" pkg="stage_ros" type="stageros" args="$(find heuristics4astar)/world/simple.world" output="screen"/>
+<!-- <node name="stage_ros" pkg="stage_ros" type="stageros" args="$(find heuristics4astar)/world/simple.world" output="screen"/> -->
+<node name="stage_ros" pkg="stage_ros" type="stageros" args="$(find heuristics4astar)/world/maze_with_blocks/maze_with_blocks.world" output="screen"/>
 
 <!-- MAP -->
-<node name="map_server" pkg="map_server" type="map_server" args="$(find heuristics4astar)/world/simple.yaml"/>
+<!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find heuristics4astar)/world/simple.yaml"/> -->
+<node name="map_server" pkg="map_server" type="map_server" args="$(find heuristics4astar)/world/maze_with_blocks/maze_with_blocks.yaml"/>
+
 
 <!-- MOVE_BASE --> <!-- DEBUG: launch-prefix="xterm \-e gdb \-\-args" --> 
 <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
