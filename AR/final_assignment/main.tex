@@ -1,7 +1,6 @@
 \documentclass[letterpaper, 10 pt, conference]{ieeeconf}
 \IEEEoverridecommandlockouts
 \overrideIEEEmargins
-
 \let\proof\relax
 \let\endproof\relax
 \usepackage{amsmath,amssymb,amsfonts}
@@ -16,6 +15,8 @@
 \usepackage[export]{adjustbox}
 \usepackage{color}
 \usepackage{hyperref}
+\usepackage{pgfplots}
+
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -23,32 +24,20 @@
 % Adjust table column separation if desired
 \setlength{\tabcolsep}{0.4em}
 
-\title{\LARGE\bf 
-Runtime-Switchable Heuristics in A* for Autonomous Robots
-}
-
-\author{
-\centering
-Your Name$^{1}$, Your Colleague$^{2}$% <-this % stops a space
-\thanks{$^{1}$Your Name is with University X, Department Y, City, Country.
-        {\tt\small name@university.edu}}%
-\thanks{$^{2}$Your Colleague is with the Laboratory of A, City, Country.
-        {\tt\small colleague@lab.org}}%
-}
+\title{\LARGE\bf Runtime-Switchable Heuristics in A* for Autonomous Robots}
+\author{\centering Ignacio Pastore Benaim, David Padilla Orenga}
 
 \begin{document}
+\setlength{\parskip}{0.5em} % Espacio de 1em entre párrafos
 \maketitle
 
-%%%%%%%%%%%%%%%%%%           
+%%%%%%%%%%%%%%%%%%%
 % ABSTRACT %
 %%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-This document presents a practical work exploring the integration of an A* global planner 
-capable of **runtime-switchable heuristics** for ROS-based autonomous navigation. 
-It outlines the motivation, methodology, implementation details, and experimental 
-results obtained under various map scenarios. The results indicate that switching 
-heuristics (e.g., Manhattan, Euclidean, Chebyshev) at runtime can improve planning 
-time in certain environments. 
+This document presents a practical exploration of integrating a global planner based on the A* algorithm with runtime-switchable heuristics for ROS-based autonomous navigation. Traditional A* implementations utilize a fixed heuristic, which can limit adaptability across diverse environments. Our approach introduces a flexible framework that allows dynamic heuristic selection (e.g., Manhattan, Euclidean, Chebyshev) during execution without requiring navigation stack restarts.
+
+We demonstrate the methodology, implementation, and experimental results obtained across various map scenarios. Experiments highlight how adaptive heuristic switching can improve planning times and path quality by tailoring the heuristic to specific map topologies. This innovation ensures robust performance in heterogeneous environments, making it a valuable tool for autonomous robotic navigation.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%           
@@ -56,41 +45,33 @@ time in certain environments.
 %%%%%%%%%%%%%%%%
 
 \section{Introduction}\label{sec:intro}
-% ~1 page
-In autonomous robotics, path planning algorithms such as Dijkstra, A*, and RRT* 
-often serve as foundations for navigation tasks. However, typical A* implementations 
-adopt a fixed heuristic, limiting flexibility when faced with diverse map topologies. 
-This work proposes a run\-time-switchable A* planner that allows users to choose from 
-multiple heuristics (Manhattan, Euclidean, Chebyshev) **without** restarting the 
-navigation stack.
 
-% 1) Project motivation and scope
-The main motivation is to demonstrate the effect of **heuristic selection** on planning 
-speed and path quality in grid-based navigation. Our scope includes implementing this 
-feature as a ROS plugin that interacts with the standard `move_base` framework. 
-We rely on:
+In autonomous robotics, global path planning is critical for navigating complex environments. Algorithms such as Dijkstra, A*, and RRT* have become foundational tools, with A* standing out due to its balance between optimality and computational efficiency. Introduced by Hart, Nilsson, and Raphael in their seminal work \cite{hart1968formal}, the A* algorithm combines the advantages of Dijkstra's algorithm and greedy best-first search by using a heuristic function to estimate the cost to the goal, ensuring both optimality and completeness when the heuristic is admissible.
+
+Despite its effectiveness, traditional A* implementations rely on a fixed heuristic function, such as Manhattan (L1 norm) or Euclidean (L2 norm), which can constrain performance in dynamic or heterogeneous environments. Different heuristics have varying strengths; for example, Manhattan is well-suited for grid-based maps with axis-aligned obstacles, while Euclidean provides better results in open spaces. However, a static heuristic limits the algorithm's ability to adapt to changing conditions.
+
+This project addresses these limitations by introducing a runtime-switchable A* planner that enables dynamic heuristic selection during navigation. This feature enhances adaptability and efficiency without requiring the navigation stack to restart, making it particularly suitable for ROS-based systems.
+
+\subsection{Project Motivation and Scope}
+The primary motivation is to demonstrate the impact of heuristic selection on planning speed and path quality in grid-based navigation. The scope of this work includes developing a ROS plugin that integrates with the `move\_base` framework and supports dynamic heuristic switching. Key components include:
 \begin{itemize}
-    \item The ROS Navigation Stack for costmap generation and path execution,
-    \item A custom global planner plugin implementing A*,
-    \item Dynamic Reconfigure to switch heuristics at runtime.
+	\item The ROS Navigation Stack for costmap generation and path execution,
+	\item A custom global planner plugin implementing A*,
+	\item Dynamic Reconfigure for runtime heuristic adjustments.
 \end{itemize}
 
-% 2) Brief literature review
-\textbf{Literature Review:}
-Recent works highlight that heuristics significantly affect path length, smoothness, 
-and computation time for grid-based search \cite{thrun2005probabilistic, lavalle2006planning}. 
-Manhattan (L1-norm) can be efficient in corridor-like grids, while Euclidean can yield 
-shorter paths in more open environments. Advanced methods like RRT* 
-\cite{karaman2011sampling} can produce smooth paths, but they often have higher 
-computation cost. 
+\subsection{Literature Review}
+Recent studies underscore the importance of heuristic selection in grid-based path planning. For instance, Manhattan (L1 norm) excels in structured, corridor-like environments, while Euclidean (L2 norm) is more effective in open spaces \cite{thrun2005probabilistic, lavalle2006planning}. Advanced methods such as RRT* \cite{karaman2011sampling} provide smooth paths but at a higher computational cost. This work builds on the foundational insights of Hart et al. \cite{hart1968formal}, emphasizing the flexibility of A* through heuristic switching to address these challenges.
 
-% 3) Outline of approach
-The rest of this paper is organized as follows: 
-Section~\ref{sec:method} details the classical A* approach and our modification 
-to allow runtime-switchable heuristics. Section~\ref{sec:implementation} describes 
-the ROS plugin structure. Section~\ref{sec:experiments} presents experimental 
-results across different map types (maze vs. open). Finally, 
-Section~\ref{sec:conclusion} offers conclusions and future work.
+\subsection{Outline of Approach}
+The remainder of this paper is organized as follows:
+\begin{itemize}
+	\item Section~\ref{sec:method} details the classical A* algorithm and our modifications for heuristic switching.
+	\item Section~\ref{sec:implementation} describes the ROS plugin architecture and implementation.
+	\item Section~\ref{sec:experiments} presents experimental results on various map types.
+	\item Section~\ref{sec:conclusion} concludes with key findings and future research directions.
+\end{itemize}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%           
@@ -141,7 +122,7 @@ Figure~\ref{fig:rqt_graph} shows a conceptual node/topic diagram (placeholder).
 \begin{figure}[!ht]
     \centering
     % Placeholder for your rqt_graph or similar
-    \fbox{\includegraphics[width=0.75\columnwidth]{images/rqt_graph_placeholder.png}}
+    \fbox{\includegraphics[width=0.75\columnwidth]{images/Nbody.png}}
     \caption{Conceptual Node Diagram: the custom global planner node 
     with connections to costmap and move\_base.}
     \label{fig:rqt_graph}
@@ -220,7 +201,7 @@ with grid directions.
 % Placeholder for figure
 \begin{figure}[!ht]
     \centering
-    \fbox{\includegraphics[width=0.45\columnwidth]{images/maze_results_placeholder.png}}
+    \fbox{\includegraphics[width=0.45\columnwidth]{images/Nbody.png}}
     \caption{Visualization of paths in a corridor map. 
     (Top) Manhattan-based route. (Bottom) Euclidean-based route.}
     \label{fig:maze_vis}
@@ -246,6 +227,35 @@ Chebyshev & 0.09 & 11.6 & 2.8 \\
 \hline
 \end{tabular}
 \end{table}
+
+\begin{figure}[H] % Forzar la posición exacta
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            bar width=10pt,
+            width=0.8\columnwidth,
+            height=5cm,
+            symbolic x coords={Manhattan, Euclidean, Chebyshev},
+            xtick=data,
+            ymin=0,
+            ymax=1.5,
+            ylabel={Tiempo (s)},
+            xlabel={Heuristics},
+            tick label style={font=\footnotesize}, % Tamaño de las etiquetas de los ejes
+            label style={font=\footnotesize}, % Tamaño de las etiquetas de los ejes X e Y
+            legend style={font=\scriptsize, at={(0.5,-0.2)}, anchor=north, legend columns=-1}, % Tamaño de la leyenda
+            grid=both,
+            nodes near coords,
+            every node near coord/.append style={font=\scriptsize}, % Tamaño de los valores sobre las barras
+        ]
+        \addplot coordinates {(Manhattan, 0.8) (Euclidean, 1.2) (Chebyshev, 1.0)};
+        \addplot coordinates {(Manhattan, 1.0) (Euclidean, 0.9) (Chebyshev, 1.1)};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Comparison of times between heuristics in different maps..}
+    \label{fig:heuristic_comparison}
+\end{figure}
 
 \subsection{Discussion}
 Changing the heuristic **at runtime** allowed for:
@@ -285,6 +295,16 @@ We aim to:
 %%%%%%%%%%%%%%
 
 \bibliographystyle{IEEEtran}
-\bibliography{biblio}
+% \bibliography{biblio}
+\begin{thebibliography}{1}
 
+\bibitem{hart1968formal} P. E. Hart, N. J. Nilsson, and B. Raphael, "A Formal Basis for the Heuristic Determination of Minimum Cost Paths," \textit{IEEE Transactions on Systems Science and Cybernetics}, vol. 4, no. 2, pp. 100--107, 1968.
+
+\bibitem{thrun2005probabilistic} S. Thrun, W. Burgard, and D. Fox, \textit{Probabilistic Robotics}, MIT Press, 2005.
+
+\bibitem{lavalle2006planning} S. M. LaValle, \textit{Planning Algorithms}, Cambridge University Press, 2006.
+
+\bibitem{karaman2011sampling} S. Karaman and E. Frazzoli, "Sampling-based Algorithms for Optimal Motion Planning," \textit{The International Journal of Robotics Research}, vol. 30, no. 7, pp. 846--894, 2011.
+
+\end{thebibliography}
 \end{document}

@@ -3,6 +3,9 @@
 .vscode
 *.zip
 **/logs
+**/MSAP
+**/CV
+**/PACS
 
 # # Ignore build, devel, and install directories
 build/
