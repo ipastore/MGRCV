@@ -1,0 +1,56 @@
+Resultados de las pruebas de thread pool
+Ejecutando thread pool con 16x12 divisiones...
+Execution time: 1219 ms.
+Execution time: 1234 ms.
+Execution time: 1247 ms.
+Execution time: 1208 ms.
+Execution time: 1221 ms.
+Execution time: 1190 ms.
+Execution time: 1213 ms.
+Execution time: 1198 ms.
+Execution time: 1194 ms.
+Execution time: 1191 ms.
+Ejecutando thread pool con 32x24 divisiones...
+Execution time: 1188 ms.
+Execution time: 1188 ms.
+Execution time: 1183 ms.
+Execution time: 1224 ms.
+Execution time: 1164 ms.
+Execution time: 1218 ms.
+Execution time: 1193 ms.
+Execution time: 1210 ms.
+Execution time: 1138 ms.
+Execution time: 1002 ms.
+Ejecutando thread pool con 64x48 divisiones...
+Execution time: 990 ms.
+Execution time: 1015 ms.
+Execution time: 1008 ms.
+Execution time: 986 ms.
+Execution time: 1010 ms.
+Execution time: 1015 ms.
+Execution time: 1005 ms.
+Execution time: 1000 ms.
+Execution time: 989 ms.
+Execution time: 993 ms.
+Ejecutando thread pool con 128x96 divisiones...
+Execution time: 1011 ms.
+Execution time: 1026 ms.
+Execution time: 1026 ms.
+Execution time: 1037 ms.
+Execution time: 1045 ms.
+Execution time: 1005 ms.
+Execution time: 1003 ms.
+Execution time: 1000 ms.
+Execution time: 983 ms.
+Execution time: 1029 ms.
+Ejecutando thread pool con 256x192 divisiones...
+Execution time: 978 ms.
+Execution time: 990 ms.
+Execution time: 1031 ms.
+Execution time: 1008 ms.
+Execution time: 1042 ms.
+Execution time: 1029 ms.
+Execution time: 1035 ms.
+Execution time: 1048 ms.
+Execution time: 985 ms.
+Execution time: 1038 ms.
