@@ -117,11 +117,30 @@ Our system consists of:
     \item \textbf{Dynamic Reconfigure Server:} Exposes the parameter 
     \texttt{/GlobalPlanner/heuristic\_type} for at-runtime switching.
 \end{itemize}
+\section{Implementation}\label{sec:implementation}
+
+\subsection{System Overview}
+Our approach provides a plugin that implements the \texttt{nav\_core::BaseGlobalPlanner} interface, making it compatible with the standard ROS Navigation Stack (\texttt{move\_base}). Specifically, this plugin is declared as:
+
+
+Hence, from the perspective of the navigation stack, our planner is loaded dynamically at runtime as \texttt{heuristics4astar/GlobalPlanner}.
+
+\begin{itemize}
+    \item \textbf{Heuristics4AStar (Plugin):} A library that extends \texttt{nav\_core::BaseGlobalPlanner} and implements A* with runtime-switchable heuristics, along with a Dijkstra fallback.
+    \item \textbf{Costmap2DROS:} Provides obstacle/costmap data from sensor inputs; used by the planner to determine feasible paths.
+    \item \textbf{Dynamic Reconfigure Server:} Exposes the parameter \texttt{/GlobalPlanner/heuristic\_type} for at-runtime switching among Manhattan, Euclidean, or Chebyshev heuristics.
+\end{itemize}
+
+\subsection{Plugin Architecture}
+Because the plugin inherits from \texttt{nav\_core::BaseGlobalPlanner}, it integrates seamlessly with \texttt{move\_base}. Internally, we adapt functionality from the standard \texttt{global\_planner} package (e.g., expansions, cost computations) but add our own code to handle heuristic switching via Dynamic Reconfigure. 
+This design allows the \texttt{move\_base} node to recognize our planner as a valid global planner plugin and load it within the navigation configuration showed in
+Figure~\ref{fig:rqt_graph}.
+
 
 \begin{figure}[!ht]
     \centering
     % Placeholder for your rqt_graph or similar
-    \fbox{\includegraphics[width=0.75\columnwidth]{images/Nbody.png}}
+    \fbox{\includegraphics[width=0.90\columnwidth]{images/rqt_graph.png}}
     \caption{Conceptual Node Diagram: the custom global planner node 
     with connections to costmap and move\_base.}
     \label{fig:rqt_graph}
@@ -200,34 +219,6 @@ We collected multiple runs for each map and heuristic, then aggregated the resul
 \end{tabular}
 \end{table}
 
-\begin{figure}[H] % Forzar la posición exacta
-    \centering
-    \begin{tikzpicture}
-        \begin{axis}[
-            ybar,
-            bar width=10pt,
-            width=0.8\columnwidth,
-            height=5cm,
-            symbolic x coords={Manhattan, Euclidean, Chebyshev},
-            xtick=data,
-            ymin=0,
-            ymax=1.5,
-            ylabel={Tiempo (s)},
-            xlabel={Heuristics},
-            tick label style={font=\footnotesize}, % Tamaño de las etiquetas de los ejes
-            label style={font=\footnotesize}, % Tamaño de las etiquetas de los ejes X e Y
-            legend style={font=\scriptsize, at={(0.5,-0.2)}, anchor=north, legend columns=-1}, % Tamaño de la leyenda
-            grid=both,
-            nodes near coords,
-            every node near coord/.append style={font=\scriptsize}, % Tamaño de los valores sobre las barras
-        ]
-        \addplot coordinates {(Manhattan, 0.8) (Euclidean, 1.2) (Chebyshev, 1.0)};
-        \addplot coordinates {(Manhattan, 1.0) (Euclidean, 0.9) (Chebyshev, 1.1)};
-        \end{axis}
-    \end{tikzpicture}
-    \caption{Comparison of times between heuristics in different maps..}
-    \label{fig:heuristic_comparison}
-\end{figure}
 
 \subsubsection{Qualitative Analysis per Map}
 \begin{itemize}
