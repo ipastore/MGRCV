@@ -1,0 +1,37 @@
+======================================================
+ INSTALLATION INSTRUCTIONS for the heuristics4astar package
+======================================================
+
+1. PRE-REQUISITES
+-----------------
+   - A working ROS1 (e.g., Noetic) environment.
+   - Standard ROS navigation packages:
+       * move_base
+       * costmap_2d
+       * nav_core
+   - (Optional) dynamic_reconfigure (usually installed with the desktop-full version of ROS).
+
+ 
+2. DOWNLOAD/CLONE THE PACKAGE
+-----------------------------
+   - Create or navigate to your catkin workspace if not already done:
+
+   - Place the heuristics4astar folder directly in ~/catkin_ws/src
+
+3. BUILD THE PACKAGE
+--------------------
+   - From ~/catkin_ws/, run:
+        cd ~/catkin_ws
+        catkin_build
+   - Source your workspace:
+        source devel/setup.bash
+
+4. VERIFY INSTALL
+----------------
+   - Check that the 'heuristics4astar' package is recognized:
+        rospack list | grep heuristics4astar
+     You should see an entry for heuristics4astar.
+
+5. NEXT STEPS
+-------------
+   - To launch the package and test the planner, see the README.txt file for instructions.
