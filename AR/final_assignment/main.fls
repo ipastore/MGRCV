@@ -428,11 +428,11 @@ INPUT ./images/manhattan_maze_corridor.png
 INPUT ./images/manhattan_maze_corridor.png
 INPUT ./images/manhattan_maze_corridor.png
 INPUT ./images/manhattan_maze_corridor.png
-INPUT ./images/euclidean_blank.png
-INPUT ./images/euclidean_blank.png
-INPUT ./images/euclidean_blank.png
-INPUT ./images/euclidean_blank.png
-INPUT ./images/euclidean_blank.png
+INPUT ./images/manhattan_blank.png
+INPUT ./images/manhattan_blank.png
+INPUT ./images/manhattan_blank.png
+INPUT ./images/manhattan_blank.png
+INPUT ./images/manhattan_blank.png
 INPUT ./images/chebyshev_corridor.png
 INPUT ./images/chebyshev_corridor.png
 INPUT ./images/chebyshev_corridor.png

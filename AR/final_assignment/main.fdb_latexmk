@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1736989203 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" "main.pdf" "main" 1736989205 0
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" 1736989203 17730 6e7550e3eeb23d205818ef0a22927bbb ""
+["pdflatex"] 1736992249 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" "main.pdf" "main" 1736992250 0
+  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" 1736992248 17992 d577607c27948bffec709b2a4d7b74a3 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/adobe/courier/pcrr7t.tfm" 1136768653 960 379cc0019370a9e0208a0a3f949f847a ""
@@ -231,12 +231,12 @@
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
   "ieeeconf.cls" 1736956599 197574 ece0d1d68e7d93da26a38d986a993284 ""
   "images/chebyshev_corridor.png" 1736980983 51943 4610df24550074a0b4e09d683f98a51c ""
-  "images/euclidean_blank.png" 1736980983 38908 6e4a754ef7abb63846368df739f33a6f ""
+  "images/manhattan_blank.png" 1736980983 41751 a88dccff6d06f66a9c20de6d7aa70343 ""
   "images/manhattan_maze_corridor.png" 1736980047 70259 d3d515b5981d3d7a5530eebddb90be9f ""
   "images/rqt_graph.png" 1736986800 25250 b5080aa41a4b0e5011086207dfb7283a ""
-  "main.aux" 1736989205 5375 9b0958c2bb153638cfb19da51e24adf7 "pdflatex"
-  "main.out" 1736989205 2875 3ec3d0baf7e8fa2954bc1dca1596a460 "pdflatex"
-  "main.tex" 1736989203 17730 6e7550e3eeb23d205818ef0a22927bbb ""
+  "main.aux" 1736992250 5330 e061d8128d064afbf4ed60590370c623 "pdflatex"
+  "main.out" 1736992250 3021 2dd79f23f31e1ee6251080e145cdbe86 "pdflatex"
+  "main.tex" 1736992248 17992 d577607c27948bffec709b2a4d7b74a3 ""
   (generated)
   "main.aux"
   "main.log"
