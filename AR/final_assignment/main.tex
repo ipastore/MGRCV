@@ -1,6 +1,7 @@
 \documentclass[letterpaper, 10 pt, conference]{ieeeconf}
 \IEEEoverridecommandlockouts
 \overrideIEEEmargins
+
 \let\proof\relax
 \let\endproof\relax
 \usepackage{amsmath,amssymb,amsfonts}
@@ -16,7 +17,7 @@
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage{pgfplots}
-
+\usepackage{cite}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -28,7 +29,7 @@
 \author{\centering Ignacio Pastore Benaim, David Padilla Orenga}
 
 \begin{document}
-\setlength{\parskip}{0.5em} % Espacio de 1em entre párrafos
+\setlength{\parskip}{0.5em} % Espacio entre párrafos
 \maketitle
 
 %%%%%%%%%%%%%%%%%%%
@@ -43,17 +44,21 @@ We demonstrate the methodology, implementation, and experimental results obtaine
 %%%%%%%%%%%%%%%%           
 % INTRODUCTION %
 %%%%%%%%%%%%%%%%
-
 \section{Introduction}\label{sec:intro}
 
-In autonomous robotics, global path planning is critical for navigating complex environments. Algorithms such as Dijkstra, A*, and RRT* have become foundational tools, with A* standing out due to its balance between optimality and computational efficiency. Introduced by Hart, Nilsson, and Raphael in their seminal work \cite{hart1968formal}, the A* algorithm combines the advantages of Dijkstra's algorithm and greedy best-first search by using a heuristic function to estimate the cost to the goal, ensuring both optimality and completeness when the heuristic is admissible.
+In autonomous robotics, global path planning is critical for navigating complex environments. 
+Algorithms such as Dijkstra, A*, and RRT* have become foundational tools, with A* standing out due to 
+its balance between optimality and computational efficiency. Introduced by Hart, Nilsson, and Raphael in
+ their seminal work \cite{hart1968formal}, the A* algorithm combines the advantages of Dijkstra's 
+ algorithm and greedy best-first search by using a heuristic function to estimate the cost to the goal, 
+ ensuring both optimality and completeness when the heuristic is admissible.
 
 Despite its effectiveness, traditional A* implementations rely on a fixed heuristic function, such as Manhattan (L1 norm) or Euclidean (L2 norm), which can constrain performance in dynamic or heterogeneous environments. Different heuristics have varying strengths; for example, Manhattan is well-suited for grid-based maps with axis-aligned obstacles, while Euclidean provides better results in open spaces. However, a static heuristic limits the algorithm's ability to adapt to changing conditions.
 
 This project addresses these limitations by introducing a runtime-switchable A* planner that enables dynamic heuristic selection during navigation. This feature enhances adaptability and efficiency without requiring the navigation stack to restart, making it particularly suitable for ROS-based systems.
 
 \subsection{Project Motivation and Scope}
-The primary motivation is to demonstrate the impact of heuristic selection on planning speed and path quality in grid-based navigation. The scope of this work includes developing a ROS plugin that integrates with the `move\_base` framework and supports dynamic heuristic switching. Key components include:
+The primary motivation is to demonstrate the impact of heuristic selection on planning speed and path quality in grid-based navigation. The scope of this work includes developing a ROS plugin that integrates with the \texttt{move\_base} framework and supports dynamic heuristic switching. Key components include:
 \begin{itemize}
 	\item The ROS Navigation Stack for costmap generation and path execution,
 	\item A custom global planner plugin implementing A*,
@@ -73,12 +78,10 @@ The remainder of this paper is organized as follows:
 \end{itemize}
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%           
 %%% METHOD %%%
 %%%%%%%%%%%%%%%%%%%%%%%%
 \section{Method Description}\label{sec:method}
-% Provide a concise, concept-focused description of the methodology
 A* \cite{hart1968formal} is a graph-based path planning algorithm that expands 
 nodes from a start position until reaching the goal. The priority of exploration 
 is determined by:
@@ -88,7 +91,7 @@ f(n) = g(n) + h(n),
 where $g(n)$ is the cost from the start to node $n$ and $h(n)$ is a heuristic 
 function estimating the cost from $n$ to the goal. 
 
-In a typical 2D grid map:
+Common heuristic functions in 2D grids:
 \begin{itemize}
     \item \textbf{Manhattan:} $h(n) = |x_{goal} - x_n| + |y_{goal} - y_n|$,
     \item \textbf{Euclidean:} $h(n) = \sqrt{(x_{goal}-x_n)^2 + (y_{goal}-y_n)^2}$,
@@ -105,8 +108,6 @@ map characteristics.
 %%% IMPLEMENTATION %%%
 %%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation}\label{sec:implementation}
-% Implementation details, node diagram, subscriptions, custom modifications
-
 \subsection{System Overview}
 Our system consists of:
 \begin{itemize}
@@ -116,8 +117,6 @@ Our system consists of:
     \item \textbf{Dynamic Reconfigure Server:} Exposes the parameter 
     \texttt{/GlobalPlanner/heuristic\_type} for at-runtime switching.
 \end{itemize}
-
-Figure~\ref{fig:rqt_graph} shows a conceptual node/topic diagram (placeholder).
 
 \begin{figure}[!ht]
     \centering
@@ -139,7 +138,6 @@ If a user chooses a suboptimal heuristic for a large open map, planning might
 be slower. But if they switch to a more direct Euclidean measure, path length 
 and timing might improve.
 
-% You could also include short pseudo-code or references to your .cpp files
 \begin{algorithm}[H]
 \caption{Pseudo-code for Switchable A* Heuristic}
 \label{alg:alg2}
@@ -148,7 +146,7 @@ and timing might improve.
 \IF{heuristic\_type == Manhattan}
     \STATE $h(n) \leftarrow |x_{goal} - x_n| + |y_{goal} - y_n|$
 \ELSIF{heuristic\_type == Euclidean}
-    \STATE $h(n) \leftarrow \sqrt{(x_{goal}-x_n)^2 + \dots}$
+    \STATE $h(n) \leftarrow \sqrt{(x_{goal}-x_n)^2 + (y_{goal}-y_n)^2}$
 \ELSIF{heuristic\_type == Chebyshev}
     \STATE $h(n) \leftarrow \max(|x_{goal}-x_n|,|y_{goal}-y_n|)$
 \ENDIF
@@ -156,74 +154,48 @@ and timing might improve.
 \end{algorithmic}
 \end{algorithm}
 
+
 %%%%%%%%%%%%%%%           
 % Experimental results %
 %%%%%%%%%%%%%%%
 \section{Experimental Results}\label{sec:experiments}
-% ~3-4 pages recommended, subdivide as needed: "Setup," "Results," "Discussion," etc.
-
 \subsection{Setup}
 We evaluated the planner in ROS Noetic, using:
 \begin{itemize}
-    \item \textbf{Simulator:} Gazebo or Stage
+    \item \textbf{Simulator:} Gazebo/Stage
     \item \textbf{Maps:} 
         \begin{itemize}
-            \item \textbf{Maze-like map} with corridors
-            \item \textbf{Open map} with wide free space
+            \item \textbf{maze\_corridor:} A corridor-like environment with turns
+            \item \textbf{blank:} Very open space, minimal obstacles
+            \item \textbf{corridor:} Another partially blocked map with line-shaped obstacles
         \end{itemize}
-    \item \textbf{Robot model:} Differential drive (e.g., TurtleBot)
-    \item \textbf{Metrics:} Planning time, path length, smoothness
+    \item \textbf{Metrics:} Planning time, path length, sum of turns
+    \item \textbf{Heuristics Tested:} Manhattan, Euclidean, Chebyshev
 \end{itemize}
-We set multiple start-goal pairs and toggled the heuristic at runtime.
 
-\subsection{Results and Analysis}
-% Placeholder for table
-\begin{table}[!ht]
-\centering
-\footnotesize
-\caption{Comparison of Heuristics in Maze Map}
-\label{table:maze}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Heuristic} & \textbf{Planning Time (s)} & \textbf{Path Length (m)} & \textbf{Smoothness}\\
-\hline
-Manhattan & 0.05 & 5.4 & 2.1 \\
-Euclidean & 0.07 & 5.1 & 2.2 \\
-Chebyshev & 0.06 & 5.2 & 2.3 \\
-\hline
-\end{tabular}
-\end{table}
-
-Table~\ref{table:maze} shows sample results in a corridor environment. 
-Manhattan has slightly lower planning time, potentially due to alignment 
-with grid directions.
-
-% Placeholder for figure
-\begin{figure}[!ht]
-    \centering
-    \fbox{\includegraphics[width=0.45\columnwidth]{images/Nbody.png}}
-    \caption{Visualization of paths in a corridor map. 
-    (Top) Manhattan-based route. (Bottom) Euclidean-based route.}
-    \label{fig:maze_vis}
-\end{figure}
-
-% Another subsection for open map results
-\subsection{Open Map}
-In an open, large arena, Euclidean performed better for overall path length 
-and has comparable planning time to Manhattan. See Table~\ref{table:open}.
+\subsection{Data and Observations}
+We collected multiple runs for each map and heuristic, then aggregated the results to produce average (mean) values of time, path length, and turning cost. Table~\ref{table:aggregated} shows a summary of the computed averages for each (Map, Heuristic) combination:
 
 \begin{table}[!ht]
 \centering
 \footnotesize
-\caption{Comparison of Heuristics in Open Map}
-\label{table:open}
-\begin{tabular}{|c|c|c|c|}
+\caption{Aggregated Averages over Runs (Time in seconds, Length in meters, Turns in sum of turn angles).}
+\label{table:aggregated}
+\begin{tabular}{|l|l|c|c|c|}
 \hline
-\textbf{Heuristic} & \textbf{Time (s)} & \textbf{Path Length (m)} & \textbf{Smoothness}\\
+\textbf{Map} & \textbf{Heuristic} & \textbf{AvgTime} & \textbf{AvgLength} & \textbf{AvgSumTurns} \\
 \hline
-Manhattan & 0.08 & 12.4 & 3.0 \\
-Euclidean & 0.08 & 11.3 & 2.9 \\
-Chebyshev & 0.09 & 11.6 & 2.8 \\
+\texttt{maze\_corridor} & manhattan & 0.0571 & 37.5759 & 324.41 \\
+\texttt{maze\_corridor} & euclidean & 0.0504 & 35.0652 & 57.1588 \\
+\texttt{maze\_corridor} & chebyshev & 0.0520 & 35.5563 & 56.8049 \\
+\hline
+\texttt{blank} & manhattan & 0.00454 & 17.2552 & 3.52737 \\
+\texttt{blank} & euclidean & 0.05271 & 17.1446 & 189.8077 \\
+\texttt{blank} & chebyshev & 0.07646 & 17.3730 & 195.2520 \\
+\hline
+\texttt{corridor} & manhattan & 0.00578 & 21.5848 & 24.8970 \\
+\texttt{corridor} & euclidean & 0.03303 & 20.7376 & 31.9885 \\
+\texttt{corridor} & chebyshev & 0.04731 & 21.2848 & 64.44 \\
 \hline
 \end{tabular}
 \end{table}
@@ -257,48 +229,88 @@ Chebyshev & 0.09 & 11.6 & 2.8 \\
     \label{fig:heuristic_comparison}
 \end{figure}
 
-\subsection{Discussion}
-Changing the heuristic **at runtime** allowed for:
+\subsubsection{Qualitative Analysis per Map}
 \begin{itemize}
-    \item Adapting to map layout quickly,
-    \item Observing noticeable differences in path shapes/time,
-    \item Overcoming potential suboptimal expansions in corridor-like vs. open spaces.
+    \item \textbf{Maze-like map (maze\_corridor)}:
+    \begin{itemize}
+        \item Paths bend around walls. Manhattan often takes a more “grid-aligned” route, while Euclidean and Chebyshev produce slightly smoother curves yet similar planning times.
+        \item Comparing results: Manhattan is \emph{slower in planning time} and yields a \emph{much higher turn sum} than Euclidean or Chebyshev. Euclidean and Chebyshev are quite close in planning time, but Chebyshev’s path is slightly longer or differs in turn cost.
+    \end{itemize}
+
+    \item \textbf{Blank map}:
+    \begin{itemize}
+        \item The path is basically a straight line from start to goal under any heuristic, but \emph{Manhattan expansions are extremely fast} (about 0.0045 s). Path length is around 17.25, with only ~3.53 turns.
+        \item Euclidean and Chebyshev times are higher, and they produce significantly bigger turn sums—likely because the expansions in open space allow diagonal expansions (or full expansions) that lead to more angle changes or expansions in the search.
+    \end{itemize}
+
+    \item \textbf{Corridor map (partially blocked, lined obstacles)}:
+    \begin{itemize}
+        \item Manhattan often yields a step-like or more direct route, while Euclidean/Chebyshev can find diagonal segments. Obstacles force detours, causing the path to weave among blocks.
+        \item Manhattan is very quick again, with moderate turn sum (~24.90). Euclidean is a bit slower (0.0330 s) with ~31.99 turns. Chebyshev is intermediate in time but has a large turn sum (~64.44), suggesting more zig-zag expansions.
+    \end{itemize}
 \end{itemize}
+
+\subsubsection{Visual Examples}
+Figure~\ref{fig:maze_paths} showcases the path in a maze‐type environment, while Figure~\ref{fig:blank_paths} shows the nearly straight diagonal route in an open map, and Figure~\ref{fig:lined_corridor_paths} illustrates the corridor or lined‐obstacle scenario. The green lines represent the global path from the start (bottom-left) to the goal (top-right).
+
+\begin{figure}[!ht]
+    \centering
+    \fbox{\includegraphics[width=0.8\columnwidth]{images/maze_corridor_example.png}}
+    \caption{Maze corridor example. Path must navigate multiple turns.}
+    \label{fig:maze_paths}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \fbox{\includegraphics[width=0.8\columnwidth]{images/blank_example.png}}
+    \caption{Blank map example. Almost a direct diagonal path.}
+    \label{fig:blank_paths}
+\end{figure}
+
+\begin{figure}[!ht]
+    \centering
+    \fbox{\includegraphics[width=0.8\columnwidth]{images/lined_corridor_example.png}}
+    \caption{Lined obstacles corridor example. The path weaves around blocks.}
+    \label{fig:lined_corridor_paths}
+\end{figure}
+
+\subsubsection{Overall Conclusions from Data}
+\begin{itemize}
+    \item No single heuristic dominates across all maps.
+    \item \emph{Manhattan} tends to be extremely fast in open spaces (\texttt{blank} map), but can produce more corners (hence a higher turn sum) in corridor-like scenarios.
+    \item \emph{Euclidean} and \emph{Chebyshev} often generate more diagonal or smoother expansions, especially in partially open areas, but can show slightly longer times in simple open spaces if the expansions are large.
+    \item Computing standard deviations or min/max could further reveal run-to-run variability.
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%           
 % CONCLUSIONS %
 %%%%%%%%%%%%%%%
-
 \section{Conclusion and Future Work}\label{sec:conclusion}
-We introduced a **runtime-switchable heuristic A*** planner within the ROS Navigation 
-Stack. Our experiments suggest that no single heuristic dominates across all 
-environments. Instead, toggling heuristics can yield improved performance in 
-specific scenarios (like mazes vs. open maps).
+We introduced a runtime-switchable heuristic A* planner within the ROS Navigation Stack, enabling dynamic changes among Manhattan, Euclidean, and Chebyshev heuristics at runtime. 
 
-\textbf{Limitations:} 
+\textbf{Key Observations}:
 \begin{itemize}
-    \item Only tested in simulation with static obstacles,
-    \item No direct integration with advanced local planners for final path smoothing.
+    \item \textbf{Maze-like environments}: Manhattan gave higher turn counts and was slower in some runs, while Euclidean/Chebyshev remained relatively efficient with fewer sharp angles.
+    \item \textbf{Open spaces}: Manhattan expansions finished extremely quickly, though path length and sum of turns were very low. Euclidean/Chebyshev had more expansions and angle changes, raising turn metrics.
+    \item \textbf{Corridor or lined obstacles}: Manhattan found step-like paths with moderate turn sums, while Euclidean or Chebyshev sometimes introduced diagonal arcs but also occasionally higher expansions and turn sums.
 \end{itemize}
 
-\textbf{Future Work:} 
-We aim to:
+\textbf{Limitations}: We tested in simulation with static obstacles; real-world trials may differ due to sensor noise and dynamic obstacles. We also did not integrate advanced local planners or post-processing for smoothing.  
+
+\textbf{Future Work}: 
 \begin{itemize}
-    \item Evaluate real-world experiments on a physical robot,
-    \item Explore automatic heuristic selection based on map analysis,
-    \item Integrate smooth path post-processing or TEB local planner.
+    \item Evaluate the plugin on a physical robot to assess real-time performance and sensor impacts.
+    \item Investigate automatic heuristic selection based on live map analysis (e.g., detecting corridor vs. open areas).
+    \item Integrate advanced local planners (like TEB) or smoothing to reduce sharp path corners.
 \end{itemize}
-
-
-%%%%%%%%%%%%%%           
-% REFERENCES %
-%%%%%%%%%%%%%%
 
 \bibliographystyle{IEEEtran}
 % \bibliography{biblio}
+
 \begin{thebibliography}{1}
 
-\bibitem{hart1968formal} P. E. Hart, N. J. Nilsson, and B. Raphael, "A Formal Basis for the Heuristic Determination of Minimum Cost Paths," \textit{IEEE Transactions on Systems Science and Cybernetics}, vol. 4, no. 2, pp. 100--107, 1968.
+\bibitem{hart1968formal} P. E. Hart, N. J. Nilsson, and B. Raphael, "A Formal Basis for the Heuristic Determination of Minimum Cost Paths," \textit{IEEE Trans. on Systems Science and Cybernetics}, vol. 4, no. 2, pp. 100--107, 1968.
 
 \bibitem{thrun2005probabilistic} S. Thrun, W. Burgard, and D. Fox, \textit{Probabilistic Robotics}, MIT Press, 2005.
 
@@ -307,4 +319,5 @@ We aim to:
 \bibitem{karaman2011sampling} S. Karaman and E. Frazzoli, "Sampling-based Algorithms for Optimal Motion Planning," \textit{The International Journal of Robotics Research}, vol. 30, no. 7, pp. 846--894, 2011.
 
 \end{thebibliography}
+
 \end{document}

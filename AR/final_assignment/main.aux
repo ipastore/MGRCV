@@ -2,13 +2,10 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
 \HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
-\global\let\oldcontentsline\contentsline
-\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
 \global\let\oldnewlabel\newlabel
 \gdef\newlabel#1#2{\newlabelxx{#1}#2}
 \gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
 \AtEndDocument{\ifx\hyper@anchor\@undefined
-\let\contentsline\oldcontentsline
 \let\newlabel\oldnewlabel
 \fi}
 \fi}
@@ -17,8 +14,7 @@
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \citation{hart1968formal}
-\citation{thrun2005probabilistic}
-\citation{lavalle2006planning}
+\citation{thrun2005probabilistic,lavalle2006planning}
 \citation{karaman2011sampling}
 \citation{hart1968formal}
 \citation{hart1968formal}
@@ -42,22 +38,26 @@
 \@writefile{toc}{\contentsline {section}{\numberline {IV}Experimental Results}{2}{section.4}\protected@file@percent }
 \newlabel{sec:experiments}{{IV}{2}{Experimental Results}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {IV-A}Setup}{2}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {IV-B}Results and Analysis}{2}{subsection.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparison of Heuristics in Maze Map}}{2}{table.1}\protected@file@percent }
-\newlabel{table:maze}{{I}{2}{Comparison of Heuristics in Maze Map}{table.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Visualization of paths in a corridor map. (Top) Manhattan-based route. (Bottom) Euclidean-based route.}}{2}{figure.2}\protected@file@percent }
-\newlabel{fig:maze_vis}{{2}{2}{Visualization of paths in a corridor map. (Top) Manhattan-based route. (Bottom) Euclidean-based route}{figure.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {IV-C}Open Map}{2}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {IV-B}Data and Observations}{2}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Aggregated Averages over Runs (Time in seconds, Length in meters, Turns in sum of turn angles).}}{2}{table.1}\protected@file@percent }
+\newlabel{table:aggregated}{{I}{2}{Aggregated Averages over Runs (Time in seconds, Length in meters, Turns in sum of turn angles)}{table.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Comparison of times between heuristics in different maps..}}{3}{figure.2}\protected@file@percent }
+\newlabel{fig:heuristic_comparison}{{2}{3}{Comparison of times between heuristics in different maps.}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {IV-B.1}Qualitative Analysis per Map}{3}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {IV-B.2}Visual Examples}{3}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {IV-B.3}Overall Conclusions from Data}{3}{subsubsection.4.2.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Maze corridor example. Path must navigate multiple turns.}}{3}{figure.3}\protected@file@percent }
+\newlabel{fig:maze_paths}{{3}{3}{Maze corridor example. Path must navigate multiple turns}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Blank map example. Almost a direct diagonal path.}}{3}{figure.4}\protected@file@percent }
+\newlabel{fig:blank_paths}{{4}{3}{Blank map example. Almost a direct diagonal path}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusion and Future Work}{3}{section.5}\protected@file@percent }
+\newlabel{sec:conclusion}{{V}{3}{Conclusion and Future Work}{section.5}{}}
 \bibstyle{IEEEtran}
 \bibcite{hart1968formal}{1}
 \bibcite{thrun2005probabilistic}{2}
 \bibcite{lavalle2006planning}{3}
 \bibcite{karaman2011sampling}{4}
-\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Comparison of Heuristics in Open Map}}{3}{table.2}\protected@file@percent }
-\newlabel{table:open}{{II}{3}{Comparison of Heuristics in Open Map}{table.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Comparison of times between heuristics in different maps..}}{3}{figure.3}\protected@file@percent }
-\newlabel{fig:heuristic_comparison}{{3}{3}{Comparison of times between heuristics in different maps.}{figure.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {IV-D}Discussion}{3}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusion and Future Work}{3}{section.5}\protected@file@percent }
-\newlabel{sec:conclusion}{{V}{3}{Conclusion and Future Work}{section.5}{}}
-\@writefile{toc}{\contentsline {section}{References}{3}{section*.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Lined obstacles corridor example. The path weaves around blocks.}}{4}{figure.5}\protected@file@percent }
+\newlabel{fig:lined_corridor_paths}{{5}{4}{Lined obstacles corridor example. The path weaves around blocks}{figure.5}{}}
+\@writefile{toc}{\contentsline {section}{References}{4}{section*.1}\protected@file@percent }
+\gdef \@abspage@last{4}
