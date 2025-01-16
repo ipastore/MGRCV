@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1736987556 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" "main.pdf" "main" 1736987558 2
-  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" 1736987556 17399 932321a98deecde255b18a07a54b582e ""
+["pdflatex"] 1736989203 "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" "main.pdf" "main" 1736989205 0
+  "/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/AR/final_assignment/main.tex" 1736989203 17730 6e7550e3eeb23d205818ef0a22927bbb ""
   "/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/adobe/courier/pcrr7t.tfm" 1136768653 960 379cc0019370a9e0208a0a3f949f847a ""
@@ -230,13 +230,13 @@
   "/usr/local/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1691844456 8173128 4e9fee7949b5ce7b1faebac18332615e ""
   "/usr/local/texlive/2023/texmf.cnf" 1678822455 577 1b2b1af17af2508fb20dd85783af4050 ""
   "ieeeconf.cls" 1736956599 197574 ece0d1d68e7d93da26a38d986a993284 ""
-  "images/blank_example.png" 0 -1 0 ""
-  "images/lined_corridor_example.png" 0 -1 0 ""
-  "images/maze_corridor_example.png" 0 -1 0 ""
+  "images/chebyshev_corridor.png" 1736980983 51943 4610df24550074a0b4e09d683f98a51c ""
+  "images/euclidean_blank.png" 1736980983 38908 6e4a754ef7abb63846368df739f33a6f ""
+  "images/manhattan_maze_corridor.png" 1736980047 70259 d3d515b5981d3d7a5530eebddb90be9f ""
   "images/rqt_graph.png" 1736986800 25250 b5080aa41a4b0e5011086207dfb7283a ""
-  "main.aux" 1736987557 5541 1644173afab7d29791d9f7ebd3aa3c77 "pdflatex"
-  "main.out" 1736987557 3125 8e6288fa2274ea8c4f2f7552e0c9b648 "pdflatex"
-  "main.tex" 1736987556 17399 932321a98deecde255b18a07a54b582e ""
+  "main.aux" 1736989205 5375 9b0958c2bb153638cfb19da51e24adf7 "pdflatex"
+  "main.out" 1736989205 2875 3ec3d0baf7e8fa2954bc1dca1596a460 "pdflatex"
+  "main.tex" 1736989203 17730 6e7550e3eeb23d205818ef0a22927bbb ""
   (generated)
   "main.aux"
   "main.log"

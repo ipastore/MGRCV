@@ -107,23 +107,12 @@ map characteristics.
 %%%%%%%%%%%%%%%%%%%%%%%%           
 %%% IMPLEMENTATION %%%
 %%%%%%%%%%%%%%%%%%%%%%%%
-\section{Implementation}\label{sec:implementation}
-\subsection{System Overview}
-Our system consists of:
-\begin{itemize}
-    \item \textbf{Global Planner Node (Custom):} Implements A* with a dynamic 
-    parameter for the heuristic.
-    \item \textbf{Costmap2DROS:} Provides obstacle/costmap data from sensor inputs.
-    \item \textbf{Dynamic Reconfigure Server:} Exposes the parameter 
-    \texttt{/GlobalPlanner/heuristic\_type} for at-runtime switching.
-\end{itemize}
+
+
 \section{Implementation}\label{sec:implementation}
 
 \subsection{System Overview}
 Our approach provides a plugin that implements the \texttt{nav\_core::BaseGlobalPlanner} interface, making it compatible with the standard ROS Navigation Stack (\texttt{move\_base}). Specifically, this plugin is declared as:
-
-
-Hence, from the perspective of the navigation stack, our planner is loaded dynamically at runtime as \texttt{heuristics4astar/GlobalPlanner}.
 
 \begin{itemize}
     \item \textbf{Heuristics4AStar (Plugin):} A library that extends \texttt{nav\_core::BaseGlobalPlanner} and implements A* with runtime-switchable heuristics, along with a Dijkstra fallback.
@@ -136,6 +125,7 @@ Because the plugin inherits from \texttt{nav\_core::BaseGlobalPlanner}, it integ
 This design allows the \texttt{move\_base} node to recognize our planner as a valid global planner plugin and load it within the navigation configuration showed in
 Figure~\ref{fig:rqt_graph}.
 
+Hence, from the perspective of the navigation stack, our planner is loaded dynamically at runtime as \texttt{heuristics4astar/GlobalPlanner}.
 
 \begin{figure}[!ht]
     \centering
@@ -151,9 +141,7 @@ Figure~\ref{fig:rqt_graph}.
 Different map structures benefit from different heuristics.  
 \textbf{Deviation from Standard A*}: 
 We add a callback in the A* plugin that updates the “heuristic\_type” string 
-(or integer) at runtime.  
-\textbf{Performance Impact:} 
-If a user chooses a suboptimal heuristic for a large open map, planning might 
+(or integer) at runtime. If a user chooses a suboptimal heuristic for a large open map, planning might 
 be slower. But if they switch to a more direct Euclidean measure, path length 
 and timing might improve.
 
@@ -183,17 +171,25 @@ We evaluated the planner in ROS Noetic, using:
 \begin{itemize}
     \item \textbf{Simulator:} Gazebo/Stage
     \item \textbf{Maps:} 
-        \begin{itemize}
-            \item \textbf{maze\_corridor:} A corridor-like environment with turns
-            \item \textbf{blank:} Very open space, minimal obstacles
-            \item \textbf{corridor:} Another partially blocked map with line-shaped obstacles
-        \end{itemize}
-    \item \textbf{Metrics:} Planning time, path length, sum of turns
+    \begin{itemize}
+        \item \textbf{maze\_corridor:} A corridor-like environment with multiple turns
+        \item \textbf{blank:} Very open space, minimal obstacles
+        \item \textbf{corridor:} A partially blocked map with line-shaped obstacles
+    \end{itemize}
+    \item \textbf{Metrics:} Planning time, path length, and sum of turns
     \item \textbf{Heuristics Tested:} Manhattan, Euclidean, Chebyshev
 \end{itemize}
 
+\paragraph*{Metrics}
+\textbf{Planning Time} (seconds) measures how long the global planner takes to compute a path once a new goal is received. Lower times indicate faster performance in finding a feasible route. 
+
+\textbf{Path Length} (meters) is the total distance from start to goal, summed over all consecutive waypoints in the final plan. Shorter lengths often signify more direct or efficient routes in terms of travel distance.
+
+\textbf{Sum of Turns} (radians) is a proxy for \textit{smoothness}: we sum the absolute angle differences between successive segments of the planned path. A higher value indicates many sharp turns or zig-zag patterns, while lower values suggest a smoother or more continuous trajectory. Although it does not enforce dynamic constraints, this turn metric helps compare how different heuristics yield straighter or more corner-heavy paths.
+
+
 \subsection{Data and Observations}
-We collected multiple runs for each map and heuristic, then aggregated the results to produce average (mean) values of time, path length, and turning cost. Table~\ref{table:aggregated} shows a summary of the computed averages for each (Map, Heuristic) combination:
+We collected 3 runs for each map and heuristic, then aggregated the results to produce mean values of time, path length, and turning cost. Table~\ref{table:aggregated} shows a summary of the computed averages for each (Map, Heuristic) combination:
 
 \begin{table}[!ht]
 \centering
@@ -242,26 +238,28 @@ We collected multiple runs for each map and heuristic, then aggregated the resul
 \end{itemize}
 
 \subsubsection{Visual Examples}
-Figure~\ref{fig:maze_paths} showcases the path in a maze‐type environment, while Figure~\ref{fig:blank_paths} shows the nearly straight diagonal route in an open map, and Figure~\ref{fig:lined_corridor_paths} illustrates the corridor or lined‐obstacle scenario. The green lines represent the global path from the start (bottom-left) to the goal (top-right).
+Figure~\ref{fig:maze_paths} showcases the path in a maze‐type environment, while Figure~\ref{fig:blank_paths} shows the nearly straight diagonal 
+route in an open map, and Figure~\ref{fig:lined_corridor_paths} illustrates the corridor or lined‐obstacle scenario.
+ The green lines represent the global path from the start (bottom-left) to the goal (top-right).
 
 \begin{figure}[!ht]
     \centering
-    \fbox{\includegraphics[width=0.8\columnwidth]{images/maze_corridor_example.png}}
-    \caption{Maze corridor example. Path must navigate multiple turns.}
+    \fbox{\includegraphics[width=0.8\columnwidth]{images/manhattan_maze_corridor.png}}
+    \caption{Maze corridor example for manhattan heuristic taking a grid-aligned path.}
     \label{fig:maze_paths}
 \end{figure}
 
 \begin{figure}[!ht]
     \centering
-    \fbox{\includegraphics[width=0.8\columnwidth]{images/blank_example.png}}
-    \caption{Blank map example. Almost a direct diagonal path.}
+    \fbox{\includegraphics[width=0.8\columnwidth]{images/euclidean_blank.png}}
+    \caption{Blank map example with euclidean heurisic. Almost a direct diagonal path.}
     \label{fig:blank_paths}
 \end{figure}
 
 \begin{figure}[!ht]
     \centering
-    \fbox{\includegraphics[width=0.8\columnwidth]{images/lined_corridor_example.png}}
-    \caption{Lined obstacles corridor example. The path weaves around blocks.}
+    \fbox{\includegraphics[width=0.8\columnwidth]{images/chebyshev_corridor.png}}
+    \caption{Lined obstacles corridor example with chebyshev heuristic. The path weaves around blocks.}
     \label{fig:lined_corridor_paths}
 \end{figure}
 
@@ -270,7 +268,6 @@ Figure~\ref{fig:maze_paths} showcases the path in a maze‐type environment, whi
     \item No single heuristic dominates across all maps.
     \item \emph{Manhattan} tends to be extremely fast in open spaces (\texttt{blank} map), but can produce more corners (hence a higher turn sum) in corridor-like scenarios.
     \item \emph{Euclidean} and \emph{Chebyshev} often generate more diagonal or smoother expansions, especially in partially open areas, but can show slightly longer times in simple open spaces if the expansions are large.
-    \item Computing standard deviations or min/max could further reveal run-to-run variability.
 \end{itemize}
 
 
@@ -282,12 +279,16 @@ We introduced a runtime-switchable heuristic A* planner within the ROS Navigatio
 
 \textbf{Key Observations}:
 \begin{itemize}
-    \item \textbf{Maze-like environments}: Manhattan gave higher turn counts and was slower in some runs, while Euclidean/Chebyshev remained relatively efficient with fewer sharp angles.
-    \item \textbf{Open spaces}: Manhattan expansions finished extremely quickly, though path length and sum of turns were very low. Euclidean/Chebyshev had more expansions and angle changes, raising turn metrics.
-    \item \textbf{Corridor or lined obstacles}: Manhattan found step-like paths with moderate turn sums, while Euclidean or Chebyshev sometimes introduced diagonal arcs but also occasionally higher expansions and turn sums.
+    \item \textbf{Maze-like environments}: Manhattan gave higher turn counts and was slower 
+    in some runs, while Euclidean/Chebyshev remained relatively efficient with fewer sharp angles.
+    \item \textbf{Open spaces}: Manhattan expansions finished extremely quickly, though path length 
+    and sum of turns were very low. Euclidean/Chebyshev had more expansions and angle changes, raising turn metrics.
+    \item \textbf{Corridor or lined obstacles}: Manhattan found step-like paths with moderate turn sums, 
+    while Euclidean or Chebyshev sometimes introduced diagonal arcs but also occasionally higher expansions and turn sums.
 \end{itemize}
 
-\textbf{Limitations}: We tested in simulation with static obstacles; real-world trials may differ due to sensor noise and dynamic obstacles. We also did not integrate advanced local planners or post-processing for smoothing.  
+\textbf{Limitations}: We tested in simulation with static obstacles; real-world trials may differ due to sensor noise and dynamic obstacles. We also did not integrate 
+advanced local planners or post-processing for smoothing.  
 
 \textbf{Future Work}: 
 \begin{itemize}
