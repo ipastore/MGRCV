@@ -1,0 +1,41 @@
+% Define the folder path and filename
+folderPath = '../data/images_tiff';
+filename = 'bottles.tiff';
+
+% Construct the full file path
+fullFilePath = fullfile(folderPath, filename);
+
+% Load the image
+img = imread(fullFilePath);
+
+% Retrieve image information
+info = imfinfo(fullFilePath);
+bitsPerPixel = info.BitDepth;
+width = info.Width;
+height = info.Height;
+
+% Report the image details
+fprintf('Bits per pixel: %d\n', bitsPerPixel);
+fprintf('Image width: %d pixels\n', width);
+fprintf('Image height: %d pixels\n', height);
+
+% Also we could retrieve the width and height and data type as:
+arrayWidth = size(img,2);
+arrayHeight = size(img,1);
+typeOfArray = class(img);
+
+% Display before converting to double: It´s the same
+figure;
+imshow(img);
+title('Figure before converting to double');
+
+% Convert the image to double-precision
+imgDouble = im2double(img);
+
+% Display the original image
+figure;
+imshow(imgDouble);
+title('Original Linear Image');
+
+
+
