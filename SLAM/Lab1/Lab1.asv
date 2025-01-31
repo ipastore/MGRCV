@@ -18,7 +18,7 @@ format long
 global config;
 
 % display correlation matrix and pause at every step
-config.step_by_step = 0;
+config.step_by_step = 1;
 
 % number of robot motions for each local map
 config.steps_per_map = 1000;
@@ -237,6 +237,9 @@ function [measurements] = get_measurements_and_data_association(map)
     measurements.z_n = measurements.z_k(measurements.z_pos_n);
     measurements.R_n = measurements.R_k(measurements.z_pos_n, measurements.z_pos_n);
 
+    % add true new measurements
+    measurements.z_true_n = visible_d(measurements.z_pos_n);
+
 end
 
 %-------------------------------------------------------------------------
@@ -280,27 +283,29 @@ function [map] = add_new_features(map, measurements)
     % J2 = sparse([zeros(1,map.n) ;eye(map.n)])
 
     m = map.n;
-    n = length(measurements.z_n);
+    n = length(measurements.ids_n);
 
     % J1 = sparse([1 zeros(1,m); zeros(m,1) eye(m); ones(n,1) zeros(n,m)]);
     J1 = sparse([eye(1+m);ones(n,1) zeros(n,m)]);
     J2 = sparse([zeros(1,n) ;zeros(m,n); eye(n)]);
+   
 
     % mapthat_x: 
-    map.hat_x = J1 * map.hat_x(1) + J2 * measurements.z_n;
+    map.hat_x = J1 * map.hat_x + J2 * measurements.z_n;
 
     % map.hat_P:
-    map.hat_P = J1 * map.hat_P(1) * J1' + J2 * measurements.R_n * J2';
+    map.hat_P = J1 * map.hat_P * J1' + J2 * measurements.R_n * J2';
 
     % map.n
     map.true_ids = [map.true_ids; measurements.ids_n];
 
-    % TODO: map.true_x
-    map.true_x = J1 * map.true_x(1) + J2 * ;
+    %map.true_x
+    map.true_x = [map.true_x; world.true_robot_location + measurements.z_true_n];
+    % Otra manera pero quizas hay problema con que las matrices no estan bien condicionadas para invertir
+    % map.true_x = J1 * world.true_robot_location + J2 * measurements.z_true_n; 
 
     % map.n
     map.n = map.n + length(measurements.ids_n);
-
 
     if config.step_by_step
         fprintf('Add %d new features...\n', length(measurements.ids_n));

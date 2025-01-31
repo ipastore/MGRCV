@@ -18,7 +18,7 @@ format long
 global config;
 
 % display correlation matrix and pause at every step
-config.step_by_step = 0;
+config.step_by_step = 1;
 
 % number of robot motions for each local map
 config.steps_per_map = 1000;
@@ -253,7 +253,28 @@ function [map] = update_map(map, measurements)
     % TO-DO:
     % DO SOMETHING HERE!
     % You need to compute H_k, y_k, S_k, K_k and update map.hat_x and map.hat_P
+    
+    % H_k
+    H_k = zeros(length(measurements.z_f), length(map.hat_x));
+    H_k(:, 1) = -1;
+    H_k(:, measurements.x_pos_f) = 1;
+    H_k = sparse(H_k);
 
+    % y_k
+    y_k = measurements.z_f - H_k * map.hat_x;
+
+    % S_k
+    S_k = H_k * map.hat_P * H_k' + measurements.R_f;
+
+    % K_k
+    K_k = map.hat_P * H_k' * inv(S_k);
+
+    % map.hat_x
+    map.hat_x = map.hat_x + K_k * y_k;
+
+    % map.hat_P
+    map.hat_P = map.hat_P - K_k * H_k * map.hat_P;
+    
     if config.step_by_step
         fprintf('Update map for last %d features...\n', length(measurements.ids_f));
         plot_correlation(map.hat_P);
@@ -270,30 +291,23 @@ function [map] = add_new_features(map, measurements)
     global config;
     global world;
 
-    % DO SOMETHING HERE!
     % update map.hat_x, map.hat_P, map.true_ids, map.true_x, map.n
-    
-
 
     % Calculate J1 and J2
     % Get n new featurs
+    m = map.n;
+    n = length(measurements.ids_n);
 
     %J1 and J2
-    % J1 = [1 ;ones(map.n, 1)]
-    % J2 = sparse([zeros(1,map.n) ;eye(map.n)])
-
-    m = map.n;
-    n = length(measurements.z_n);
-
     % J1 = sparse([1 zeros(1,m); zeros(m,1) eye(m); ones(n,1) zeros(n,m)]);
     J1 = sparse([eye(1+m);ones(n,1) zeros(n,m)]);
     J2 = sparse([zeros(1,n) ;zeros(m,n); eye(n)]);
 
     % mapthat_x: 
-    map.hat_x = J1 * map.hat_x(1) + J2 * measurements.z_n;
+    map.hat_x = J1 * map.hat_x + J2 * measurements.z_n;
 
     % map.hat_P:
-    map.hat_P = J1 * map.hat_P(1) * J1' + J2 * measurements.R_n * J2';
+    map.hat_P = J1 * map.hat_P * J1' + J2 * measurements.R_n * J2';
 
     % map.n
     map.true_ids = [map.true_ids; measurements.ids_n];
