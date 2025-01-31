@@ -237,9 +237,6 @@ function [measurements] = get_measurements_and_data_association(map)
     measurements.z_n = measurements.z_k(measurements.z_pos_n);
     measurements.R_n = measurements.R_k(measurements.z_pos_n, measurements.z_pos_n);
 
-    % add true new measurements
-    measurements.z_true_n = visible_d(measurements.z_pos_n);
-
 end
 
 %-------------------------------------------------------------------------
@@ -298,13 +295,12 @@ function [map] = add_new_features(map, measurements)
     % map.n
     map.true_ids = [map.true_ids; measurements.ids_n];
 
-    %map.true_x
-    map.true_x = [map.true_x; world.true_robot_location + measurements.z_true_n];
-    % Otra manera pero quizas hay problema con que las matrices no estan bien condicionadas para invertir
-    % map.true_x = J1 * world.true_robot_location + J2 * measurements.z_true_n; 
+    % TODO: map.true_x
+    map.true_x = J1 * map.true_x(1) + J2 * ;
 
     % map.n
     map.n = map.n + length(measurements.ids_n);
+
 
     if config.step_by_step
         fprintf('Add %d new features...\n', length(measurements.ids_n));
