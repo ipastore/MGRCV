@@ -1,6 +1,10 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOAD TIFF %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Define the folder path and filename
 folderPath = '../data/images_tiff';
-filename = 'bottles.tiff';
+% filename = 'bottles.tiff';
+% filename = 'IMG_0596.tiff';
+filename = 'IMG_1026.tiff';
 
 % Construct the full file path
 fullFilePath = fullfile(folderPath, filename);
@@ -24,18 +28,81 @@ arrayWidth = size(img,2);
 arrayHeight = size(img,1);
 typeOfArray = class(img);
 
-% Display before converting to double: It´s the same
-figure;
-imshow(img);
-title('Figure before converting to double');
+% Display
+% figure;
+% imshow(img);
+% title('Before Linearization');
 
-% Convert the image to double-precision
-imgDouble = im2double(img);
 
-% Display the original image
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEARIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Convert array of img to double
+imgDoubleArray = double(img);
+
+blackLevel = 1023; 
+saturationLevel = 15600; 
+
+% Shift the image so that blackLevel becomes 0
+imgShifted = imgDoubleArray - blackLevel;
+
+% Scale the image so that saturationLevel becomes 1
+imgLinearToClip = imgShifted / (saturationLevel - blackLevel);
+
+% Clip values outside the range [0, 1]
+imgLinear = max(min(imgLinearToClip, 1), 0);
+
+
+% Display the linearized image
 figure;
-imshow(imgDouble);
-title('Original Linear Image');
+imshow(imgLinear);
+title('Linearized Image');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%It could be done with demosaic()
+
+function [R, G, B] = demosaic_bayer(imgLinear, pattern)
+    % Ensure the input is double
+    imgLinear = double(imgLinear);
+
+    % Get the size of the image
+    [height, width] = size(imgLinear);
+
+    % Initialize the color channels
+    R = zeros(height, width);
+    G = zeros(height, width);
+    B = zeros(height, width);
+
+    % Apply the Bayer pattern
+    switch lower(pattern)
+        case 'grbg'
+            G(1:2:end, 1:2:end) = imgLinear(1:2:end, 1:2:end); % Green
+            R(1:2:end, 2:2:end) = imgLinear(1:2:end, 2:2:end); % Red
+            B(2:2:end, 1:2:end) = imgLinear(2:2:end, 1:2:end); % Blue
+            G(2:2:end, 2:2:end) = imgLinear(2:2:end, 2:2:end); % Green
+
+        case 'rggb'
+            R(1:2:end, 1:2:end) = imgLinear(1:2:end, 1:2:end); % Red
+            G(1:2:end, 2:2:end) = imgLinear(1:2:end, 2:2:end); % Green
+            G(2:2:end, 1:2:end) = imgLinear(2:2:end, 1:2:end); % Green
+            B(2:2:end, 2:2:end) = imgLinear(2:2:end, 2:2:end); % Blue
+
+        case 'bggr'
+            B(1:2:end, 1:2:end) = imgLinear(1:2:end, 1:2:end); % Blue
+            G(1:2:end, 2:2:end) = imgLinear(1:2:end, 2:2:end); % Green
+            G(2:2:end, 1:2:end) = imgLinear(2:2:end, 1:2:end); % Green
+            R(2:2:end, 2:2:end) = imgLinear(2:2:end, 2:2:end); % Red
+
+        case 'gbrg'
+            G(1:2:end, 1:2:end) = imgLinear(1:2:end, 1:2:end); % Green
+            B(1:2:end, 2:2:end) = imgLinear(1:2:end, 2:2:end); % Blue
+            R(2:2:end, 1:2:end) = imgLinear(2:2:end, 1:2:end); % Red
+            G(2:2:end, 2:2:end) = imgLinear(2:2:end, 2:2:end); % Green
+
+        otherwise
+            error('Unknown Bayer pattern: %s', pattern);
+    end
+
+end
 
 
 
