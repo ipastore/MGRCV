@@ -3,6 +3,10 @@ Autores: David Padilla Orenga, Ignacio Pastore Benaim
 Asignatura: Computational Imaging
 %}
 
+clear
+clc
+close all
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOAD TIFF %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,7 +50,7 @@ imgShifted = imgDoubleArray - blackLevel;                       % Shift the imag
 imgLinearToClip = imgShifted / (saturationLevel - blackLevel);  % Scale the image so that saturationLevel becomes 1
 imgLinear = max(min(imgLinearToClip, 1), 0);                    % Clip values outside the range [0, 1]
 
-% Display the linearized image
+% % Display the linearized image
 figure;
 imshow(imgLinear);
 title('Linearized Image');
@@ -56,16 +60,25 @@ title('Linearized Image');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BAYERN DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Apply Bayern demosaic
+% Choose pattern
 patterns = {'rggb', 'gbrg', 'grbg', 'bggr'};
 patternIndex = 1; %
 pattern = patterns{patternIndex};
+
+% % Apply Bayern demosaic with bilinear interpolation
 RGB_image = demosaic_bilinear(imgLinear, pattern);
 
-% Display the demosaiced image
+% Display the demosaiced image with bilinear
 figure;
 imshow(RGB_image);
 title('Demosaiced Image with bilinear interpolation');
+
+
+% Apply Bayern demosaic with nearest neighbor and circshift
+RGB_image_nn_circshift = demosaic_nearest_neighbor(imgLinear, pattern);
+figure;
+imshow(RGB_image_nn_circshift);
+title('Demosaiced Image with NN')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,7 +90,7 @@ balancedImage_WW = whiteWorldWB(RGB_image);
 % Apply gray world white balancing
 balancedImage_GW = grayWorldWB(RGB_image);
 % Apply manual white balancing
-figure, imshow(RGB_image);
+figure, imshow(RGB_image); title('Choose a pixel')
 refPoint = round(ginput(1));
 balancedImage_manual = manualWhiteBalance(RGB_image, refPoint);
 
@@ -89,7 +102,7 @@ figure; imshow(balancedImage_manual); title('Manual White Balance');
 
 
 
-%% ---------------------------- FUNCTIONS --------------------------------%%
+%% ---------------------------- FUNCTIONS --------------------------------%
 
 function [R, G, B] = demosaic_bayer(imgLinear, pattern)
 
@@ -161,6 +174,53 @@ function RGB_image = demosaic_bilinear(imgLinear, pattern)
 
 end
 
+
+function RGB_image = demosaic_nearest_neighbor(imgLinear, pattern)
+    % Separate the RAW image into R, G, B channels based on Bayer pattern
+    [R, G, B] = demosaic_bayer(imgLinear, pattern);
+    
+    % Interpolate each channel
+    R_interp = nearest_neighbor_interpolation(R);
+    G_interp = nearest_neighbor_interpolation(G);
+    B_interp = nearest_neighbor_interpolation(B);
+    
+    RGB_image = cat(3, R_interp, G_interp, B_interp);
+end
+
+function channel_interp = nearest_neighbor_interpolation(channel)
+    [height, width] = size(channel);
+    known_mask = (channel ~= 0);        % Identify known pixels
+    channel_interp = channel;           % Initialize output
+
+    % Direction shifts: Right, Left, Down, Up
+    shifts = [0, 1; 0, -1; 1, 0; -1, 0];
+
+    % Loop until all missing pixels are filled
+    while any(~known_mask(:))
+        prev_mask = known_mask;
+
+        for k = 1:size(shifts, 1)
+            dx = shifts(k, 1);
+            dy = shifts(k, 2);
+
+            % Shift known mask and the channel
+            shifted_mask = circshift(prev_mask, [dx, dy]);
+            shifted_channel = circshift(channel_interp, [dx, dy]);
+
+            % Find missing pixels adjacent to known pixels
+            fill_mask = shifted_mask & ~known_mask;
+
+            % Fill missing pixels
+            channel_interp(fill_mask) = shifted_channel(fill_mask);
+
+            % Update the known mask
+            known_mask = known_mask | fill_mask;
+        end
+    end
+end
+
+
+
 function balancedImage = whiteWorldWB(inputImage)
     
     % Find the maximum value in each channel (Two max needed: one for row and another for column)
@@ -221,3 +281,5 @@ function balancedImage = manualWhiteBalance(inputImage, refPoint)
     balancedImage(:,:,3) = inputImage(:,:,3) * scaleB;
     
 end
+
+
