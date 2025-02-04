@@ -10,8 +10,9 @@ Asignatura: Computational Imaging
 % Load the image
 folderPath = '../data/images_tiff';
 % filename = 'bottles.tiff';
-filename = 'IMG_0596.tiff';
+% filename = 'IMG_0596.tiff';
 % filename = 'IMG_1026.tiff';
+filename = 'colors_noise.tiff';
 fullFilePath = fullfile(folderPath, filename);
 img = imread(fullFilePath);
 
@@ -50,7 +51,7 @@ imgLinear = max(min(imgLinearToClip, 1), 0);                    % Clip values ou
 figure;
 imshow(imgLinear);
 title('Linearized Image');
-
+uiwait;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BAYERN DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,7 +67,7 @@ RGB_image = demosaic_bilinear(imgLinear, pattern);
 figure;
 imshow(RGB_image);
 title('Demosaiced Image with bilinear interpolation');
-
+uiwait;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WHITE BALANCING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,15 +80,34 @@ balancedImage_GW = grayWorldWB(RGB_image);
 % Apply manual white balancing
 figure, imshow(RGB_image);
 refPoint = round(ginput(1));
+uiwait;
 balancedImage_manual = manualWhiteBalance(RGB_image, refPoint);
 
 % Display the results
 figure; imshow(balancedImage_WW); title('White World Assumption');
 figure; imshow(balancedImage_GW); title('Gray World Assumption');
 figure; imshow(balancedImage_manual); title('Manual White Balance');
+uiwait;
+
+% Select the final balanced image
+final_balancedImage = balancedImage_manual;
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DENOISER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+kernel_size = 3;
+denoisedImage_mean = denoiser_mean(final_balancedImage, kernel_size);
+denoisedImage_median = denoiser_median(final_balancedImage, kernel_size);
+denoisedImage_gaussian = denoiser_gaussian(final_balancedImage, kernel_size, 1);
+
+% Display the results
+figure; imshow(final_balancedImage); title('Without denoising');
+figure; imshow(denoisedImage_mean); title('Denoised Image with mean filter');
+figure; imshow(denoisedImage_median); title('Denoised Image with median filter');
+figure; imshow(denoisedImage_gaussian); title('Denoised Image with gaussian filter');
+uiwait;
 
 %% ---------------------------- FUNCTIONS --------------------------------%%
 
@@ -220,4 +240,107 @@ function balancedImage = manualWhiteBalance(inputImage, refPoint)
     balancedImage(:,:,2) = inputImage(:,:,2) * scaleG;
     balancedImage(:,:,3) = inputImage(:,:,3) * scaleB;
     
+end
+
+
+function denoised_image = denoiser_mean(inputImage, kernel_size)
+    
+    %Kernel
+    kernel = ones(kernel_size,kernel_size);
+
+    % Get the RGB values. Each channel will have different noise levels
+    R = inputImage(:,:,1);
+    G = inputImage(:,:,2);
+    B = inputImage(:,:,3);
+
+    % Make the channel masks
+    [height, width] = size(R);
+    Phantom_ones = ones(height, width);
+
+    % Get numeratos
+    R_numerator = conv2(R, kernel, 'same');
+    G_numerator = conv2(G, kernel, 'same');
+    B_numerator = conv2(B, kernel, 'same');
+    % Get denomiator
+    Denominator = conv2(Phantom_ones, kernel, 'same');
+
+    % Divide and get the RGB image
+    R = R_numerator ./ Denominator;
+    G = G_numerator ./ Denominator;
+    B = B_numerator ./ Denominator;
+    denoised_image = cat(3, R, G, B);
+
+end
+
+
+function denoised_image = denoiser_median(inputImage, kernel_size)
+
+    % Obtener dimensiones
+    [h, w, c] = size(inputImage);
+    pad_size = floor(kernel_size / 2);
+
+    % Inicializar imagen de salida
+    denoised_image = zeros(h, w, c);
+
+    % Aplicar filtro de mediana en cada canal sin `padarray`
+    for ch = 1:c
+        % Extraer canal actual
+        channel = inputImage(:,:,ch);
+
+        % Crear una imagen ampliada con padding (sin `padarray`)
+        padded_channel = zeros(h + 2*pad_size, w + 2*pad_size);
+
+        % Copiar la imagen en el centro de la matriz ampliada
+        padded_channel(pad_size+1:end-pad_size, pad_size+1:end-pad_size) = channel;
+
+        % Replicar los bordes (Simulando 'replicate' de `padarray`)
+        % Bordes superior e inferior
+        padded_channel(1:pad_size, :) = padded_channel(pad_size+1:2*pad_size, :);
+        padded_channel(end-pad_size+1:end, :) = padded_channel(end-2*pad_size+1:end-pad_size, :);
+
+        % Bordes izquierdo y derecho
+        padded_channel(:, 1:pad_size) = padded_channel(:, pad_size+1:2*pad_size);
+        padded_channel(:, end-pad_size+1:end) = padded_channel(:, end-2*pad_size+1:end-pad_size);
+
+        % Crear una matriz de ventanas concatenadas
+        windows = cat(3, ...
+            padded_channel(1:end-2, 1:end-2), padded_channel(1:end-2, 2:end-1), padded_channel(1:end-2, 3:end), ...
+            padded_channel(2:end-1, 1:end-2), padded_channel(2:end-1, 2:end-1), padded_channel(2:end-1, 3:end), ...
+            padded_channel(3:end, 1:end-2), padded_channel(3:end, 2:end-1), padded_channel(3:end, 3:end));
+
+        % Calcular la mediana en la tercera dimensión (los 9 valores por píxel)
+        denoised_image(:,:,ch) = median(windows, 3);
+    end
+
+end
+
+
+function kernel = gaussian_kernel(kernel_size, sigma)
+    % Crear una malla de coordenadas centrada en (0,0)
+    [x, y] = meshgrid(-floor(kernel_size/2):floor(kernel_size/2), -floor(kernel_size/2):floor(kernel_size/2));
+
+    % Aplicar la ecuación de la función Gaussiana
+    kernel = exp(-(x.^2 + y.^2) / (2 * sigma^2)) / (2 * pi * sigma^2);
+
+    % Normalizar para que la suma de los valores sea 1
+    kernel = kernel / sum(kernel(:));
+end
+
+
+function denoised_image = denoiser_gaussian(inputImage, kernel_size, sigma)
+    
+    %Kernel
+    kernel = gaussian_kernel(kernel_size, sigma);
+
+    % Get the RGB values. Each channel will have different noise levels
+    R = inputImage(:,:,1);
+    G = inputImage(:,:,2);
+    B = inputImage(:,:,3);
+
+    % Get numeratos
+    R = conv2(R, kernel, 'same');
+    G = conv2(G, kernel, 'same');
+    B = conv2(B, kernel, 'same');
+    denoised_image = cat(3, R, G, B);
+
 end
