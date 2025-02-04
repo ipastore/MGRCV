@@ -1,15 +1,18 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOAD TIFF %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%{
+Autores: David Padilla Orenga, Ignacio Pastore Benaim
+Asignatura: Computational Imaging
+%}
 
-% Define the folder path and filename
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOAD TIFF %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Load the image
 folderPath = '../data/images_tiff';
 % filename = 'bottles.tiff';
 filename = 'IMG_0596.tiff';
 % filename = 'IMG_1026.tiff';
-
-% Construct the full file path
 fullFilePath = fullfile(folderPath, filename);
-
-% Load the image
 img = imread(fullFilePath);
 
 % Retrieve image information
@@ -28,64 +31,75 @@ arrayWidth = size(img,2);
 arrayHeight = size(img,1);
 typeOfArray = class(img);
 
-% Display
-% figure;
-% imshow(img);
-% title('Before Linearization');
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEARIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEARIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Convert array of img to double
 imgDoubleArray = double(img);
-
 blackLevel = 1023; 
 saturationLevel = 15600; 
 
-% Shift the image so that blackLevel becomes 0
-imgShifted = imgDoubleArray - blackLevel;
-
-% Scale the image so that saturationLevel becomes 1
-imgLinearToClip = imgShifted / (saturationLevel - blackLevel);
-
-% Clip values outside the range [0, 1]
-imgLinear = max(min(imgLinearToClip, 1), 0);
-
+% Linearize the image
+imgShifted = imgDoubleArray - blackLevel;                       % Shift the image so that blackLevel becomes 0
+imgLinearToClip = imgShifted / (saturationLevel - blackLevel);  % Scale the image so that saturationLevel becomes 1
+imgLinear = max(min(imgLinearToClip, 1), 0);                    % Clip values outside the range [0, 1]
 
 % Display the linearized image
-% figure;
-% imshow(imgLinear);
-% title('Linearized Image');
+figure;
+imshow(imgLinear);
+title('Linearized Image');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BAYERN DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Apply Bayern demosaic
-pattern = 'rggb';
-% pattern = 'gbrg';
-% pattern = 'grbg';
-% pattern = 'bggr';
-
+patterns = {'rggb', 'gbrg', 'grbg', 'bggr'};
+patternIndex = 1; %
+pattern = patterns{patternIndex};
 RGB_image = demosaic_bilinear(imgLinear, pattern);
+
+% Display the demosaiced image
 figure;
 imshow(RGB_image);
 title('Demosaiced Image with bilinear interpolation');
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WHITE BALANCING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Apply white world white balancing 
+balancedImage_WW = whiteWorldWB(RGB_image);
+% Apply gray world white balancing
+balancedImage_GW = grayWorldWB(RGB_image);
+% Apply manual white balancing
+figure, imshow(RGB_image);
+refPoint = round(ginput(1));
+balancedImage_manual = manualWhiteBalance(RGB_image, refPoint);
+
+% Display the results
+figure; imshow(balancedImage_WW); title('White World Assumption');
+figure; imshow(balancedImage_GW); title('Gray World Assumption');
+figure; imshow(balancedImage_manual); title('Manual White Balance');
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%It could be done with demosaic()
+
+
+%% ---------------------------- FUNCTIONS --------------------------------%%
 
 function [R, G, B] = demosaic_bayer(imgLinear, pattern)
-    % Ensure the input is double
-    imgLinear = double(imgLinear);
-
-    % Get the size of the image
-    [height, width] = size(imgLinear);
 
     % Initialize the color channels
+    [height, width] = size(imgLinear);
     R = zeros(height, width);
     G = zeros(height, width);
     B = zeros(height, width);
 
-    % Apply the Bayer pattern
+    % Apply the Bayer demosaic depending on the pattern
     switch lower(pattern)
         case 'grbg'
             G(1:2:end, 1:2:end) = imgLinear(1:2:end, 1:2:end); % Green
@@ -121,19 +135,12 @@ function RGB_image = demosaic_bilinear(imgLinear, pattern)
     %Kernel
     kernel = ones(3,3);
 
-    % Ensure the input is double
-    imgLinear = double(imgLinear);
-
-    % Get the size of the image
-    [height, width] = size(imgLinear);
-
-    % Initialize the color channels
-    Phantom_ones = ones(height, width);
-
     % Apply the Bayer pattern
     [R, G, B] = demosaic_bayer(imgLinear, pattern);
 
-    % Make masks
+    % Make the channel masks
+    [height, width] = size(imgLinear);
+    Phantom_ones = ones(height, width);
     [R_mask, G_mask, B_mask] = demosaic_bayer(Phantom_ones, pattern);
 
     % Get denomiators
@@ -146,13 +153,71 @@ function RGB_image = demosaic_bilinear(imgLinear, pattern)
     G_numerator = conv2(G, kernel, 'same');
     B_numerator = conv2(B, kernel, 'same');
 
-    % Divide
+    % Divide and get the RGB image
     R = R_numerator ./ R_denominator;
     G = G_numerator ./ G_denominator;
     B = B_numerator ./ B_denominator;
-
     RGB_image = cat(3, R, G, B);
 
 end
 
+function balancedImage = whiteWorldWB(inputImage)
     
+    % Find the maximum value in each channel (Two max needed: one for row and another for column)
+    maxR = max(max(inputImage(:,:,1)));
+    maxG = max(max(inputImage(:,:,2)));
+    maxB = max(max(inputImage(:,:,3)));
+    
+    % Compute scaling factors based on the highest intensity
+    scaleR = maxG / maxR;
+    scaleB = maxG / maxB;
+    % No need to scale the green channel since it is the reference
+        
+    % Application of the scale factor for each of the channels
+    balancedImage(:,:,1) = inputImage(:,:,1) * scaleR;
+    balancedImage(:,:,2) = inputImage(:,:,2);
+    balancedImage(:,:,3) = inputImage(:,:,3) * scaleB;
+
+end
+
+function balancedImage = grayWorldWB(inputImage)
+    
+    % Compute the mean intensity of each channel (Two max needed: one for row and another for column)
+    meanR = mean(mean(inputImage(:,:,1)));
+    meanG = mean(mean(inputImage(:,:,2)));
+    meanB = mean(mean(inputImage(:,:,3)));
+    
+    % Compute scaling factors based on the green channel (as reference)
+    scaleR = meanG / meanR;
+    scaleG = 1;  % Green is used as reference
+    scaleB = meanG / meanB;
+    
+    % Application of the scale factor for each of the channels
+    balancedImage(:,:,1) = inputImage(:,:,1) * scaleR;
+    balancedImage(:,:,2) = inputImage(:,:,2) * scaleG;
+    balancedImage(:,:,3) = inputImage(:,:,3) * scaleB;
+    
+end
+
+function balancedImage = manualWhiteBalance(inputImage, refPoint)
+    
+    % Coordinates of the reference point
+    row = refPoint(1);
+    col = refPoint(2);
+    
+    % We get the RGB values of the point
+    R_ref = inputImage(row, col, 1);
+    G_ref = inputImage(row, col, 2);
+    B_ref = inputImage(row, col, 3);
+    
+    % Computation of scale factors as the pdf says
+    scaleR = (R_ref + G_ref + B_ref) / (3 * R_ref);
+    scaleG = (R_ref + G_ref + B_ref) / (3 * G_ref);
+    scaleB = (R_ref + G_ref + B_ref) / (3 * B_ref);
+    
+    % Application of the scale factor for each of the channels
+    balancedImage(:,:,1) = inputImage(:,:,1) * scaleR;
+    balancedImage(:,:,2) = inputImage(:,:,2) * scaleG;
+    balancedImage(:,:,3) = inputImage(:,:,3) * scaleB;
+    
+end
