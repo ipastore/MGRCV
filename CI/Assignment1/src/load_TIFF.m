@@ -122,6 +122,14 @@ figure; imshow(denoisedImage_median); title('Denoised Image with median filter')
 figure; imshow(denoisedImage_gaussian); title('Denoised Image with gaussian filter');
 uiwait;
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DENOISER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+print('Cositas')
+
+
 %% ---------------------------- FUNCTIONS --------------------------------%
 
 function [R, G, B] = demosaic_bayer(imgLinear, pattern)
@@ -194,7 +202,6 @@ function RGB_image = demosaic_bilinear(imgLinear, pattern)
 
 end
 
-
 function RGB_image = demosaic_nearest_neighbor(imgLinear, pattern)
     % Separate the RAW image into R, G, B channels based on Bayer pattern
     [R, G, B] = demosaic_bayer(imgLinear, pattern);
@@ -238,8 +245,6 @@ function channel_interp = nearest_neighbor_interpolation(channel)
         end
     end
 end
-
-
 
 function balancedImage = whiteWorldWB(inputImage)
     
@@ -302,7 +307,6 @@ function balancedImage = manualWhiteBalance(inputImage, refPoint)
     
 end
 
-
 function denoised_image = denoiser_mean(inputImage, kernel_size)
     
     %Kernel
@@ -331,7 +335,6 @@ function denoised_image = denoiser_mean(inputImage, kernel_size)
     denoised_image = cat(3, R, G, B);
 
 end
-
 
 function denoised_image = denoiser_median(inputImage, kernel_size)
 
@@ -374,7 +377,6 @@ function denoised_image = denoiser_median(inputImage, kernel_size)
 
 end
 
-
 function kernel = gaussian_kernel(kernel_size, sigma)
     % Crear una malla de coordenadas centrada en (0,0)
     [x, y] = meshgrid(-floor(kernel_size/2):floor(kernel_size/2), -floor(kernel_size/2):floor(kernel_size/2));
@@ -385,7 +387,6 @@ function kernel = gaussian_kernel(kernel_size, sigma)
     % Normalizar para que la suma de los valores sea 1
     kernel = kernel / sum(kernel(:));
 end
-
 
 function denoised_image = denoiser_gaussian(inputImage, kernel_size, sigma)
     
