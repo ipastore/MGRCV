@@ -18,7 +18,7 @@ format long
 global config;
 
 % display correlation matrix and pause at every step
-config.step_by_step = 1;
+config.step_by_step = 0;
 
 % number of robot motions for each local map
 config.steps_per_map = 1000;
@@ -101,13 +101,65 @@ global map;
 % BEGIN
 %-------------------------------------------------------------------------
 
-[map] = Kalman_filter_slam(map, config.steps_per_map);
+% [map] = Kalman_filter_slam(map, config.steps_per_map);
+n_maps = 4;
+[map] = Sequential_map_strategy(map, config.steps_per_map, n_maps);
 
 display_map_results(map);
 
 %-------------------------------------------------------------------------
 % END
 %-------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------
+% Sequential_map_strategy
+%-------------------------------------------------------------------------
+
+function [map] = Sequential_map_strategy(map, steps, n_maps)
+
+    % First, we need to know how many steps we have to do in each map
+    map_steps = repmat(floor(steps/n_maps), 1, n_maps) + (1:n_maps <= mod(steps, n_maps));
+    
+    for i = 1:n_maps
+        local_map = struct(); % Initialize local_map as an empty struct
+        local_map = Kalman_filter_slam(local_map, map_steps(i));
+        if i == 1
+            map = local_map;
+        else
+            map = merge_maps(map, local_map);
+        end
+    end
+
+end
+
+function [global_map] = merge_maps(global_map, local_map)
+    
+    % We obtain the numer of features in each map
+    m1 = length(global_map.hat_x) - 1;  % Since the robot position is not a feature
+    m2 = length(local_map.hat_x) - 1;   % Since the robot position is not a feature
+
+    % We compute the Jacobians J1 and J2
+    J1 = sparse([eye(1+m1);
+                ones(m2, 1) zeros(m2, m1)]);
+    J2 = sparse([1 zeros(1, m2);
+                zeros(m1, m2+1);
+                zeros(m2, 1) eye(m2)]);
+
+    % We compute the new map
+    global_map.hat_x = J1 * global_map.hat_x + J2 * local_map.hat_x;
+    global_map.hat_P = J1 * global_map.hat_P * J1' + J2 * local_map.hat_P * J2';
+
+    % We update other fields
+    global_map.true_ids = [global_map.true_ids; local_map.true_ids(2:end)];
+    global_map.true_x = [global_map.true_x; local_map.true_x(2:end)];
+    global_map.n = global_map.n + local_map.n;
+    % Update record statistics
+    offset = local_map.R0 - global_map.R0;
+    global_map.stats.true_x = [global_map.stats.true_x; local_map.stats.true_x + offset];
+    global_map.stats.error_x = [global_map.stats.error_x; local_map.stats.error_x];
+    global_map.stats.sigma_x = [global_map.stats.sigma_x; local_map.stats.sigma_x];
+    global_map.stats.cost_t = [global_map.stats.cost_t; local_map.stats.cost_t];
+end
 
 %-------------------------------------------------------------------------
 % Kalman_filter_slam
@@ -139,6 +191,7 @@ function [map] = Kalman_filter_slam(map, steps)
     map.stats.error_x = [];
     map.stats.sigma_x = [];
     map.stats.cost_t = [];
+    
 
     for k = 0:steps
 
