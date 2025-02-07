@@ -134,6 +134,9 @@ end
 
 function [global_map] = merge_maps(global_map, local_map)
     
+    % Timer
+    tjoin = tic;
+
     % We obtain the numer of features in each map
     m1 = length(global_map.hat_x) - 1;  % Since the robot position is not a feature
     m2 = length(local_map.hat_x) - 1;   % Since the robot position is not a feature
@@ -159,6 +162,7 @@ function [global_map] = merge_maps(global_map, local_map)
     global_map.stats.error_x = [global_map.stats.error_x; local_map.stats.error_x];
     global_map.stats.sigma_x = [global_map.stats.sigma_x; local_map.stats.sigma_x];
     global_map.stats.cost_t = [global_map.stats.cost_t; local_map.stats.cost_t];
+    global_map.stats.cost_t(end) = global_map.stats.cost_t(end) + toc(tjoin); 
 end
 
 %-------------------------------------------------------------------------
