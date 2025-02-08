@@ -7,102 +7,274 @@ clear
 clc
 close all
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOAD TIFF %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global plot_all;
+plot_all = 1;
+global deploy_all;
+deploy_all = 1;
+
+if deploy_all
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOAD TIFF %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Load the image
+    folderPath = '../data/images_tiff';
+    % filename = 'bottles.tiff';
+    filename = 'IMG_0596.tiff';
+    % % filename = 'IMG_1026.tiff';
+    % % filename = 'colors_noise.tiff';
+    % filename = 'colors.tiff';
+    fullFilePath = fullfile(folderPath, filename);
+    img = imread(fullFilePath);
+
+    % Retrieve image information
+    info = imfinfo(fullFilePath);
+    bitsPerPixel = info.BitDepth;
+    width = info.Width;
+    height = info.Height;
+
+    % Report the image details
+    fprintf('Bits per pixel: %d\n', bitsPerPixel);
+    fprintf('Image width: %d pixels\n', width);
+    fprintf('Image height: %d pixels\n', height);
+
+    % Also we could retrieve the width and height and data type as:
+    arrayWidth = size(img,2);
+    arrayHeight = size(img,1);
+    typeOfArray = class(img);
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEARIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Convert array of img to double
+    imgDoubleArray = double(img);
+    blackLevel = 1023; 
+    saturationLevel = 15600; 
+
+    % Linearize the image
+    imgShifted = imgDoubleArray - blackLevel;                       % Shift the image so that blackLevel becomes 0
+    imgLinearToClip = imgShifted / (saturationLevel - blackLevel);  % Scale the image so that saturationLevel becomes 1
+    imgLinear = max(min(imgLinearToClip, 1), 0);                    % Clip values outside the range [0, 1]
+
+    if plot_all
+        % Display the linearized image
+        figure;imshow(img);title('Linearized Image');uiwait;
+    end
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BAYERN DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Choose pattern
+    patterns = {'rggb', 'gbrg', 'grbg', 'bggr'};
+    patternIndex = 1; %
+    pattern = patterns{patternIndex};
+
+    % % Apply Bayern demosaic with bilinear interpolation
+    RGB_image = demosaic_bilinear(imgLinear, pattern);
+
+    if plot_all
+        % Display the demosaiced image with bilinear
+        figure;imshow(RGB_image);title('Demosaiced Image with bilinear interpolation');uiwait;
+    end
+
+    % Apply Bayern demosaic with nearest neighbor and circshift
+    RGB_image_nn_circshift = demosaic_nearest_neighbor(imgLinear, pattern);
+
+    if plot_all
+        % Display the demosaiced image with nearest neighbor
+        figure;imshow(RGB_image_nn_circshift);title('Demosaiced Image with nearest neighbor');uiwait;
+    end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WHITE BALANCING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % Apply white world white balancing 
+    balancedImage_WW = whiteWorldWB(RGB_image);
+    % Apply gray world white balancing
+    balancedImage_GW = grayWorldWB(RGB_image);
+    % Apply manual white balancing
+    figure, imshow(RGB_image); title('Choose a pixel')
+    refPoint = round(ginput(1));
+    uiwait;
+
+    balancedImage_manual = manualWhiteBalance(RGB_image, refPoint);
+
+    if plot_all
+        % Display the results
+        figure; imshow(balancedImage_WW); title('White World Assumption');
+        figure; imshow(balancedImage_GW); title('Gray World Assumption');
+        figure; imshow(balancedImage_manual); title('Manual White Balance');
+        uiwait;
+    end
+
+    % Select the final balanced image
+    final_balancedImage = balancedImage_manual;
+    % final_balancedImage = balancedImage_GW;
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DENOISER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    kernel_size = 3;
+    denoisedImage_mean = denoiser_mean(final_balancedImage, kernel_size);
+    denoisedImage_median = denoiser_median(final_balancedImage, kernel_size);
+    denoisedImage_gaussian = denoiser_gaussian(final_balancedImage, kernel_size, 1);
+
+
+
+    if plot_all
+        figure; imshow(final_balancedImage); title('Without denoising');
+        figure; imshow(denoisedImage_mean); title('Denoised Image with mean filter');
+        figure; imshow(denoisedImage_median); title('Denoised Image with median filter');
+        figure; imshow(denoisedImage_gaussian); title('Denoised Image with gaussian filter');
+        uiwait;
+    end
+
+    save('denoisedImage_gaussian.mat', 'denoisedImage_gaussian');
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COLOR BALANCE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % load('./denoisedImage_gaussian.mat', 'denoisedImage_gaussian');
+
+    % Boost saturation with different levels
+    if plot_all
+        saturation_factors = [1, 1.25, 1.5, 1.75, 2];
+        for i = 1:length(saturation_factors)
+            img_color_balanced = color_balance(denoisedImage_gaussian, saturation_factors(i));
+            figure;
+            imshow(img_color_balanced);
+            title(sprintf('Saturation factor: %.2f', saturation_factors(i)));
+        end
+        uiwait;
+    end
+
+
+    % Select desired saturation
+    selected_saturation_factor = 1.50;
+
+    img_color_balanced = color_balance(denoisedImage_gaussian, selected_saturation_factor);
+    save('img_color_balanced.mat', 'img_color_balanced');
+
+    if plot_all
+        figure;imshow(img_color_balanced);title(sprintf('Color balanced image with saturation factor %.2f', selected_saturation_factor));uiwait;
+    end
+
+end
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TONE REPRODUCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Load the image
-folderPath = '../data/images_tiff';
-% filename = 'bottles.tiff';
-filename = 'IMG_0596.tiff';
-% filename = 'IMG_1026.tiff';
-fullFilePath = fullfile(folderPath, filename);
-img = imread(fullFilePath);
+% load('./img_color_balanced.mat', 'img_color_balanced');
 
-% Retrieve image information
-info = imfinfo(fullFilePath);
-bitsPerPixel = info.BitDepth;
-width = info.Width;
-height = info.Height;
+if plot_all 
+    % Apply alpha correction for different values and display the figures
+    porcentage_brighten = [0.25, 0.50, 0.75];
+    for i = 1:length(porcentage_brighten)
+        img_alpha = alpha_correction(img_color_balanced, porcentage_brighten(i));
+        gamma_values = [1.7, 1.8, 1.9, 2, 2.2, 2.4];
+        for j = 1:length(gamma_values)
+            img_gamma = tone_reproduction(img_alpha, gamma_values(j));
+            figure;
+            imshow(img_gamma);
+            title(sprintf('Gamma corrected image with gamma %.2f and porcentage: %.2f', gamma_values(j), porcentage_brighten(i)));
+        end
+    end
 
-% Report the image details
-fprintf('Bits per pixel: %d\n', bitsPerPixel);
-fprintf('Image width: %d pixels\n', width);
-fprintf('Image height: %d pixels\n', height);
+    for i = length(porcentage_brighten)
+        img_gamma = tone_reproduction(img_color_balanced, porcentage_brighten(i));
+        figure;
+        imshow(img_gamma);
+        title(sprintf('Gamma corrected image with gamma %.2f and porcentage: %.2f', gamma_values(j)));
+    end
 
-% Also we could retrieve the width and height and data type as:
-arrayWidth = size(img,2);
-arrayHeight = size(img,1);
-typeOfArray = class(img);
+end
 
+selected_porcentage_brighten = 0.75;
+% img_alpha = alpha_correction(img_color_balanced, selected_porcentage_brighten);
+% figure;imshow(img_alpha);title(sprintf('Alpha corrected image with alpha %.2f',selected_porcentage_brighten));uiwait;
+% save('img_alpha.mat', 'img_alpha');
+% % load('./img_alpha.mat', 'img_alpha');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEARIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% img_gamma = tone_reproduction(img_alpha, selected_gamma);
+% figure;imshow(img_gamma);title(sprintf('Alpha corrected image with alpha %.2f and gamma %.2f',selected_porcentage_brighten, selected_gamma));uiwait;
+% 
+% gammas = [ 1.7, 1.8];
+% for i = 1:length(gammas)
+%     img_gamma = tone_reproduction(img_color_balanced, gammas(i));
+%     figure;
+%     imshow(img_gamma);
+%     title(sprintf('Gamma corrected image with gamma %.2f', gammas(i)));
+% end
 
-% Convert array of img to double
-imgDoubleArray = double(img);
-blackLevel = 1023; 
-saturationLevel = 15600; 
-
-% Linearize the image
-imgShifted = imgDoubleArray - blackLevel;                       % Shift the image so that blackLevel becomes 0
-imgLinearToClip = imgShifted / (saturationLevel - blackLevel);  % Scale the image so that saturationLevel becomes 1
-imgLinear = max(min(imgLinearToClip, 1), 0);                    % Clip values outside the range [0, 1]
-
-% % Display the linearized image
-figure;
-imshow(imgLinear);
-title('Linearized Image');
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BAYERN DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Choose pattern
-patterns = {'rggb', 'gbrg', 'grbg', 'bggr'};
-patternIndex = 1; %
-pattern = patterns{patternIndex};
-
-% % Apply Bayern demosaic with bilinear interpolation
-RGB_image = demosaic_bilinear(imgLinear, pattern);
-
-% Display the demosaiced image with bilinear
-figure;
-imshow(RGB_image);
-title('Demosaiced Image with bilinear interpolation');
-
-
-% Apply Bayern demosaic with nearest neighbor and circshift
-RGB_image_nn_circshift = demosaic_nearest_neighbor_circshift(imgLinear, pattern);
-figure;
-imshow(RGB_image_nn_circshift);
-title('Demosaiced Image with NN and circshift')
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WHITE BALANCING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Apply white world white balancing 
-balancedImage_WW = whiteWorldWB(RGB_image);
-% Apply gray world white balancing
-balancedImage_GW = grayWorldWB(RGB_image);
-% Apply manual white balancing
-figure, imshow(RGB_image);
-refPoint = round(ginput(1));
-balancedImage_manual = manualWhiteBalance(RGB_image, refPoint);
-
-% Display the results
-figure; imshow(balancedImage_WW); title('White World Assumption');
-figure; imshow(balancedImage_GW); title('Gray World Assumption');
-figure; imshow(balancedImage_manual); title('Manual White Balance');
-
-
-
+% selected_gamma = 1.6; 
+% img_gamma = tone_reproduction(img_color_balanced, selected_gamma);
+% figure;imshow(img_gamma);title(sprintf('Gamma corrected with %.2f', selected_gamma));uiwait;
 
 %% ---------------------------- FUNCTIONS --------------------------------%
+function img_alpha = alpha_correction(img_color_balanced, porcentage_brighten)
+
+    % Brighten the image 
+    max_gray = max(max(rgb2gray(img_color_balanced))); % Get maximum grayscale value
+    exposure_alpha = log2(porcentage_brighten / max_gray); % Scale to % of max brightness
+
+    % Apply alpha correction
+    img_alpha = img_color_balanced .* 2^exposure_alpha;;
+    
+    % Clip values to [0, 1]
+    img_alpha = min(max(img_alpha, 0), 1);
+end
+
+function img_gamma = tone_reproduction(img_linear, gamma_value)
+    
+    % Apply sRGB gamma correction
+    img_gamma = zeros(size(img_linear));
+    threshold = 0.0031308;
+    
+    % Piecewise function for each channel
+    for c = 1:3 % R, G, B channels
+        linear = img_linear(:,:,c);
+        nonlinear = zeros(size(linear));
+        
+        % Case 1: linear <= threshold
+        mask_low = linear <= threshold;
+        nonlinear(mask_low) = 12.92 .* linear(mask_low);
+        
+        % Case 2: linear > threshold
+        mask_high = ~mask_low;
+        nonlinear(mask_high) = (1.055) .* (linear(mask_high).^(1/gamma_value)) - 0.055;
+        
+        img_gamma(:,:,c) = nonlinear;
+    end
+    
+    % Clip final values
+    img_gamma = min(max(img_gamma, 0), 1);
+end
+
+function img_out = color_balance(img_rgb, saturation_factor)
+    % Convert RGB to HSV
+    img_hsv = rgb2hsv(img_rgb);
+    
+    % Boost saturation channel (S is the 2nd channel)
+    img_hsv(:,:,2) = img_hsv(:,:,2) .* saturation_factor;
+    
+    % Clip values to [0, 1]
+    img_hsv(:,:,2) = min(max(img_hsv(:,:,2), 0), 1);
+    
+    % Convert back to RGB
+    img_out = hsv2rgb(img_hsv);
+end
+
 
 function [R, G, B] = demosaic_bayer(imgLinear, pattern)
 
@@ -174,141 +346,14 @@ function RGB_image = demosaic_bilinear(imgLinear, pattern)
 
 end
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% NN TAKES TOO LONG!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 function RGB_image = demosaic_nearest_neighbor(imgLinear, pattern)
     % Separate the RAW image into R, G, B channels based on Bayer pattern
     [R, G, B] = demosaic_bayer(imgLinear, pattern);
     
     % Interpolate each channel
-    R_interp = interpolate_channel(R, pattern, 'R');
-    disp('Channel R done');
-    G_interp = interpolate_channel(G, pattern, 'G');
-    disp('Channel G done');
-    B_interp = interpolate_channel(B, pattern, 'B');
-    disp('Channel B done');
-
-    
-    RGB_image = cat(3, R_interp, G_interp, B_interp);
-end
-
-function channel_interp = interpolate_channel(channel, pattern, color)
-    [height, width] = size(channel);
-    channel_interp = channel;
-    
-    % Find missing pixels
-    [missing_rows, missing_cols] = find(channel == 0);
-
-    for k = 1:length(missing_rows)
-        i = missing_rows(k);
-        j = missing_cols(k);
-        disp([i, j]);
-        
-        % Find nearest existing pixel based on Bayer pattern
-        switch pattern
-            case 'rggb'
-                [i_nn, j_nn] = find_nearest_pixel(i, j, color, 'rggb', height, width);
-            case 'bggr'
-                [i_nn, j_nn] = find_nearest_pixel(i, j, color, 'bggr', height, width);
-            case 'grbg'
-                [i_nn, j_nn] = find_nearest_pixel(i, j, color, 'grbg', height, width);
-            case 'gbrg'
-                [i_nn, j_nn] = find_nearest_pixel(i, j, color, 'gbrg', height, width);
-            otherwise
-                error('Unknown Bayer pattern: %s', pattern);
-        end
-        
-        % Ensure indices are within bounds
-        i_nn = max(1, min(height, i_nn));
-        j_nn = max(1, min(width, j_nn));
-        
-        channel_interp(i, j) = channel(i_nn, j_nn);
-    end
-end
-
-function [i_nn, j_nn] = find_nearest_pixel(i, j, color, pattern, height, width)
-    switch pattern
-        case 'rggb'
-            if color == 'R'
-                i_nn = 2 * floor((i-1)/2) + 1;
-                j_nn = 2 * floor((j-1)/2) + 1;
-            elseif color == 'B'
-                i_nn = 2 * floor(i/2);
-                j_nn = 2 * floor(j/2);
-            else % G
-                if mod(i + j, 2) == 1
-                    i_nn = i;
-                    j_nn = j;
-                else
-                    [i_nn, j_nn] = pick_horizontal_or_vertical(i, j, width);
-                end
-            end
-        case 'bggr'
-            if color == 'B'
-                i_nn = 2 * floor((i-1)/2) + 1;
-                j_nn = 2 * floor((j-1)/2) + 1;
-            elseif color == 'R'
-                i_nn = 2 * floor(i/2);
-                j_nn = 2 * floor(j/2);
-            else % G
-                if mod(i + j, 2) == 1
-                    i_nn = i;
-                    j_nn = j;
-                else
-                    [i_nn, j_nn] = pick_horizontal_or_vertical(i, j, width);
-                end
-            end
-        case 'grbg'
-            if color == 'G'
-                i_nn = i;
-                j_nn = j;
-            elseif color == 'R'
-                i_nn = 2 * floor((i-1)/2) + 1;
-                j_nn = 2 * floor((j-1)/2) + 2;
-            else % B
-                i_nn = 2 * floor(i/2) + 2;
-                j_nn = 2 * floor(j/2) + 1;
-            end
-        case 'gbrg'
-            if color == 'G'
-                i_nn = i;
-                j_nn = j;
-            elseif color == 'B'
-                i_nn = 2 * floor((i-1)/2) + 1;
-                j_nn = 2 * floor((j-1)/2) + 2;
-            else % R
-                i_nn = 2 * floor(i/2) + 2;
-                j_nn = 2 * floor(j/2) + 1;
-            end
-    end
-end
-
-function [i_nn, j_nn] = pick_horizontal_or_vertical(i, j, width)
-    if mod(i + j, 2) == 0
-        j_nn = max(1, j - 1);
-        i_nn = i;
-    else
-        j_nn = min(width, j + 1);
-        i_nn = i;
-    end
-end
-
-function RGB_image = demosaic_nearest_neighbor_circshift(imgLinear, pattern)
-    % Separate the RAW image into R, G, B channels based on Bayer pattern
-    [R, G, B] = demosaic_bayer(imgLinear, pattern);
-    
-    % Interpolate each channel
     R_interp = nearest_neighbor_interpolation(R);
-    disp('Channel R done');
     G_interp = nearest_neighbor_interpolation(G);
-    disp('Channel G done');
     B_interp = nearest_neighbor_interpolation(B);
-    disp('Channel B done');
     
     RGB_image = cat(3, R_interp, G_interp, B_interp);
 end
@@ -344,8 +389,6 @@ function channel_interp = nearest_neighbor_interpolation(channel)
         end
     end
 end
-
-
 
 function balancedImage = whiteWorldWB(inputImage)
     
@@ -408,4 +451,101 @@ function balancedImage = manualWhiteBalance(inputImage, refPoint)
     
 end
 
+function denoised_image = denoiser_mean(inputImage, kernel_size)
+    
+    %Kernel
+    kernel = ones(kernel_size,kernel_size);
 
+    % Get the RGB values. Each channel will have different noise levels
+    R = inputImage(:,:,1);
+    G = inputImage(:,:,2);
+    B = inputImage(:,:,3);
+
+    % Make the channel masks
+    [height, width] = size(R);
+    Phantom_ones = ones(height, width);
+
+    % Get numeratos
+    R_numerator = conv2(R, kernel, 'same');
+    G_numerator = conv2(G, kernel, 'same');
+    B_numerator = conv2(B, kernel, 'same');
+    % Get denomiator
+    Denominator = conv2(Phantom_ones, kernel, 'same');
+
+    % Divide and get the RGB image
+    R = R_numerator ./ Denominator;
+    G = G_numerator ./ Denominator;
+    B = B_numerator ./ Denominator;
+    denoised_image = cat(3, R, G, B);
+
+end
+
+function denoised_image = denoiser_median(inputImage, kernel_size)
+
+    % Obtener dimensiones
+    [h, w, c] = size(inputImage);
+    pad_size = floor(kernel_size / 2);
+
+    % Inicializar imagen de salida
+    denoised_image = zeros(h, w, c);
+
+    % Aplicar filtro de mediana en cada canal sin `padarray`
+    for ch = 1:c
+        % Extraer canal actual
+        channel = inputImage(:,:,ch);
+
+        % Crear una imagen ampliada con padding (sin `padarray`)
+        padded_channel = zeros(h + 2*pad_size, w + 2*pad_size);
+
+        % Copiar la imagen en el centro de la matriz ampliada
+        padded_channel(pad_size+1:end-pad_size, pad_size+1:end-pad_size) = channel;
+
+        % Replicar los bordes (Simulando 'replicate' de `padarray`)
+        % Bordes superior e inferior
+        padded_channel(1:pad_size, :) = padded_channel(pad_size+1:2*pad_size, :);
+        padded_channel(end-pad_size+1:end, :) = padded_channel(end-2*pad_size+1:end-pad_size, :);
+
+        % Bordes izquierdo y derecho
+        padded_channel(:, 1:pad_size) = padded_channel(:, pad_size+1:2*pad_size);
+        padded_channel(:, end-pad_size+1:end) = padded_channel(:, end-2*pad_size+1:end-pad_size);
+
+        % Crear una matriz de ventanas concatenadas
+        windows = cat(3, ...
+            padded_channel(1:end-2, 1:end-2), padded_channel(1:end-2, 2:end-1), padded_channel(1:end-2, 3:end), ...
+            padded_channel(2:end-1, 1:end-2), padded_channel(2:end-1, 2:end-1), padded_channel(2:end-1, 3:end), ...
+            padded_channel(3:end, 1:end-2), padded_channel(3:end, 2:end-1), padded_channel(3:end, 3:end));
+
+        % Calcular la mediana en la tercera dimensión (los 9 valores por píxel)
+        denoised_image(:,:,ch) = median(windows, 3);
+    end
+
+end
+
+function kernel = gaussian_kernel(kernel_size, sigma)
+    % Crear una malla de coordenadas centrada en (0,0)
+    [x, y] = meshgrid(-floor(kernel_size/2):floor(kernel_size/2), -floor(kernel_size/2):floor(kernel_size/2));
+
+    % Aplicar la ecuación de la función Gaussiana
+    kernel = exp(-(x.^2 + y.^2) / (2 * sigma^2)) / (2 * pi * sigma^2);
+
+    % Normalizar para que la suma de los valores sea 1
+    kernel = kernel / sum(kernel(:));
+end
+
+function denoised_image = denoiser_gaussian(inputImage, kernel_size, sigma)
+    
+    %Kernel
+    kernel = gaussian_kernel(kernel_size, sigma);
+
+    % Get the RGB values. Each channel will have different noise levels
+    R = inputImage(:,:,1);
+    G = inputImage(:,:,2);
+    B = inputImage(:,:,3);
+
+    % Get numeratos
+    R = conv2(R, kernel, 'same');
+    G = conv2(G, kernel, 'same');
+    B = conv2(B, kernel, 'same');
+    denoised_image = cat(3, R, G, B);
+
+end
