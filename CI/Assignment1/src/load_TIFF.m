@@ -7,10 +7,56 @@ clear
 clc
 close all
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONFIG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 global plot_all;
 plot_all = 0;
 global deploy_all;
-deploy_all = 0;
+deploy_all = 1;
+
+% 1 Choose pattern
+patterns = {'rggb', 'gbrg', 'grbg', 'bggr'};
+patternIndex = 1; %
+pattern = patterns{patternIndex};
+
+% 2 Choose the white balance method
+white_balance_methods = {'manual', 'gray_world', 'white_world'};
+selected_white_balance_methodIndex = 1;
+selected_white_balance_method = white_balance_methods{selected_white_balance_methodIndex};
+
+% 3 Choose posible values to try
+saturation_factors = [1, 1.25, 1.5, 1.75, 2];
+porcentage_brighten = [0.25, 0.50, 0.75];
+gamma_values = [1.7, 1.8, 1.9, 2, 2.2, 2.4];
+qualities = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5];    % for applying compression
+
+% 4 Choose selected final values
+selected_saturation_factor = 1.50;
+selected_porcentage_brighten = 0.75;
+selected_gamma = 1.8;
+
+% 5 Choose the folder path. Previously run dcraw -4 -D -T 'filename.CR2'
+folderPath = '../data/images_raw';
+
+% 6 Choose the filename
+% filename = 'bottles.tiff';
+filename = 'IMG_0596.tiff';
+% % filename = 'IMG_1026.tiff';
+% % filename = 'colors_noise.tiff';
+% filename = 'colors.tiff';
+
+fullFilePath = fullfile(folderPath, filename);
+
+% 7 Choose the output folder
+output_folder = '../output';
+
+[~,output_filename, ~] = fileparts(fullFilePath)
+%Create the output folder
+if ~exist(fullfile(output_folder, output_filename), 'dir')
+    mkdir(fullfile(output_folder, output_filename));
+end
+output_path = fullfile(output_folder, output_filename);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CONFIG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if deploy_all
 
@@ -19,13 +65,6 @@ if deploy_all
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Load the image
-    folderPath = '../data/images_tiff';
-    % filename = 'bottles.tiff';
-    filename = 'IMG_0596.tiff';
-    % % filename = 'IMG_1026.tiff';
-    % % filename = 'colors_noise.tiff';
-    % filename = 'colors.tiff';
-    fullFilePath = fullfile(folderPath, filename);
     img = imread(fullFilePath);
 
     % Retrieve image information
@@ -55,9 +94,10 @@ if deploy_all
     saturationLevel = 15600; 
 
     % Linearize the image
-    imgShifted = imgDoubleArray - blackLevel;                       % Shift the image so that blackLevel becomes 0
-    imgLinearToClip = imgShifted / (saturationLevel - blackLevel);  % Scale the image so that saturationLevel becomes 1
-    imgLinear = max(min(imgLinearToClip, 1), 0);                    % Clip values outside the range [0, 1]
+    imgShifted = imgDoubleArray - blackLevel;                       
+    imgLinearToClip = imgShifted / (saturationLevel - blackLevel);  
+    imgLinear = max(min(imgLinearToClip, 1), 0);                    
+    save_image(imgLinear, output_path, 'linearized');
 
     if plot_all
         % Display the linearized image
@@ -69,13 +109,9 @@ if deploy_all
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BAYERN DEMOSAIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % Choose pattern
-    patterns = {'rggb', 'gbrg', 'grbg', 'bggr'};
-    patternIndex = 1; %
-    pattern = patterns{patternIndex};
-
-    % % Apply Bayern demosaic with bilinear interpolation
+    % Apply Bayern demosaic with bilinear interpolation
     RGB_image = demosaic_bilinear(imgLinear, pattern);
+    save_image(RGB_image, output_path, 'demosaiced_bilinear');
 
     if plot_all
         % Display the demosaiced image with bilinear
@@ -84,6 +120,7 @@ if deploy_all
 
     % Apply Bayern demosaic with nearest neighbor and circshift
     RGB_image_nn_circshift = demosaic_nearest_neighbor(imgLinear, pattern);
+    save_image(RGB_image_nn_circshift, output_path, 'demosaiced_nearest_neighbor');
 
     if plot_all
         % Display the demosaiced image with nearest neighbor
@@ -96,14 +133,19 @@ if deploy_all
 
     % Apply white world white balancing 
     balancedImage_WW = whiteWorldWB(RGB_image);
+    save_image(balancedImage_WW, output_path, 'white_balanced_white_world');
+    
     % Apply gray world white balancing
     balancedImage_GW = grayWorldWB(RGB_image);
+    save_image(balancedImage_GW, output_path, 'white_balanced_gray_world');
+
     % Apply manual white balancing
     figure, imshow(RGB_image); title('Choose a pixel')
     refPoint = round(ginput(1));
     uiwait;
 
     balancedImage_manual = manualWhiteBalance(RGB_image, refPoint);
+    save_image(balancedImage_manual, output_path, 'white_balanced_manual');
 
     if plot_all
         % Display the results
@@ -117,16 +159,30 @@ if deploy_all
     final_balancedImage = balancedImage_manual;
     % final_balancedImage = balancedImage_GW;
 
+
+    % Select the final balanced image based on the chosen method
+    switch selected_white_balance_method
+        case 'manual'
+            final_balancedImage = balancedImage_manual;
+        case 'gray_world'
+            final_balancedImage = balancedImage_GW;
+        case 'white_world'
+            final_balancedImage = balancedImage_WW;
+        otherwise
+            error('Unknown white balance method: %s', selected_white_balance_method);
+    end
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DENOISER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     kernel_size = 3;
     denoisedImage_mean = denoiser_mean(final_balancedImage, kernel_size);
+    save_image(denoisedImage_mean, output_path, 'denoised_mean');
     denoisedImage_median = denoiser_median(final_balancedImage, kernel_size);
+    save_image(denoisedImage_median, output_path, 'denoised_median');
     denoisedImage_gaussian = denoiser_gaussian(final_balancedImage, kernel_size, 1);
-
-
+    save_image(denoisedImage_gaussian, output_path, 'denoised_gaussian');
 
     if plot_all
         figure; imshow(final_balancedImage); title('Without denoising');
@@ -136,8 +192,7 @@ if deploy_all
         uiwait;
     end
 
-    save('denoisedImage_gaussian.mat', 'denoisedImage_gaussian');
-
+    % save('denoisedImage_gaussian.mat', 'denoisedImage_gaussian');
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COLOR BALANCE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,9 +202,11 @@ if deploy_all
 
     % Boost saturation with different levels
     if plot_all
-        saturation_factors = [1, 1.25, 1.5, 1.75, 2];
         for i = 1:length(saturation_factors)
             img_color_balanced = color_balance(denoisedImage_gaussian, saturation_factors(i));
+            filename_sat = sprintf('color_balanced_saturation_%.2f', saturation_factors(i));
+            filename_sat = strrep(filename_sat, '0', '');  
+            save_image(img_color_balanced, output_path, filename_sat);
             figure;
             imshow(img_color_balanced);
             title(sprintf('Saturation factor: %.2f', saturation_factors(i)));
@@ -158,17 +215,16 @@ if deploy_all
     end
 
 
-    % Select desired saturation
-    selected_saturation_factor = 1.50;
-
+    % Apply desired saturation
     img_color_balanced = color_balance(denoisedImage_gaussian, selected_saturation_factor);
-    save('img_color_balanced.mat', 'img_color_balanced');
+    % save('img_color_balanced.mat', 'img_color_balanced');
+    filename_sat = sprintf('color_balanced_saturation_%.2f', selected_saturation_factor);
+    filename_sat = strrep(filename_sat, '0', '');  
+    save_image(img_color_balanced, output_path, filename_sat);
 
     if plot_all
         figure;imshow(img_color_balanced);title(sprintf('Color balanced image with saturation factor %.2f', selected_saturation_factor));uiwait;
     end
-
-
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TONE REPRODUCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -179,88 +235,115 @@ if deploy_all
     
     if plot_all 
         % Apply alpha correction for different values and display the figures
-        porcentage_brighten = [0.25, 0.50, 0.75];
         for i = 1:length(porcentage_brighten)
             img_alpha = alpha_correction(img_color_balanced, porcentage_brighten(i));
-            gamma_values = [1.7, 1.8, 1.9, 2, 2.2, 2.4];
+            filename_alpha = sprintf('alpha_%.2f', porcentage_brighten(i));
+            filename_alpha = strrep(filename_alpha, '0', '');  
+            save_image(img_alpha, output_path, filename_alpha);
             for j = 1:length(gamma_values)
                 img_gamma = tone_reproduction(img_alpha, gamma_values(j));
+                filename_gamma = sprintf('gamma_%.2f', gamma_values(j));
+                filename_gamma = strrep(filename_gamma, '0', '');
+                filename_alpha_gamma = strcat(filename_alpha, filename_gamma);
+                save_image(img_gamma, output_path, filename_alpha_gamma);
                 figure;
                 imshow(img_gamma);
                 title(sprintf('Gamma corrected image with gamma %.2f and porcentage: %.2f', gamma_values(j), porcentage_brighten(i)));
             end
         end
-    
-        for i = length(porcentage_brighten)
-            img_gamma = tone_reproduction(img_color_balanced, porcentage_brighten(i));
+        
+        % Apply gamma correction for different values without alpha correction and display the figures
+        for i = length(gamma_values)
+            img_gamma = tone_reproduction(img_color_balanced, gamma_values(i));
+            filename_gamma = sprintf('gamma_%.2f', gamma_values(i));
+            filename_gamma = strrep(filename_gamma, '0', '');
+            save_image(img_gamma, output_path, filename_gamma);
             figure;
             imshow(img_gamma);
-            title(sprintf('Gamma corrected image with gamma %.2f', gamma_values(j)));
+            title(sprintf('Gamma corrected image with gamma %.2f', gamma_values(i)));
         end
     
     end
     
-    selected_porcentage_brighten = 0.75;
+    % Apply selected alpha correction
     img_alpha = alpha_correction(img_color_balanced, selected_porcentage_brighten);
+    filename_alpha = sprintf('alpha_%.2f', selected_porcentage_brighten);
+    filename_alpha = strrep(filename_alpha, '0', '');
+    save_image(img_alpha, output_path, filename_alpha);
     
-    selected_gamma = 1.8; 
+    % Apply selected gamma correction
     img_gamma = tone_reproduction(img_color_balanced, selected_gamma);
-    figure;imshow(img_gamma);title(sprintf('Gamma corrected with %.2f and brighten porcentage %.2f', selected_gamma, selected_porcentage_brighten));uiwait;
-save('img_gamma.mat', 'img_gamma');
+    filename_gamma = sprintf('gamma_%.2f', selected_gamma);
+    filename_gamma = strrep(filename_gamma, '0', '');
+    save_image(img_gamma, output_path, filename_gamma);
+
+    figure;imshow(img_gamma);title(sprintf('Saturation %.2f, Gamma %.2f and brighten porcentage %.2f', selected_saturation_factor, selected_gamma, selected_porcentage_brighten));
+    % save('img_gamma.mat', 'img_gamma');
+
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPRESSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    % load('./img_gamma.mat', 'img_gamma');
+
+    % Save the image as PNG
+    save_image(img_gamma, output_path, 'final_loseless');
+
+    if exist(fullfile(output_path, 'final_loseless.png'), 'file')
+        png_info = dir(fullfile(output_path, 'final_loseless.png'));
+    else
+        error('PNG file not found.');
+    end
+
+    compression_ratios = zeros(size(qualities));
+
+    for i = 1:length(qualities)
+        quality = qualities(i);
+       
+        output_filename = fullfile(output_path, sprintf('compressed_%d.jpg', quality));
+        imwrite(img_gamma, output_filename, 'Quality', quality);
+        
+        if exist(output_filename, 'file')
+            jpeg_info = dir(output_filename);
+        else
+            error('JPEG file not found.');
+        end
+        
+        compression_ratios(i) = png_info.bytes / jpeg_info.bytes;
+        
+        fprintf('Compression Ratio (PNG to JPEG, Quality %d): %.2f\n', quality, compression_ratios(i));
+    end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPRESSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-load('./img_gamma.mat', 'img_gamma');
-
-% Save as PNG (lossless)
-imwrite(img_gamma, 'output_image.png', 'PNG');
-
-% Get file information for the PNG file
-png_info = dir('output_image.png');
-
-qualities = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5];
-compression_ratios = zeros(size(qualities));
-
-for i = 1:length(qualities)
-    quality = qualities(i);
-    output_filename = sprintf('output_image_%d.jpg', quality);
-    
-    % Save as JPEG with the current quality
-    imwrite(img_gamma, output_filename, 'Quality', quality);
-    
-    % Compute compression ratios
-    jpeg_info = dir(output_filename);
-    compression_ratios(i) = png_info.bytes / jpeg_info.bytes;
-    
-    fprintf('Compression Ratio (PNG to JPEG, Quality %d): %.2f\n', quality, compression_ratios(i));
-end
-
-
-% Compression Ratio (PNG to JPEG, Quality 95): 5.66
-% Compression Ratio (PNG to JPEG, Quality 90): 8.99
-% Compression Ratio (PNG to JPEG, Quality 85): 12.08
-% Compression Ratio (PNG to JPEG, Quality 80): 14.76
-% Compression Ratio (PNG to JPEG, Quality 75): 17.28
-% Compression Ratio (PNG to JPEG, Quality 70): 19.14
-% Compression Ratio (PNG to JPEG, Quality 65): 20.91
-% Compression Ratio (PNG to JPEG, Quality 60): 22.65
-% Compression Ratio (PNG to JPEG, Quality 55): 24.03
-% Compression Ratio (PNG to JPEG, Quality 50): 25.26
-% Compression Ratio (PNG to JPEG, Quality 45): 26.48
-% Compression Ratio (PNG to JPEG, Quality 40): 28.08
-% Compression Ratio (PNG to JPEG, Quality 35): 29.59
+% Compression Ratio (PNG to JPEG, Quality 95): 5.58
+% Compression Ratio (PNG to JPEG, Quality 90): 8.83
+% Compression Ratio (PNG to JPEG, Quality 85): 11.85
+% Compression Ratio (PNG to JPEG, Quality 80): 14.49
+% Compression Ratio (PNG to JPEG, Quality 75): 16.99
+% Compression Ratio (PNG to JPEG, Quality 70): 18.87
+% Compression Ratio (PNG to JPEG, Quality 65): 20.68
+% Compression Ratio (PNG to JPEG, Quality 60): 22.47
+% Compression Ratio (PNG to JPEG, Quality 55): 23.89
+% Compression Ratio (PNG to JPEG, Quality 50): 25.13
+% Compression Ratio (PNG to JPEG, Quality 45): 26.37
+% Compression Ratio (PNG to JPEG, Quality 40): 28.03
+% Compression Ratio (PNG to JPEG, Quality 35): 29.54
 % Compression Ratio (PNG to JPEG, Quality 30): 31.54
-% Compression Ratio (PNG to JPEG, Quality 25): 33.87
-% Compression Ratio (PNG to JPEG, Quality 20): 36.77
-% Compression Ratio (PNG to JPEG, Quality 15): 40.16
-% Compression Ratio (PNG to JPEG, Quality 10): 44.75
-% Compression Ratio (PNG to JPEG, Quality 5): 50.56
+% Compression Ratio (PNG to JPEG, Quality 25): 33.85
+% Compression Ratio (PNG to JPEG, Quality 20): 36.82
+% Compression Ratio (PNG to JPEG, Quality 15): 40.24
+% Compression Ratio (PNG to JPEG, Quality 10): 44.89
+% Compression Ratio (PNG to JPEG, Quality 5): 50.86
 % Hasta 75 no se ve perdida
 
 %% ---------------------------- FUNCTIONS --------------------------------%
+function save_image(img,output_path, operation_type)
+    output_full = fullfile(output_path, strcat(operation_type, '.png'));
+    imwrite(img, output_full, 'PNG');
+end
+
 function img_alpha = alpha_correction(img_color_balanced, porcentage_brighten)
 
     % Brighten the image 
