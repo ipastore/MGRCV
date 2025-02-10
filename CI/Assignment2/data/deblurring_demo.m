@@ -1,0 +1,151 @@
+clear all;
+clc;
+close all;
+
+% Choose the output folder
+output_folder = '../output';
+
+
+% Different noise levels and blur sizes
+sigma_values = [0.001, 0.005, 0.01, 0.02];  % Gaussian noise levels
+blur_sizes = [3, 7, 15];  % Different blur sizes
+
+% Read and preprocess image
+% aperture = imread('apertures/zhou.bmp');
+% aperture = imread('apertures/raskar.bmp');
+% aperture = imread('apertures/Levin.bmp');
+% aperture = imread('apertures/circular.bmp');
+image = imread('images/penguins.jpg');
+image = image(:, :, 1);
+f0 = im2double(image);
+[height, width, ~] = size(f0);
+
+
+for sigma = sigma_values
+    for blurSize = blur_sizes
+        fprintf('Testing with sigma = %.4f, blurSize = %d\n', sigma, blurSize);
+
+        % Generate prior matrix
+        A_star = eMakePrior(height, width) + 1e-8;
+        C = sigma.^2 * height * width ./ A_star;
+
+        % Create blur kernel
+        temp = fspecial('disk', blurSize);
+        flow = max(temp(:));
+        k1 = im2double(imresize(aperture, [2*blurSize + 1, 2*blurSize + 1], 'nearest'));
+        k1 = k1 * (flow / max(k1(:)));
+
+        % Apply blur
+        f1 = zDefocused(f0, k1, sigma, 0);
+
+        f0_hat = deconvwnr(f1, k1, sigma^2);
+        convolutionType = 'Wiener_wout_prior';
+
+        % Display results
+        fig = figure;
+        subplot(1, 3, 1), imshow(f0), title('Focused');
+        subplot(1, 3, 2), imshow(f1), title(sprintf('Defocused (sigma=%.3f, blurSize=%d)', sigma, blurSize));
+        subplot(1, 3, 3), imshow(f0_hat), title('Recovered (Lucy)');
+        % Save the figure
+    
+        % Save the figure as a single image
+        output_filename = sprintf('sigma%.3f_blurSize%d.png', sigma, blurSize);
+        fullPath = fullfile(output_folder,convolutionType);
+        if ~exist(fullPath, 'dir')
+            mkdir(fullPath);
+        end
+        
+        saveas(fig, fullfile(fullPath,output_filename));
+        close(fig);
+        
+
+    end
+end
+
+for sigma = sigma_values
+    for blurSize = blur_sizes
+        fprintf('Testing with sigma = %.4f, blurSize = %d\n', sigma, blurSize);
+
+        % Generate prior matrix
+        A_star = eMakePrior(height, width) + 1e-8;
+        C = sigma.^2 * height * width ./ A_star;
+
+        % Create blur kernel
+        temp = fspecial('disk', blurSize);
+        flow = max(temp(:));
+        k1 = im2double(imresize(aperture, [2*blurSize + 1, 2*blurSize + 1], 'nearest'));
+        k1 = k1 * (flow / max(k1(:)));
+
+        % Apply blur
+        f1 = zDefocused(f0, k1, sigma, 0);
+
+        % Recover using Wiener deconvolution
+        f0_hat = zDeconvWNR(f1, k1, C);
+        convolutionType = 'Wiener';
+
+        % Display results
+        fig = figure;
+        subplot(1, 3, 1), imshow(f0), title('Focused');
+        subplot(1, 3, 2), imshow(f1), title(sprintf('Defocused (sigma=%.3f, blurSize=%d)', sigma, blurSize));
+        subplot(1, 3, 3), imshow(f0_hat), title('Recovered (Lucy)');
+        % Save the figure
+    
+        % Save the figure as a single image
+        output_filename = sprintf('sigma%.3f_blurSize%d.png', sigma, blurSize);
+        fullPath = fullfile(output_folder,convolutionType);
+        if ~exist(fullPath, 'dir')
+            mkdir(fullPath);
+        end
+        
+        saveas(fig, fullfile(fullPath,output_filename));
+        close(fig);
+        
+
+    end
+end
+
+
+for sigma = sigma_values
+    for blurSize = blur_sizes
+        for n_it = [5, 10, 20]
+
+            fprintf('Testing with sigma = %.4f, blurSize = %d\n', sigma, blurSize);
+
+            % Generate prior matrix
+            A_star = eMakePrior(height, width) + 1e-8;
+            C = sigma.^2 * height * width ./ A_star;
+
+            % Create blur kernel
+            temp = fspecial('disk', blurSize);
+            flow = max(temp(:));
+            k1 = im2double(imresize(aperture, [2*blurSize + 1, 2*blurSize + 1], 'nearest'));
+            k1 = k1 * (flow / max(k1(:)));
+
+            % Apply blur
+            f1 = zDefocused(f0, k1, sigma, 0);
+
+            % Recover using Lucy-Richardson Deconvolution
+            f0_hat = deconvlucy(f1, k1, n_it);
+            convolutionType = sprintf('Lucy_%d', n_it);
+
+
+            % Display results
+            fig = figure;
+            subplot(1, 3, 1), imshow(f0), title('Focused');
+            subplot(1, 3, 2), imshow(f1), title(sprintf('Defocused (sigma=%.3f, blurSize=%d)', sigma, blurSize));
+            subplot(1, 3, 3), imshow(f0_hat), title('Recovered (Lucy)');
+            % Save the figure
+        
+            % Save the figure as a single image
+            output_filename = sprintf('sigma%.3f_blurSize%d.png', sigma, blurSize);
+            fullPath = fullfile(output_folder,convolutionType);
+            if ~exist(fullPath, 'dir')
+                mkdir(fullPath);
+            end
+            
+            saveas(fig, fullfile(fullPath,output_filename));
+            close(fig);
+            
+        end
+    end
+end
