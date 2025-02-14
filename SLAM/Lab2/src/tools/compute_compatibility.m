@@ -25,6 +25,8 @@ compatibility.ic = compatibility.d2 < chi2(dof);
 compatibility.candidates.features = find(sum(compatibility.ic, 1));
 compatibility.candidates.observations = find(sum(compatibility.ic, 2))';
 
+%AL: almacena para cada observacion la cantidad de predicciones compatibles
 compatibility.AL = (sum (compatibility.ic, 2))';
-compatibility.HS = prod(compatibility.AL + 1);
 
+%HS: calcula el producto de AL+1 para cada observacion
+compatibility.HS = prod(compatibility.AL + 1);  
