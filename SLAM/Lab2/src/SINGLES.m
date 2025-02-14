@@ -21,5 +21,16 @@ H = zeros(1, observations.m);
 %
 % compatibility.ic(i,j) = 1 if observation i is a neighbour of
 % feature j.
+
+
+sumObs = compatibility.AL;                   % Neighbors per observation
+sumFeat = compatibility.features_count;      % Observations per feature
+obsMask = (sumObs == 1);                     % Observations with exactly 1 neighbor
+[~, neighIdx] = max(compatibility.ic(obsMask,:),[],2); % Index of each neighbor
+featMask = (sumFeat(neighIdx) == 1);         % Those neighbors also have exactly 1 observation
+obsInds = find(obsMask);
+H(obsInds(featMask)) = neighIdx(featMask);
+            
+
             
 configuration.name = 'SINGLES';

@@ -27,6 +27,7 @@ compatibility.candidates.observations = find(sum(compatibility.ic, 2))';
 
 %AL: almacena para cada observacion la cantidad de predicciones compatibles
 compatibility.AL = (sum (compatibility.ic, 2))';
+compatibility.features_count =(sum (compatibility.ic, 1));
 
 %HS: calcula el producto de AL+1 para cada observacion
 compatibility.HS = prod(compatibility.AL + 1);  
