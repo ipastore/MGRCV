@@ -45,7 +45,7 @@ for sigma = sigma_values
         fig = figure;
         subplot(1, 3, 1), imshow(f0), title('Focused');
         subplot(1, 3, 2), imshow(f1), title(sprintf('Defocused (sigma=%.3f, blurSize=%d)', sigma, blurSize));
-        subplot(1, 3, 3), imshow(f0_hat), title('Recovered (Lucy)');
+        subplot(1, 3, 3), imshow(f0_hat), title('Recovered (Wiener_wout_prior)');
         % Save the figure
     
         % Save the figure as a single image
