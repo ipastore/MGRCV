@@ -1,0 +1,79 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{Computational Imaging: Coded Apertures}
+\author{David Padilla Orenga \\ Ignacio Pastore Benaim}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction}
+This report presents the results of Assignment 2 for the Computational Imaging course. The assignment focuses on the use of coded apertures for image blurring, deblurring, and power spectrum analysis. The MATLAB script provided performs these tasks using different apertures and convolution methods. Coded apertures play a crucial role in computational imaging as they allow for improved image restoration techniques by encoding more information about the original scene.
+
+\section{Methods}
+The MATLAB script implements a systematic evaluation of different parameters affecting image blurring and deblurring. The following parameters were used:
+\begin{itemize}
+    \item \textbf{Sigma values for Gaussian noise:} [0.001, 0.005, 0.01, 0.02]
+    \item \textbf{Blur sizes for the disk filter:} [3, 7, 15]
+    \item \textbf{Apertures:} {'zhou', 'raskar', 'Levin', 'circular'}
+    \item \textbf{Input image:} 'images/penguins.jpg'
+    \item \textbf{Output folder:} '../output'
+\end{itemize}
+
+For each combination of these parameters, the script applies a blurring function, simulates coded aperture effects, and attempts to restore the image using various deconvolution methods. 
+
+The deconvolution methods tested include:
+\begin{itemize}
+    \item Wiener deconvolution with priors
+    \item Wiener deconvolution without priors
+    \item Lucy-Richardson deconvolution with 5, 10, and 20 iterations
+\end{itemize}
+
+The choice of these methods is based on their ability to recover high-frequency components lost during blurring. The power spectrum of each processed image is also analyzed to observe how different apertures affect frequency preservation.
+
+\section{Results}
+The script iterates over the defined sigma values, blur sizes, and apertures, performing blurring, deblurring, and power spectrum analysis for each combination. The results are saved in the specified output folder.
+
+\subsection{Effect of Sigma Values}
+Higher sigma values introduce more noise into the image, which increases the challenge for deblurring algorithms. Wiener deconvolution with prior information was found to be the most effective in preserving image details, while Wiener without priors performed poorly as it lacked additional constraints for noise suppression.
+
+\subsection{Effect of Blur Sizes}
+Larger blur sizes create more pronounced blurring effects. The Lucy-Richardson deconvolution method performed particularly well for larger blur sizes when more iterations were used. However, excessive iterations introduced artifacts in some cases, suggesting that an optimal number of iterations needs to be chosen based on the level of blurring.
+
+\subsection{Effect of Apertures}
+The type of aperture significantly affects both blurring and deblurring outcomes. 
+\begin{itemize}
+    \item \textbf{Circular aperture:} Created a uniform blur pattern but lost a significant amount of high-frequency detail, making deblurring more difficult.
+    \item \textbf{Zhou and Raskar apertures:} Produced structured blurs that retained more frequency information, leading to better image restoration results.
+    \item \textbf{Levin aperture:} Provided moderate performance, balancing between frequency preservation and computational efficiency.
+\end{itemize}
+
+\section{Comparison of Wiener and Lucy-Richardson Deconvolution}
+The Wiener deconvolution method with priors performed consistently well across different noise levels and blur sizes. In contrast, the Lucy-Richardson method's performance was dependent on the number of iterations:
+\begin{itemize}
+    \item With 5 iterations, Lucy-Richardson provided minimal sharpening but did not fully restore details.
+    \item With 10 iterations, edges and fine structures became more visible, but slight noise amplification was observed.
+    \item With 20 iterations, the restoration was sharper, but ringing artifacts and over-enhancement of noise became an issue.
+\end{itemize}
+The iterative nature of Lucy-Richardson deconvolution allows it to refine the estimate of the original image progressively, but excessive iterations can amplify noise and introduce artifacts. In high-noise scenarios, Wiener deconvolution with priors was found to be more stable and effective in producing cleaner results.
+
+\section{Discussion on Coded Aperture Effect}
+Coded apertures play a crucial role in computational imaging by influencing both the blurring and deblurring process. Unlike a conventional circular aperture, a coded aperture modulates incoming light rays in a structured manner, spreading the frequency components across the image. This modulation ensures that even after blurring, higher-frequency components remain encoded in a way that makes them easier to recover during deconvolution.
+
+The effectiveness of coded apertures is particularly evident in their ability to mitigate information loss. When using a circular aperture, certain high-frequency components are lost irreversibly, making deblurring difficult or impossible. In contrast, coded apertures distribute these frequencies across the image, improving the recoverability of fine details. This structured encoding leads to better deblurring results when using computational reconstruction techniques.
+
+\section{Conclusion}
+The choice of convolution method depends on the sigma value and blur size. The Wiener deconvolution method with prior information is recommended for higher sigma values, while the Lucy-Richardson method is suitable for larger blur sizes. The 'zhou' and 'raskar' apertures are recommended for better deblurring results. In all cases, Wiener without priors performed poorly compared to Wiener with priors. 
+
+Furthermore, the results demonstrate the significant advantages of coded apertures in preserving high-frequency details. By using structured apertures, deblurring algorithms are more effective, enabling improved image recovery in computational imaging applications. Future work may explore optimizing coded aperture designs to further enhance image restoration techniques.
+
+\end{document}
+

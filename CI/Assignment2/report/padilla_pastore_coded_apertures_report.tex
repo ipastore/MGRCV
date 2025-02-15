@@ -1,0 +1,53 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{Computational Imaging: Coded Apertures}
+\author{David Padilla Orenga \\ Ignacio Pastore Benaim}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction}
+This report presents the results of Assignment 2 for the Computational Imaging course. The assignment focuses on the use of coded apertures for image blurring, deblurring, and power spectrum analysis. The MATLAB script provided performs these tasks using different apertures and convolution methods.
+
+\section{Methods}
+The MATLAB script uses the following parameters:
+\begin{itemize}
+    \item \textbf{Sigma values for Gaussian noise:} [0.001, 0.005, 0.01, 0.02]
+    \item \textbf{Blur sizes for the disk filter:} [3, 7, 15]
+    \item \textbf{Apertures:} {'zhou', 'raskar', 'Levin', 'circular'}
+    \item \textbf{Input image:} 'images/penguins.jpg'
+    \item \textbf{Output folder:} '../output'
+\end{itemize}
+
+\section{Results}
+The script iterates over the defined sigma values, blur sizes, and apertures, performing blurring, deblurring,
+ and power spectrum analysis for each combination. The results are saved in the specified output folder.
+
+\subsection{Effect of Sigma Values}
+Higher sigma values result in more noise in the image, making the deblurring process more challenging. 
+The Wiener deconvolution method with prior information provided the best results for higher sigma values.
+
+\subsection{Effect of Blur Sizes}
+Larger blur sizes result in more significant blurring of the image. The Lucy-Richardson deconvolution method 
+performed well for larger blur sizes, especially with more iterations.
+
+\subsection{Effect of Apertures}
+Different apertures produce different blurring patterns. The 'zhou' and 'raskar' apertures provided the best 
+results for deblurring, while the 'circular' aperture was less effective.
+
+\section{Conclusion}
+The choice of convolution method depends on the sigma value and blur size. 
+The Wiener deconvolution method with prior information is recommended for higher sigma values, 
+while the Lucy-Richardson method is suitable for larger blur sizes. 
+The 'zhou' and 'raskar' apertures are recommended for better deblurring results. 
+In all cases, Wiener without priors performed poorly compared to Wiener with priors.
+\end{document}

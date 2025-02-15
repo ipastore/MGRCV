@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.8.12)  10 FEB 2025 15:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.8.12)  16 FEB 2025 00:33
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CI/Assignment2/report/padilla_pastore_camera_pipeline_report.tex
-(/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CI/Assignment2/report/padilla_pastore_camera_pipeline_report.tex
+**/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CI/Assignment2/report/report.tex
+(/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CI/Assignment2/report/report.tex
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-08-11>
 (/usr/local/texlive/2023/texmf-dist/tex/latex/base/article.cls
@@ -242,8 +242,8 @@ Package caption Info: New subtype `subtable' on input line 238.
 File: l3backend-pdftex.def 2023-04-19 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count287
 \l__pdf_internal_box=\box53
-) (./padilla_pastore_camera_pipeline_report.aux)
-\openout1 = `padilla_pastore_camera_pipeline_report.aux'.
+) (./report.aux)
+\openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 12.
 LaTeX Font Info:    ... okay on input line 12.
@@ -283,40 +283,50 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 Package hyperref Info: Link coloring OFF on input line 12.
- (./padilla_pastore_camera_pipeline_report.out) (./padilla_pastore_camera_pipeline_report.out)
+ (./report.out) (./report.out)
 \@outlinefile=\write3
-\openout3 = `padilla_pastore_camera_pipeline_report.out'.
+\openout3 = `report.out'.
 
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
  [1
 
 {/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (1.72272pt too wide) in paragraph at lines 40--41
+[]\OT1/cmr/m/n/10 The choice of these meth-ods is based on their abil-ity to re-cover high-frequency
+ []
+
+
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.20 \end{document}
-                    [1] (./padilla_pastore_camera_pipeline_report.aux)
+l.50 
+      [1{/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
+Overfull \hbox (0.44502pt too wide) in paragraph at lines 60--61
+\OT1/cmr/m/n/10 The Wiener de-con-vo-lu-tion method with pri-ors per-formed con-sis-tently well across
+ []
+
+[2] [3] (./report.aux)
  ***********
 LaTeX2e <2023-06-01> patch level 1
 L3 programming layer <2023-08-11>
  ***********
-Package rerunfilecheck Info: File `padilla_pastore_camera_pipeline_report.out' has not changed.
-(rerunfilecheck)             Checksum: 290FABC4BFD1B8D9CC79B9AE69829DA2;131.
+Package rerunfilecheck Info: File `report.out' has not changed.
+(rerunfilecheck)             Checksum: 2A9AADC9A74F0D398D891D88097653E6;1410.
  ) 
 Here is how much of TeX's memory you used:
- 10435 strings out of 475189
- 166616 string characters out of 5763832
- 1918254 words of memory out of 5000000
- 31628 multiletter control sequences out of 15000+600000
- 562383 words of font info for 51 fonts, out of 8000000 for 9000
+ 10462 strings out of 475189
+ 166356 string characters out of 5763832
+ 1925254 words of memory out of 5000000
+ 31642 multiletter control sequences out of 15000+600000
+ 563333 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,6n,79p,354b,434s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on padilla_pastore_camera_pipeline_report.pdf (2 pages, 43840 bytes).
+ 75i,6n,79p,575b,436s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
+Output written on report.pdf (4 pages, 91246 bytes).
 PDF statistics:
- 41 PDF objects out of 1000 (max. 8388607)
- 28 compressed objects within 1 object stream
- 3 named destinations out of 1000 (max. 500000)
- 9 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 95 PDF objects out of 1000 (max. 8388607)
+ 76 compressed objects within 1 object stream
+ 13 named destinations out of 1000 (max. 500000)
+ 73 words of extra memory for PDF output out of 10000 (max. 10000000)
 
