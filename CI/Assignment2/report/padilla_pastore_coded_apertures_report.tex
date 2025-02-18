@@ -4,6 +4,7 @@
 \usepackage{hyperref}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage[margin=1in]{geometry}
 
 \title{Computational Imaging: Coded Apertures}
 \author{David Padilla Orenga \\ Ignacio Pastore Benaim}
@@ -12,42 +13,76 @@
 \begin{document}
 \maketitle
 \thispagestyle{empty}
-\newpage
-\setcounter{page}{1}
-
-\section{Introduction}
-This report presents the results of Assignment 2 for the Computational Imaging course. The assignment focuses on the use of coded apertures for image blurring, deblurring, and power spectrum analysis. The MATLAB script provided performs these tasks using different apertures and convolution methods.
 
 \section{Methods}
-The MATLAB script uses the following parameters:
+The MATLAB script systematically evaluates different parameters affecting image blurring and deblurring. The parameters used were chosen as follows:
 \begin{itemize}
-    \item \textbf{Sigma values for Gaussian noise:} [0.001, 0.005, 0.01, 0.02]
-    \item \textbf{Blur sizes for the disk filter:} [3, 7, 15]
-    \item \textbf{Apertures:} {'zhou', 'raskar', 'Levin', 'circular'}
-    \item \textbf{Input image:} 'images/penguins.jpg'
-    \item \textbf{Output folder:} '../output'
+    \item \textbf{Sigma values for Gaussian noise:} [0.001, 0.005, 0.01, 0.02] -- Selected to simulate low to moderately high noise levels.
+    \item \textbf{Blur sizes for the disk filter:} [3, 7, 15] -- These sizes were chosen to represent small, moderate, and large blur effects.
+    \item \textbf{Apertures:} \texttt{\{`zhou', `raskar', `Levin', `circular'\}} -- Different designs were
+     evaluated to understand their impact on frequency preservation.
+    \item \textbf{Input image:} \texttt{images/penguins.jpg}
 \end{itemize}
 
-\section{Results}
-The script iterates over the defined sigma values, blur sizes, and apertures, performing blurring, deblurring,
- and power spectrum analysis for each combination. The results are saved in the specified output folder.
+For all cases, five deconvolution (or convolution) types were tested:
+\begin{enumerate}
+    \item \textbf{Wiener deconvolution with priors}.
+    \item \textbf{Wiener deconvolution without priors}.
+    \item \textbf{Lucy-Richardson deconvolution with 5 iterations}.
+    \item \textbf{Lucy-Richardson deconvolution with 10 iterations}.
+    \item \textbf{Lucy-Richardson deconvolution with 20 iterations}.
+\end{enumerate}
+
+
+\section{Results and Intermediate Analysis}
+The script iterated over the sigma values, blur sizes, and apertures, with the following observations:
 
 \subsection{Effect of Sigma Values}
-Higher sigma values result in more noise in the image, making the deblurring process more challenging. 
-The Wiener deconvolution method with prior information provided the best results for higher sigma values.
+Intermediate results revealed that higher sigma values introduce more noise, making deblurring challenging.
+ In particular, under high noise conditions (e.g., $\sigma=0.020$), iterative methods such as Lucy-Richardson 
+ can amplify noise if not properly controlled.
 
 \subsection{Effect of Blur Sizes}
-Larger blur sizes result in more significant blurring of the image. The Lucy-Richardson deconvolution method 
-performed well for larger blur sizes, especially with more iterations.
+Intermediate images clearly showed that larger blur sizes resulted in a more pronounced
+loss of high-frequency information. The Lucy-Richardson method, with increased iterations, 
+restored finer details but required careful iteration control to avoid excessive noise amplification.
+ For challenging setups (large blur size combined with high sigma), an intermediate number of iterations
+  (around 10) provided the best trade-off between sharpening and noise suppression.
 
 \subsection{Effect of Apertures}
-Different apertures produce different blurring patterns. The 'zhou' and 'raskar' apertures provided the best 
-results for deblurring, while the 'circular' aperture was less effective.
+Comparisons between apertures indicated:
+\begin{itemize}
+    \item \textbf{Circular aperture:} Provided a uniform blur but irreversibly lost many high-frequency details.
+    \item \textbf{Zhou and Raskar apertures:} Generated structured blurs that preserved frequency information better, leading to improved deblurring outcomes.
+    \item \textbf{Levin aperture:} Delivered moderate performance, balancing between frequency retention and computational efficiency.
+\end{itemize}
+Intermediate power spectra demonstrate that the aperture shape, along with blur size, primarily defines the frequency distribution, independent of the noise level.
+
+\section{Final Results and Discussion}
+Final restored images confirm that:
+\begin{itemize}
+    \item \textbf{Wiener deconvolution with priors} outperforms other methods across almost all tested combinations 
+    of sigma and blur size, proving to be the most robust approach, though some setups with Lucy deconvolution 
+    yield comparable performance (explained later).
+    \item \textbf{Lucy-Richardson deconvolution} can achieve superior sharpening. 
+    However, at high noise levels (e.g., $\sigma=0.020$ with blur size 15), 
+    the method is sensitive to the number of iterations. In this challenging case, 10 
+    iterations provided a better balance by mitigating noise amplification compared 
+    to 5 (under-sharpening) or 20 iterations (over-amplification of noise).
+    \item For scenarios with very low noise (e.g., $\sigma=0.001$) and minimal blur (blur size 3), most deconvolution methods produce acceptable results, indicating that parameter sensitivity is more critical under adverse conditions.
+    \item \textbf{Wiener deconvolution without priors} consistently underperformed compared to its counterpart with priors.
+\end{itemize}
 
 \section{Conclusion}
-The choice of convolution method depends on the sigma value and blur size. 
-The Wiener deconvolution method with prior information is recommended for higher sigma values, 
-while the Lucy-Richardson method is suitable for larger blur sizes. 
-The 'zhou' and 'raskar' apertures are recommended for better deblurring results. 
-In all cases, Wiener without priors performed poorly compared to Wiener with priors.
+The report demonstrates that the choice of deconvolution method should
+ carefully consider the sigma value and blur size. Under high noise and
+ large blur conditions, Wiener deconvolution with priors is the most robust, while 
+ Lucy-Richardson deconvolution shows optimal performance at an intermediate iteration count (e.g., 10 iterations) 
+ to avoid noise amplification. For benign conditions (low sigma and small blur size), most methods yield satisfactory
+  results. Additionally, among the tested coded apertures, the Raskar and Zhou designs are the most effective 
+  in preserving high-frequency details, followed by the Levin design, with the circular aperture trailing behind.
+
+These insights highlight the importance of handcrafting parameters,
+ especially the iteration count in Lucy-Richardson deconvolution, to achieve 
+ the best balance between deblurring and noise control. 
 \end{document}

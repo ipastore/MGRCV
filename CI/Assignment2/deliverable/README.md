@@ -80,3 +80,4 @@ Here, Z denotes the color channel, where:
 - Z = 1 corresponds to the Red channel,
 - Z = 2 corresponds to the Green channel,
 - Z = 3 corresponds to the Blue channel.
+
