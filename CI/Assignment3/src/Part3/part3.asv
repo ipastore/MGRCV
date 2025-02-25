@@ -1,0 +1,16 @@
+%load HDR
+hdr = hdrread('../Part1/Results/hdr_image.hdr');
+
+i = 3;
+
+for dR = [2, 4, 6]
+
+    imwrite( ...
+        durand_tonemapping(hdr,dR), ...
+        "Results/tonemapped_durand_dR_"+dR+".png", ...
+        fignum=i ...
+        )
+    
+      i = i +1;
+
+end

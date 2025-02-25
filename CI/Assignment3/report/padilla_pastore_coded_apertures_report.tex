@@ -1,0 +1,95 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[margin=1in]{geometry}
+
+\title{Assignment3: High-Dynamic-Range-Imaging}
+\author{David Padilla Orenga \\ Ignacio Pastore Benaim}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Results and Discussion}
+Figures~\ref{fig:responseFunctions} and~\ref{fig:radianceMaps} show the response functions and the resulting radiance maps for the different combinations of weighting and smoothing:
+\begin{itemize}
+    \item \textbf{Tent Weighting + \(\lambda=50\):} Produces a smooth, stable response curve.  Saturated or dark pixels are de-emphasized, leading to fewer artifacts in the HDR.
+    \item \textbf{Tent Weighting + \(\lambda\approx0\):} With almost no smoothness constraint, the response function can become more jagged, though mid-range pixel mapping is still emphasized.
+    \item \textbf{No Weighting + \(\lambda=50\):} Gives a smooth CRF but lacks emphasis on mid-range pixels, so extremely dark or bright values can introduce noise or artifacts in the HDR.
+    \item \textbf{No Weighting + \(\lambda\approx0\):} Tends to be noisier overall, and bright or dark regions can dominate.  The CRF is less stable.
+\end{itemize}
+
+\paragraph{Observations.}
+\begin{itemize}
+    \item \textbf{Influence of \(\lambda\):} A larger \(\lambda\) yields smoother CRFs.  In practice, \(\lambda=50\) gave visually pleasing results, whereas \(\lambda \approx 10^{-6}\) sometimes overfits noise.
+    \item \textbf{Influence of Weighting:} Tent weighting avoids saturations at the extremes by de-emphasizing high and low pixel values, typically producing better final HDR images.  Constant weighting can result in more noise in the darkest or brightest regions.
+    \item \textbf{Preferred Images:} We generally preferred the results from \textit{Tent Weighting with moderate smoothing}, as it offered a stable response curve and balanced radiance maps.
+\end{itemize}
+
+\section{Conclusion}
+In this part of the lab, we demonstrated how different parameters (\(\lambda\) and 
+weighting functions) affect the camera response function and final HDR radiance map.  
+he tent weighting function with a moderate smoothing parameter (\(\lambda=50\)) produced the most 
+stable and visually appealing results.  In subsequent parts, we will use these HDR images for global 
+and local tone mapping experiments.
+
+
+\section{ANOTHER Conclusion}
+
+Explanation of Differences: The three response functions (CRFs) 
+display different characteristics based on the smoothing and weighting methods used: 1. 
+Tent Weighting + \(\lambda = 50\) (Full Method: - Tent weighting assigns more weight to pixel
+alues at the middle of the exposure range and less weight to the extremely bright and dark pixel values, 
+hich reduces the influence of noise from those extreme values in darker/shadow or overexposed/highlight areas. 
+The response function achieved smoother transitions between the pixel values, with fewer artifacts in the
+HDR resulting from outliers or noisy pixels. The response curve appears relatively stable and gradually 
+changes, especially near mid-range exposures. 2. Tent Weighting + \(\lambda \approx 0\) 
+(No Smoothness: - With such a low \(\lambda\), the smoothing term is practically eliminated, 
+causing the CRF to be much more jagged. It might capture finer details, but at the cost of noise 
+and irregularities. - The lack of smoothing increases the visibility of abrupt changes in response
+function between similar exposure values, which is not ideal for HDR reconstruction, as it leads 
+to inconsistencies in the final image. 3. No Weighting + \(\lambda = 50\) 
+(Full Method, No Weighting:- The absence of the weighting function means that bright and dark pixels contribute as much as those 
+in the middle ranges. This causes the final response function to be highly influenced by extreme 
+pixel values, which are typically outliers or noise—in the darkest regions or highlights, which 
+might reduce the robustness of the reconstruction. The image is more prone to artifacts, especially
+when these extreme values "overpower" the middle ones. 4. No Weighting + \(\lambda \approx 0\) 
+(No Smoothness, No Weighting - Without both the smoothing term and the weighting function, 
+this results in an unstable, noisy CRF. This model does not emphasize middle-range pixels and allows
+ noise or clipping in both the brightest and darkest areas to more heavily affect the response function. 
+ The resulting CRF is irregular and jagged, reflecting unwanted noise and artifacts from the data. 
+Mixed Paragraph with Results, Discussion, Observations, and Conclusions (without figures): 
+ In this part of the HDR imaging process, we have investigated the effects of different weighting 
+ schemes and smoothing parameters on the recovery of the camera response function (CRF) and the resulting
+  HDR radiance maps. We found that the response function with tent weighting and moderate smoothing 
+  (\(\lambda = 50\)) produced a stable and visually pleasing result. The tent weighting function effectively
+   emphasized mid-range pixel values, reducing influence from saturated or underexposed pixels, and 
+   smoothing the outcome. On the other hand, using a very low smoothing parameter (\(\lambda \approx 0\)) 
+   resulted in a jagged CRF, capturing more noise and less accurately mapping the exposure values, which 
+   negatively affected the quality of the HDR image. Additionally, applying no weighting function led to 
+   more artifacts, especially at extreme pixel values, making the radiance map appear noisy in very 
+   bright or dark regions. The results showed that combining tent weighting with moderate smoothing
+   (\(\lambda = 50\)) produces the most visually appealing and stable response functions, leading to
+    HDR images with better shadow and highlight balance. Therefore, for most applications, 
+    favoring tent weighting with moderate smoothing is ideal, as it ensures a robust reconstruction 
+    with minimal distortion and effective exposure handling
+
+When we use tent weighting with a moderate smoothing parameter, 
+the resulting response function is smooth and avoids being dominated 
+by under- or over-exposed pixels; this yields a stable mapping from pixel values 
+to log exposure across most of the brightness range. With the same tent weighting but negligible
+ smoothing, the curve can become more jagged, reflecting local variations or noise in the data—especially 
+ near the midrange, where the tent weighting gives those pixels more importance. If we remove the weighting 
+ but keep smoothing, the function remains relatively smooth, yet high and low pixel values influence the shape 
+ more strongly, sometimes resulting in a steeper slope at the extremes. Finally, removing both weighting and 
+ smoothing can lead to an even noisier or less stable function, since extreme pixel values are weighted
+  equally with midrange values and there is no regularization term to enforce smoothness. Overall, 
+  these variations illustrate how the weighting scheme and smoothing parameter jointly control the 
+  balance between fitting the data closely (potentially amplifying noise) and producing a stable,
+  continuous response function that robustly handles saturated and very dark pixels.
+
+\end{document}
