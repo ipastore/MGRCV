@@ -1,0 +1,97 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[margin=1in]{geometry}
+
+\title{Assignment3: High-Dynamic-Range-Imaging}
+\author{David Padilla Orenga \\ Ignacio Pastore Benaim}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Part 1: Camera Response Function Estimation}
+We compared different weighting functions and smoothing parameters for HDR reconstruction using the Memorial Church dataset with multiple exposures:
+
+\begin{itemize}
+    \item \textbf{Weighting function impact:} Tent weighting de-emphasizes extreme pixel values (very bright or dark), producing more balanced HDR images with fewer artifacts in shadows and highlights. This approach follows the principle that mid-exposure pixels contain the most reliable information. No weighting treats all pixels equally, causing noise and instability in extreme luminance areas, particularly in heavily under- or over-exposed regions. The impact of the weighting function can be seen clearly in the comparative figure.
+    
+    \item \textbf{Smoothing parameter (\(\lambda\)):} Higher values (\(\lambda=50\)) constrain 
+        the camera response function to be smoother, reducing noise sensitivity and producing stable
+        reconstructions with continuous tone transitions. In contrast, minimal smoothing (\(\lambda \approx 0\)) creates jagged, 
+        unstable responses that amplify noise and can introduce false details or artifacts,
+        especially in areas with limited exposure samples. The impact of smoothing can be seen clearly in the smooth vs no smooth Curve response functions figures.
+\end{itemize}
+
+The best combination was \textbf{Tent Weighting + \(\lambda=50\)}, which offered a stable response curve and well-balanced dynamic range in the reconstructed image, particularly evident in the stained glass windows and interior architectural details of the church scene.
+
+\section{Part 2: Global Tone Mapping}
+We evaluated Reinhard's tone mapping operator against a simple division operator (I/(1+I)), exploring how different parameters affect visual perception:
+
+\begin{itemize}
+    \item \textbf{Key parameter:} Controls overall brightness by mapping to middle gray. We tested values [0.09, 0.18, 0.36, 0.72]:
+    \begin{itemize}
+        \item \textbf{Low key (0.09):} Created dramatic, darker images that emphasized window illumination but lost shadow detail in church interiors.
+        \item \textbf{Standard key (0.18):} Provided balanced exposure that most closely matched human visual perception, with good detail in both bright and dark regions.
+        \item \textbf{High key (0.36-0.72):} Generated brighter images revealing more shadow details but at the cost of highlight detail in window areas and light sources.
+    \end{itemize}
+    
+    \item \textbf{Burn parameter:} Controls highlight compression, critical for HDR scenes. From our tests with [0.1, 0.5, 1.0]:
+    \begin{itemize}
+        \item \textbf{Low burn (0.1):} Maximized highlight preservation in bright areas like windows but reduced overall contrast.
+        \item \textbf{Medium burn (0.5):} Offered superior balance between highlight detail and natural appearance.
+        \item \textbf{High burn (1.0):} Created higher contrast scenes with more vivid colors but lost fine details in bright regions.
+    \end{itemize}
+\end{itemize}
+
+Reinhard's operator significantly outperformed the simple division method, which exhibited clipped highlights and flat mid-tones. The optimal settings were key=0.18 with burn=0.5, producing images with natural appearance and balanced luminance distribution.
+
+We applied Global Tone Mapping for every case in Part 1. Comparative images are included in the report. To see all the generated images, run the provided MATLAB script.
+
+\section{Part 3: Local Tone Mapping}
+We compared Durand's bilateral filtering approach with a naive global contrast reduction method, focusing on local detail preservation:
+
+\begin{itemize}
+    \item \textbf{Durand method:} Decomposes the image into:
+    \begin{itemize}
+        \item \textbf{Base layer:} Captured through bilateral filtering (with spatial sigma proportional to image height at 0.02*height), containing large-scale illumination variations.
+        \item \textbf{Detail layer:} Preserves fine texture and edge information by subtracting the base from log intensity.
+        \item \textbf{Compression:} Applied only to the base layer before recombining with unmodified details.
+    \end{itemize}
+    
+    \item \textbf{Naive approach:} Applies uniform contrast reduction to the entire log image, failing to preserve the relationship between local contrast and illumination.
+    
+    \item \textbf{Dynamic range (dR):} We tested compression factors [2, 4, 6, 8]:
+    \begin{itemize}
+        \item \textbf{Low dR (2):} Preserved original contrast relationships but insufficiently compressed extreme lighting differences.
+        \item \textbf{Medium dR (4):} Achieved optimal balance between compression and detail preservation.
+        \item \textbf{High dR (6-8):} Created more uniform lighting but began to introduce unnatural appearance in high-contrast transitions.
+    \end{itemize}
+\end{itemize}
+
+Durand's method consistently outperformed the naive approach, preserving fine details in stained glass while properly compressing the overall dynamic range. The bilateral filter effectively separated illumination from texture, maintaining local contrast that was lost in the naive approach.
+As in Part 2, we applied Local Tone Mapping for every case in Part 1. Comparative images are included in the report. To see all the generated images, run the provided MATLAB script.
+
+\section{Part 4: Custom Pipeline}
+We captured a nighttime scene in a home corridor that presented complex lighting conditions:
+\begin{itemize}
+    \item \textbf{Scene composition:} Shot from the living room showing a corridor with multiple lighting zones. Two primary light sources illuminate the scene: a ceiling light casting broad illumination and a secondary visible light source within the frame. The corridor leads to two rooms with open doors—a bedroom and a bathroom—both with dim interior lighting creating subtle illumination gradients. A mirror in the living room adds complexity by reflecting additional interior details.
+    
+    \item \textbf{Lighting complexity:} The scene encompasses at least five distinct luminance zones: bright direct light sources, ambient living room lighting, corridor shadows, dim room interiors visible through doorways, and subtle mirror reflections. This creates a challenging HDR scenario with approximately 14-16 stops of dynamic range. This complexity is evident in the radiance map shown in the figure comparison.
+\end{itemize}
+
+Based on our parameter study from previous parts, we processed this scene using:
+\begin{itemize}
+    \item \textbf{HDR Reconstruction:} Tent weighting with moderate smoothing (\(\lambda=50\)) to achieve stable response curves across all luminance zones.
+    \item \textbf{Tone Mapping:} Applied both Reinhard (key=0.18, burn=0.5) and Durand (dR=4) methods for comparison.
+\end{itemize}
+
+While Reinhard's method provided natural overall contrast with pleasing color rendition, Durand's operator better preserved the subtle details, particularly the texture details in the bright ceiling light area while simultaneously maintaining visibility in the dim corridor and room interiors. The local operator successfully preserved the graduation of light through the corridor and the subtle details visible in the mirror reflection, making it our preferred choice for this complex scene with its extreme lighting variations.
+
+We also created a simple HDR image for comparison using a basic scaling and gamma correction method. However, this approach was not sufficient, as it failed to adequately handle the scene's dynamic range, resulting in poor detail preservation and unnatural appearance.
+
+\end{document}
