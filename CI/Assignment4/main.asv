@@ -1,0 +1,63 @@
+close all;  % Close all figures
+clear variables;  % Clear all variables
+clc;  % Clear command window
+
+% Display script starting message
+disp('=== NLOS Reconstruction Started ===');
+
+% Configuration parameters
+voxel_resolution = 8;
+spad_sampling = 8; 
+data_path = '/Users/ignaciopastorebenaim/Documents/MGRCV/TPs/CI/Assignment4/data/Z_d=0.5_l=[1x1]_s=[256x256].mat';
+
+% Load measurement data
+disp('Loading dataset...');
+measurement_data = load(data_path);
+
+% Display dataset information
+fprintf('Dataset info: %s\n', data_path);
+fprintf('Volume position: [%.2f, %.2f, %.2f]\n', measurement_data.data.volumePosition(1), ...
+    measurement_data.data.volumePosition(2), measurement_data.data.volumePosition(3));
+fprintf('Volume size: %.2f\n', measurement_data.data.volumeSize);
+
+% Reconstruction phase
+disp('Starting reconstruction...');
+reconstruction_timer = tic;
+reconstructed_volume = backprojection_naive(measurement_data.data, voxel_resolution, spad_sampling);
+reconstruction_time = toc(reconstruction_timer);
+
+% Report reconstruction performance
+disp('=== Reconstruction Complete ===');
+fprintf('Reconstruction resolution: %d×%d×%d voxels\n', voxel_resolution, voxel_resolution, voxel_resolution);
+fprintf('SPAD sampling rate: %d\n', spad_sampling);
+fprintf('Total reconstruction time: %.3f seconds\n', reconstruction_time);
+
+% Post-processing 
+disp('Applying Laplacian filter...');
+filter_timer = tic;
+laplacian_kernel = fspecial3('lap');
+filtered_volume = imfilter(reconstructed_volume, -laplacian_kernel, 'symmetric');
+filter_time = toc(filter_timer);
+fprintf('Filter applied in %.3f seconds\n', filter_time);
+
+% Visualization
+disp('Generating visualizations...');
+
+% 3D volume visualization
+figure('Name', 'Original Volume');
+volumeViewer(reconstructed_volume);
+
+figure('Name', 'Laplacian-Filtered Volume');
+volumeViewer(filtered_volume);
+
+% 2D maximum intensity projection
+figure('Name', 'Maximum Intensity Projection');
+max_projection = squeeze(max(reconstructed_volume, [], 3));
+imagesc(rot90(max_projection, 2));
+colormap(hot(256));
+colorbar;
+title('Maximum Intensity Projection');
+axis equal tight;
+
+disp('Visualization complete.');
+disp('=== Processing Complete ===');
